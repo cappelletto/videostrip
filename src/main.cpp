@@ -17,6 +17,7 @@
 
 #include <headers.h>
 #include <helper.h>
+#include <options.h>
 
 using namespace std;
 using namespace cv;
@@ -32,6 +33,26 @@ int main(int argc, char *argv[])
 {
 
     logc.warn("main", "Alpha version. Sandbox for module building and testing");
+
+    int retval = initParser(argc, argv);    // initial argument validation, populates arg parsing structure args
+    if (retval != 0)                        // some error ocurred, we have been signaled to stop
+        return retval;
+    std::ostringstream s;
+
+    // Input file priority: must be defined either by the config.yaml or --input argument
+    string inputFileName    = ""; // command arg or config defined
+    string outputFileName   = ""; // if empty, output filenames will be the same as the standard. If non-null, will be used as prefix
+    string outputFilePath   = ""; // absolut/relative folder path were output will be stored
+    int verbosityLevel      = 0;  // verbosity level, 0 - 3
+
+    if (argInput)   inputFileName    = args::get(argInput);   //input file is mandatory positional argument. Overrides any definition in configuration.yaml
+    if (argOutput)  outputFileName   = args::get(argOutput);  //input file is mandatory positional argument. Overrides any definition in configuration.yaml
+    if (argVerbose) verbosityLevel   = args::get(argVerbose); // retrieve user defined verbosity level
+
+    if (inputFileName.empty()){ //not defined as command line argument? let's use config.yaml definition
+        logc.error ("main", "Input file missing. Please define it using --input='filename' or inside a YAML configuration file (see --config option)");
+        return -1;
+    }
 
     // cout << "\tOpenCV version:\t" << yellow << CV_VERSION << reset << endl;
     // cout << "\tGit commit:\t" << yellow << GIT_COMMIT << reset << endl;
