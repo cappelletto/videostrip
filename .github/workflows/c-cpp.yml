@@ -17,14 +17,12 @@ jobs:
       run:  | 
         sudo apt-get update -y
         sudo apt install libopencv-dev
-        apt-cache show libopencv-dev
         dpkg -L libopencv-dev
     - name: CMake
       run: |
         cd ${{ github.workspace }}
-        mkdir -p build
-        cd build
-        cmake ..
+        export OpenCV_DIR="/usr/lib/x86_64-linux-gnu/cmake/opencv4"
+        cmake -Bbuild
     - name: Building target
       run: |
         cd build
