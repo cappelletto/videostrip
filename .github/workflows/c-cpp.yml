@@ -14,7 +14,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Dependencies
-      run:  sudo apt install libopencv-dev
+      run:  | 
+        sudo apt-get update -y
+        sudo apt install libopencv-dev
+        apt-cache show libopencv-dev
+        dpkg -L libopencv-dev
     - name: CMake
       run: |
         cd ${{ github.workspace }}
