@@ -16,11 +16,11 @@
 
 args::ArgumentParser argParser("","");
 args::HelpFlag 	     argHelp(argParser, "help", "Display this help menu", {'h', "help"});
-args::CompletionFlag completion(argParser, {"complete"});	//TODO: figure out why is missing in current version of args.hxx
+// args::CompletionFlag completion(argParser, {"complete"});	//TODO: figure out why is missing in current version of args.hxx
 
-args::ValueFlag <std::string> 	argInput(argParser, "input", "Input bathymetry map. TIFF file or XYZ point collection", {"input"});
-// args::Positional<std::string> 	argInput(argParser,     "input",    "Input bathymetry map. TIFF file or XYZ point collection");
-args::ValueFlag	<std::string> 	argOutput(argParser,    "output",   "Output file basename that will be used as prefix of all exported layers",{'o',"output"});
+args::Flag 			            argDumpInfo(argParser, "dump", "Show compilation time related information", {'d', "dump"});
+args::ValueFlag <std::string> 	argInput(argParser, "input", "Path to video input file", {"input"});
+args::ValueFlag	<std::string> 	argOutput(argParser,    "output",   "Output filename prefix",{'o',"output"});
 args::ValueFlag	<int> 	        argVerbose(argParser,   "verbose",  "Define verbosity level, 0 - 3", {"verbose"});
 
 // Free parameters for debugging

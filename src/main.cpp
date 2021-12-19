@@ -49,14 +49,23 @@ int main(int argc, char *argv[])
     if (argOutput)  outputFileName   = args::get(argOutput);  //input file is mandatory positional argument. Overrides any definition in configuration.yaml
     if (argVerbose) verbosityLevel   = args::get(argVerbose); // retrieve user defined verbosity level
 
+    if (argDumpInfo)
+    {
+        cout << "\tOpenCV version:\t" << yellow << CV_VERSION << reset << endl;
+        cout << "\tGit commit:\t" << yellow << GIT_COMMIT << reset << endl;
+        cout << "\tMode:\t\t" << yellow << CMAKE_BUILD_TYPE << reset << endl;
+        cout << cv::getBuildInformation() << std::endl;
+        s << "Input file: " << inputFileName << endl;
+        s << "Output file: " << outputFileName << endl;
+        s << "Verbosity level: " << verbosityLevel << endl;
+        logc.info("main", s.str());
+        return 0;
+    }
+
     if (inputFileName.empty()){ //not defined as command line argument? let's use config.yaml definition
-        logc.error ("main", "Input file missing. Please define it using --input='filename' or inside a YAML configuration file (see --config option)");
+        logc.error ("main", "Input file missing. Please define it using --input=<filename>");
         return -1;
     }
 
-    // cout << "\tOpenCV version:\t" << yellow << CV_VERSION << reset << endl;
-    // cout << "\tGit commit:\t" << yellow << GIT_COMMIT << reset << endl;
-    // cout << "\tMode:\t\t" << yellow << CMAKE_BUILD_TYPE << reset << endl;
-    // cout << cv::getBuildInformation() << std::endl;
     return 0;
 }
