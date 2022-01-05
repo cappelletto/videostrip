@@ -96,8 +96,8 @@ add_definitions( -DGIT_COMMIT="${GIT_INFO}" ) # Forward current git info as a si
 add_definitions( -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" ) # Forward current git info as a single string
 
                           ############################ MAD_TEST ####################
-add_executable(videostrip #src/videostrip.cpp
-                          src/main.cpp
+add_executable(videostrip src/videostrip-cli.cpp
+                          #src/main.cpp
                           src/helper.cpp
                           ${PROJECT_HEADERS})
 

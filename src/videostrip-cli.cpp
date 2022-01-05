@@ -1,11 +1,7 @@
 /**
- * @file mad_test.cpp
+ * @file main.cpp
  * @author Jose Cappelletto (cappelletto@gmail.com)
- * @brief Measurability Area Detector, extended version of LAD test
- *        Sandbox module for testing core and extended functionalities and integration of Geotiff, OpenCV, CGAL & GDAL
- *        Part of PhD project on predicting landable areas for autonomous vehicles using remotely sensed data
- *        Ocean Perception Lab. University of Southampton, UK. 
- *        Visit: https://oceans.soton.ac.uk
+ * @brief [videostrip] as stand-alone module for video processing. Rework from scracth, based on the original uwimgproc/videostrip.cpp
  * @version 3.6-DualEnv [local + Iridis5]
  * @date 2021-11-18
  * 
