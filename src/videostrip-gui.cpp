@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 #endif
 
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "videostrip-mockup", NULL, NULL);
     if (window == NULL)
         return 1;
     glfwMakeContextCurrent(window);
@@ -85,11 +85,14 @@ int main(int argc, char *argv[])
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Our state
-    bool show_demo_window = true;
-    bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    cout << "context created" << endl;
+
+
+    ImGui::SetNextWindowSize(ImVec2(700,500));
     // Main loop
+    static bool window_flag = true;
     while (!glfwWindowShouldClose(window))
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -104,42 +107,110 @@ int main(int argc, char *argv[])
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+        ImGui::Begin("videostrip-gui", &window_flag, ImGuiWindowFlags_MenuBar    | 
+                                                     ImGuiWindowFlags_NoTitleBar |
+                                                     ImGuiWindowFlags_NoCollapse |
+                                                     ImGuiWindowFlags_NoMove     |
+                                                     ImGuiWindowFlags_NoResize   );
+        // Begin main menu bar
+        if (ImGui::BeginMainMenuBar())
         {
-            static float f = 0.0f;
-            static int counter = 0;
-
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
-
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("Load video"))
+                {
+                    // Open file dialog
+                }
+                if (ImGui::MenuItem("Exit", "Alt+F4"))
+                {
+                    window_flag = false;
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Edit"))
+            {
+                if (ImGui::MenuItem("Some parameters", "CTRL+Y", false, false)) // Disabled item
+                {
+                }
+                ImGui::Separator();
+                if (ImGui::MenuItem("Preferences", "CTRL+P"))
+                {
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Help"))
+            {
+                if (ImGui::MenuItem("About"))
+                {
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
         }
 
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
+        // if (ImGui::Begin("videostrip-gui", &window_flag))
+        // {
+
+            ImGui::SetCursorPos(ImVec2(23,62.5));
+            ImGui::Text("filename: <path/to/filename>");
+
+            ImGui::SetCursorPos(ImVec2(182,123.5));
+            ImGui::PushItemWidth(200);
+            static float progress16 = 0.0f;
+            ImGui::ProgressBar(progress16, ImVec2(0.0f, 0.0f));
+            ImGui::PopItemWidth();
+
+            ImGui::SetCursorPos(ImVec2(184.5,94.5));
+            ImGui::Button("Button1", ImVec2(57,19)); //remove size argument (ImVec2) to auto-resize
+
+            ImGui::SetCursorPos(ImVec2(248.5,93.5));
+            ImGui::Button("Button2", ImVec2(57,19)); //remove size argument (ImVec2) to auto-resize
+
+            ImGui::SetCursorPos(ImVec2(313.5,96.5));
+            ImGui::Button("Button3", ImVec2(57,19)); //remove size argument (ImVec2) to auto-resize
+
+            ImGui::SetCursorPos(ImVec2(186,151.5));
+            ImGui::Text("Log output (current action)");
+
+            ImGui::SetCursorPos(ImVec2(16,96));
+            ImGui::BeginChild(22, ImVec2(158,130), true);
+
+            ImGui::SetCursorPos(ImVec2(33.5,60.5));
+            ImGui::Text("video preview");
+
+            ImGui::EndChild();
+
+            ImGui::SetCursorPos(ImVec2(401,90));
+            ImGui::BeginChild(24, ImVec2(151,138), true);
+
+            ImGui::SetCursorPos(ImVec2(44.5,59.5));
+            ImGui::Text("logger output");
+
+            ImGui::EndChild();
+
+            ImGui::SetCursorPos(ImVec2(306.5,62.5));
+            ImGui::Button("^ load", ImVec2(50,19)); //remove size argument (ImVec2) to auto-resize
+
+            ImGui::SetCursorPos(ImVec2(26.5,74.5));
+            ImGui::Text("VIDEO summary info");
+
             ImGui::End();
-        }
+        // }
+
+        // // Edit a color (stored as ~4 floats)
+        // ImGui::ColorEdit4("Color", my_color);
+
+        // // Plot some values
+        // const float my_values[] = { 0.2f, 0.1f, 1.0f, 0.5f, 0.9f, 2.2f };
+        // ImGui::PlotLines("Frame Times", my_values, IM_ARRAYSIZE(my_values));
+
+        // // Display contents in a scrolling region
+        // ImGui::TextColored(ImVec4(1,1,0,1), "Important Stuff");
+        // ImGui::BeginChild("Scrolling");
+        // for (int n = 0; n < 50; n++)
+        //     ImGui::Text("%04d: Some text", n);
+        // ImGui::EndChild();
+        // ImGui::End();
 
         // Rendering
         ImGui::Render();
