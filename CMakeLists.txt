@@ -42,7 +42,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 message ("${Cyan} Configuring system")
 # GNU compiler flags. If you are using a different compiler, you may need to change these flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3 -Wformat")
 # Additional flags for vectorized/multithread profiling and debugging
 # Ask if compiler is GNU and support this flags, otherwise it could fail
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread -mavx2 -shared-libgcc")
@@ -74,17 +74,44 @@ message(STATUS "    version: ${OpenCV_VERSION}")
 message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
+# OpenGL is used as a rendering backend, so we need to find it
+find_package(OpenGL REQUIRED)
+if (OPENGL_FOUND)
+  message("${BoldGreen}" "OpenGL library status:" "${ColourReset}")
+  message(STATUS "    version: ${OPENGL_VERSION}")
+  message(STATUS "    libraries: ${OPENGL_LIBRARIES}")
+  message(STATUS "    include path: ${OPENGL_INCLUDE_DIR}")
+endif()
+
+# find_package(glfw3 3.3 REQUIRED)  # current release for cmake is pretty incomplete. Use pkg-config instead
+# message(STATUS "Found GLFW3 in ${GLFW3_INCLUDE_DIR}")
+# message(STATUS "Found GLFW in ${GLFW_LIBRARIES}")
+
+find_package(PkgConfig REQUIRED)
+pkg_search_module(GLFW REQUIRED glfw3)
+
+include_directories(${GLFW_INCLUDE_DIRS})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${GLFW_INCLUDE_DIRS}")
+
+set (IMGUI_DIR      external/imgui)
+
+set (IMGUI_SOURCES  ${IMGUI_DIR}/imgui.cpp
+                    ${IMGUI_DIR}/imgui_draw.cpp
+                    ${IMGUI_DIR}/imgui_demo.cpp
+                    ${IMGUI_DIR}/imgui_widgets.cpp
+                    ${IMGUI_DIR}/imgui_tables.cpp
+                    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+                    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp)
+
 # Greedy include of all headers
 file(GLOB PROJECT_HEADERS include/*.h include/*.hpp external/*.h external/*.hpp external/*.hxx)
-
-# set (YAML_DIR $ENV{HOME}/local) # Path hint for YAML package installed from github
 
 include_directories(BEFORE ../include
                     include
                     ${OpenCV_INCLUDE_DIRS}
+                    ${IMGUI_DIR}
+                    ${IMGUI_DIR}/backends
                     )
-          
-# include_directories(AFTER ${YAML_DIR}/include)
 
 # Retrieve git commit information, forward it as compiler flags so they can be used during building time
 exec_program(
@@ -95,17 +122,35 @@ exec_program(
 add_definitions( -DGIT_COMMIT="${GIT_INFO}" ) # Forward current git info as a single string
 add_definitions( -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" ) # Forward current git info as a single string
 
-                          ############################ MAD_TEST ####################
-add_executable(videostrip src/videostrip-cli.cpp
-                          #src/main.cpp
-                          src/helper.cpp
-                          ${PROJECT_HEADERS})
+# collect all the libraries in a single variable
+set(CORE_LIBS ${OpenCV_LIBS} )
+set(GUI_LIBS  ${OPENGL_LIBRARIES} ${GLFW_LIBRARIES} ${IMGUI_LIBS})
 
-# find_library (YAML_LIB yaml-cpp PATHS ${YAML_DIR}/lib64)      # for non-canonical installations of yaml library
-# message (STATUS "Using yaml-cpp libraries from:" ${YAML_LIB})
+message ("${Cyan} Building system")
+message ("${BoldBlue} Building core libraries: ${ColourReset}")
+message ("CORE_LIBS: ${CORE_LIBS}")
+message ("${BoldBlue} Building GUI libraries: ${ColourReset}")
+message ("GUI_LIBS: ${GUI_LIBS}")
 
-target_compile_options(videostrip     PUBLIC -std=c++17 -mavx2) # the global flags may already have been set with std=c++17 
-target_link_libraries(videostrip      ${OpenCV_LIBS} )
+############################ videostrip ####################
+add_executable(videostrip   src/videostrip-cli.cpp
+                            src/helper.cpp
+                            ${PROJECT_HEADERS})
 
-install (TARGETS videostrip   DESTINATION $ENV{HOME}/bin)
+############################ videostrip ####################
+add_executable(videostrip-gui 
+                            src/videostrip-gui.cpp
+                            src/helper.cpp
+                            ${IMGUI_SOURCES}
+                            ${PROJECT_HEADERS})
+
+target_compile_options(videostrip       PUBLIC -std=c++17 -mavx2) # the global flags may already have been set with std=c++17 
+target_link_libraries (videostrip       ${CORE_LIBS} )
+
+target_compile_options(videostrip-gui   PUBLIC -std=c++17 -mavx2) # the global flags may already have been set with std=c++17 
+target_link_libraries (videostrip-gui   ${CORE_LIBS} ${GUI_LIBS} ${CMAKE_DL_LIBS} )
+# target_link_libraries (videostrip-gui   ${CORE_LIBS} ${GUI_LIBS} ${CMAKE_DL_LIBS} glfw glut glu glfw3)
+
+install (TARGETS videostrip             DESTINATION $ENV{HOME}/bin)
+install (TARGETS videostrip-gui         DESTINATION $ENV{HOME}/bin)
 # configure_file(scripts/tiff.convert2png.sh  $ENV{HOME}/bin/scripts)
