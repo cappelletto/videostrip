@@ -34,6 +34,22 @@ using namespace cv;
     @fn     int main(int argc, char* argv[])
     @brief  Main function
 */
+/*
+    CreateWindow
+    CreateDevice
+    CreateImgui (context)
+
+    DestroyImgui (context)
+    DestroyDevice
+    DestroyWindow
+*/
+
+/*
+    Also set to true the docking flags
+    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+
+*/
+
 
 logger::ConsoleOutput logc; // as a global variable, we are Ok with this
 
@@ -73,12 +89,22 @@ int main(int argc, char *argv[])
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // Enable Keyboard Controls
+
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsClassic();
+
+    auto& style = ImGui::GetStyle();
+    // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        style.WindowRounding = 8.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -87,13 +113,11 @@ int main(int argc, char *argv[])
     // Our state
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    cout << "context created" << endl;
-
 
     ImGui::SetNextWindowSize(ImVec2(700,500));
     // Main loop
     static bool window_flag = true;
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window) && window_flag)
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -107,13 +131,16 @@ int main(int argc, char *argv[])
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        // ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+    
         ImGui::Begin("videostrip-gui", &window_flag, ImGuiWindowFlags_MenuBar    | 
-                                                     ImGuiWindowFlags_NoTitleBar |
+                                                    //  ImGuiWindowFlags_NoTitleBar |
                                                      ImGuiWindowFlags_NoCollapse |
-                                                     ImGuiWindowFlags_NoMove     |
-                                                     ImGuiWindowFlags_NoResize   );
+                                                     ImGuiWindowFlags_NoMove     //|
+                                                    //  ImGuiWindowFlags_NoResize
+                                                       );
         // Begin main menu bar
-        if (ImGui::BeginMainMenuBar())
+/*        if (ImGui::BeginMainMenuBar())
         {
             if (ImGui::BeginMenu("File"))
             {
@@ -147,7 +174,7 @@ int main(int argc, char *argv[])
             }
             ImGui::EndMainMenuBar();
         }
-
+//*/
         // if (ImGui::Begin("videostrip-gui", &window_flag))
         // {
 
@@ -163,38 +190,43 @@ int main(int argc, char *argv[])
             ImGui::SetCursorPos(ImVec2(184.5,94.5));
             ImGui::Button("Button1", ImVec2(57,19)); //remove size argument (ImVec2) to auto-resize
 
-            ImGui::SetCursorPos(ImVec2(248.5,93.5));
-            ImGui::Button("Button2", ImVec2(57,19)); //remove size argument (ImVec2) to auto-resize
+            // ImGui::SetCursorPos(ImVec2(248.5,93.5));
+            // ImGui::Button("Button2", ImVec2(57,19)); //remove size argument (ImVec2) to auto-resize
 
-            ImGui::SetCursorPos(ImVec2(313.5,96.5));
-            ImGui::Button("Button3", ImVec2(57,19)); //remove size argument (ImVec2) to auto-resize
+            // ImGui::SetCursorPos(ImVec2(313.5,96.5));
+            // ImGui::Button("Button3", ImVec2(57,19)); //remove size argument (ImVec2) to auto-resize
 
-            ImGui::SetCursorPos(ImVec2(186,151.5));
-            ImGui::Text("Log output (current action)");
+            // ImGui::SetCursorPos(ImVec2(186,151.5));
+            // ImGui::Text("Log output (current action)");
 
-            ImGui::SetCursorPos(ImVec2(16,96));
-            ImGui::BeginChild(22, ImVec2(158,130), true);
+            // ImGui::SetCursorPos(ImVec2(16,96));
+            // ImGui::BeginChild(22, ImVec2(158,130), true);
 
-            ImGui::SetCursorPos(ImVec2(33.5,60.5));
-            ImGui::Text("video preview");
+            // ImGui::SetCursorPos(ImVec2(33.5,60.5));
+            // ImGui::Text("video preview");
 
-            ImGui::EndChild();
+            // ImGui::EndChild();
 
-            ImGui::SetCursorPos(ImVec2(401,90));
-            ImGui::BeginChild(24, ImVec2(151,138), true);
+            // ImGui::SetCursorPos(ImVec2(401,90));
+            // ImGui::BeginChild(24, ImVec2(151,138), true);
 
-            ImGui::SetCursorPos(ImVec2(44.5,59.5));
-            ImGui::Text("logger output");
+            // ImGui::SetCursorPos(ImVec2(44.5,59.5));
+            // ImGui::Text("logger output");
 
-            ImGui::EndChild();
+            // ImGui::EndChild();
 
-            ImGui::SetCursorPos(ImVec2(306.5,62.5));
-            ImGui::Button("^ load", ImVec2(50,19)); //remove size argument (ImVec2) to auto-resize
+            // ImGui::SetCursorPos(ImVec2(306.5,62.5));
+            // ImGui::Button("^ load", ImVec2(50,19)); //remove size argument (ImVec2) to auto-resize
 
-            ImGui::SetCursorPos(ImVec2(26.5,74.5));
-            ImGui::Text("VIDEO summary info");
+            // ImGui::SetCursorPos(ImVec2(26.5,74.5));
+            // ImGui::Text("VIDEO summary info");
 
             ImGui::End();
+
+        ImGui::Begin("file-summary", &window_flag);
+        ImGui::SetCursorPos(ImVec2(15,15));
+        ImGui::Text("Summary information about the input video");
+        ImGui::End();
         // }
 
         // // Edit a color (stored as ~4 floats)
