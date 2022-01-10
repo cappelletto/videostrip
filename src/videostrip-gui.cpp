@@ -24,47 +24,32 @@
 
 #include "gui/vsgui.hpp"
 
-static void glfw_error_callback(int error, const char* description)
-{
-    cout << "Glfw Error [" << error << "] "<< description << endl;
-}
-
 using namespace std;
 using namespace cv;
+
+logger::ConsoleOutput logc; // as a global variable, we are Ok with this
 
 /*!
     @fn     int main(int argc, char* argv[])
     @brief  Main function
 */
 
-logger::ConsoleOutput logc; // as a global variable, we are Ok with this
-
 int main(int argc, char *argv[])
 {
     vs::vsGui gui;
     logc.warn("main", "Dear Imgui mockup implementation - OpenGL renderer");
 
-    // Setup window
-    glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
-        return 1;
-
-    // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(800, 600, "videostrip-mockup", NULL, NULL);
-    if (window == NULL)
-        return 1;
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable vsync
-
-    // Initialize vsgui instance
-    gui.Init(window);
+    int retval = gui.Init();;   // OpenGL context setup
+    if (retval) {
+        logc.error("main", "OpenGL + imgui context setup failed");
+        return retval;
+    }
 
     // Our state
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     ImGui::SetNextWindowSize(ImVec2(700,500));
     // Main loop
     static bool window_flag = true;
-    while (!glfwWindowShouldClose(window) && window_flag)
+    while (!gui.ShouldClose() && window_flag)
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -73,19 +58,12 @@ int main(int argc, char *argv[])
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
 
-        // ************************************* imgui BEGIN()
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        // ************************************* imgui BEGIN()
+        gui.NewFrame();
 
-        // ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
-    
         ImGui::Begin("videostrip-gui", &window_flag, ImGuiWindowFlags_MenuBar    | 
                                                     //  ImGuiWindowFlags_NoTitleBar |
-                                                     ImGuiWindowFlags_NoCollapse |
-                                                     ImGuiWindowFlags_NoMove     //|
+                                                     ImGuiWindowFlags_NoCollapse //|
+                                                    //  ImGuiWindowFlags_NoMove     //|
                                                     //  ImGuiWindowFlags_NoResize
                                                        );
         ImGui::SetCursorPos(ImVec2(23,62.5));
@@ -107,28 +85,19 @@ int main(int argc, char *argv[])
         ImGui::SetCursorPos(ImVec2(15,15));
         ImGui::Text("Summary information about the input video");
         ImGui::End();
-        // }
 
-        // ************************************* imgui END()
+        // *********************************************** >> Next window
+        ImGui::Begin("another-name", &window_flag);
+        ImGui::SetCursorPos(ImVec2(10,10));
+        ImGui::Text("Scroll bar or log info");
+        ImGui::End();
+
         // Rendering
-        ImGui::Render();
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        glfwSwapBuffers(window);
-
-        // ************************************* imgui END()
+        gui.Render();
     }
 
     // Cleanup
     gui.Destroy();
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
 
     return 0;
 }

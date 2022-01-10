@@ -1,3 +1,4 @@
+# videostrip-gui project. This build script is for Linux systems using OpenGL + GLFW
 cmake_minimum_required(VERSION 3.18)  # coud be lower, still to be decided
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
@@ -36,7 +37,7 @@ if(NOT WIN32)
 endif()
 
 # Define project name
-project(videostrip_project)
+project(videostrip)
 set(CMAKE_CXX_STANDARD 17)          # verify that the compiler supports C++17, as some targets could reversely fallback to c++14
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -133,9 +134,9 @@ message ("${BoldBlue} Building GUI libraries: ${ColourReset}")
 message ("GUI_LIBS: ${GUI_LIBS}")
 
 ############################ videostrip ####################
-add_executable(videostrip   src/videostrip-cli.cpp
-                            src/helper.cpp
-                            ${PROJECT_HEADERS})
+add_executable(${PROJECT_NAME}  src/videostrip-cli.cpp
+                                src/helper.cpp
+                                ${PROJECT_HEADERS})
 
 ############################ videostrip ####################
 add_executable(videostrip-gui 
@@ -145,13 +146,13 @@ add_executable(videostrip-gui
                             ${IMGUI_SOURCES}
                             ${PROJECT_HEADERS})
 
-target_compile_options(videostrip       PUBLIC -std=c++17 -mavx2) # the global flags may already have been set with std=c++17 
-target_link_libraries (videostrip       ${CORE_LIBS} )
+target_compile_options(${PROJECT_NAME}  PUBLIC -std=c++17 -mavx2) # the global flags may already have been set with std=c++17 
+target_link_libraries (${PROJECT_NAME}  ${CORE_LIBS} )
 
 target_compile_options(videostrip-gui   PUBLIC -std=c++17 -mavx2) # the global flags may already have been set with std=c++17 
 target_link_libraries (videostrip-gui   ${CORE_LIBS} ${GUI_LIBS} ${CMAKE_DL_LIBS} )
 # target_link_libraries (videostrip-gui   ${CORE_LIBS} ${GUI_LIBS} ${CMAKE_DL_LIBS} glfw glut glu glfw3)
 
-install (TARGETS videostrip             DESTINATION $ENV{HOME}/bin)
+install (TARGETS ${PROJECT_NAME}        DESTINATION $ENV{HOME}/bin)
 install (TARGETS videostrip-gui         DESTINATION $ENV{HOME}/bin)
 # configure_file(scripts/tiff.convert2png.sh  $ENV{HOME}/bin/scripts)
