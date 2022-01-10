@@ -1,0 +1,29 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Dependencies
+      run:  | 
+        sudo apt-get update -y
+        sudo apt install libopencv-dev
+        dpkg -L libopencv-dev
+    - name: CMake
+      run: |
+        cd ${{ github.workspace }}
+        export OpenCV_DIR="/usr/lib/x86_64-linux-gnu/cmake/opencv4"
+        cmake -Bbuild
+    - name: Building target
+      run: |
+        cd build
+        make
