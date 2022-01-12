@@ -143,6 +143,7 @@ add_executable(videostrip-gui
                             src/videostrip-gui.cpp
                             src/helper.cpp
                             src/gui/vsgui.cpp
+                            src/videostrip/vscore.cpp
                             ${IMGUI_SOURCES}
                             ${PROJECT_HEADERS})
 

@@ -19,9 +19,11 @@
 #include <GLFW/glfw3.h>
 // imgui headers
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
 
+#include "videostrip/vscore.h"
 #include "gui/vsgui.hpp"
 
 using namespace std;
@@ -36,7 +38,8 @@ logger::ConsoleOutput logc; // as a global variable, we are Ok with this
 
 int main(int argc, char *argv[])
 {
-    vs::vsGui gui;
+    vs::vsGui         gui;
+    vs::VideoFileInfo video ("fakename.vdo", 1920, 1080, 30, 100);
     logc.warn("main", "Dear Imgui mockup implementation - OpenGL renderer");
 
     int retval = gui.Init();;   // OpenGL context setup
@@ -60,34 +63,41 @@ int main(int argc, char *argv[])
 
         gui.NewFrame();
 
-        ImGui::Begin("videostrip-gui", &window_flag, ImGuiWindowFlags_MenuBar    | 
+        ImGui::Begin("videostrip-gui", NULL, ImGuiWindowFlags_MenuBar    |
+                                                    //  ImGuiWin
                                                     //  ImGuiWindowFlags_NoTitleBar |
                                                      ImGuiWindowFlags_NoCollapse //|
                                                     //  ImGuiWindowFlags_NoMove     //|
                                                     //  ImGuiWindowFlags_NoResize
                                                        );
-        ImGui::SetCursorPos(ImVec2(23,62.5));
-        ImGui::Text("filename: <path/to/filename>");
 
-        ImGui::SetCursorPos(ImVec2(182,123.5));
-        ImGui::PushItemWidth(200);
-        static float progress16 = 0.0f;
-        ImGui::ProgressBar(progress16, ImVec2(0.0f, 0.0f));
-        ImGui::PopItemWidth();
+        ImGui::SetCursorPos(ImVec2(20,50));
+        ImGui::Text("Filename: %s", video.filename.c_str());
+        ImGui::SetCursorPos(ImVec2(20,70));
+        ImGui::Text("Framerate: %d", video.fps);
+        ImGui::SetCursorPos(ImVec2(20,90));
+        ImGui::Text("Total frames: %d", video.num_frames);
+        ImGui::SetCursorPos(ImVec2(20,120));
+        // ImGui::Text("Total frames: %d");
 
-        ImGui::SetCursorPos(ImVec2(184.5,94.5));
-        ImGui::Button("Button1", ImVec2(57,19)); //remove size argument (ImVec2) to auto-resize
+        ImGui::Text("%s among %d items", ICON_FA_SEARCH, 42);
+        ImGui::Button(ICON_FA_SEARCH " Search");
 
         ImGui::End();
 
         // *********************************************** >> Next window
-        ImGui::Begin("file-summary", &window_flag);
+        ImGui::Begin("file-summary", NULL);
+        // ImGui::Begin("file-summary", &window_flag);
         ImGui::SetCursorPos(ImVec2(15,15));
-        ImGui::Text("Summary information about the input video");
+        ImGui::Text("Video:");
+        ImGui::SetCursorPos(ImVec2(15,40));
+        ImGui::Text("640x480@30fps");
+        ImGui::SetCursorPos(ImVec2(15,65));
+        ImGui::Text("Duration: 00:11:42.06");
         ImGui::End();
 
         // *********************************************** >> Next window
-        ImGui::Begin("another-name", &window_flag);
+        ImGui::Begin("another-name", NULL);
         ImGui::SetCursorPos(ImVec2(10,10));
         ImGui::Text("Scroll bar or log info");
         ImGui::End();
