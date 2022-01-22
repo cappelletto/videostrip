@@ -3,8 +3,11 @@
 
 // Let's define the videostrip namespace vs
 
-#include "headers.h"
 #include "videostrip/vscore.h"
+
+namespace vs{
+    logger::ConsoleOutput logc; // single translation unit allowed to define logc (global variable within the namespace scope)
+}
 
 void vs::VideoFile::showInfo(){
     // print the video file information
@@ -36,7 +39,9 @@ int vs::VideoFile::peekFile(std::string inputfile){
     cv::VideoCapture capture(inputfile);
     if (! capture.isOpened()) {
         //error while opening the video input
-        std::cout << red << "Unable to open video file: " << inputfile << std::endl;
+        std::ostringstream ss;
+        ss << red << "Unable to open video file: " << inputfile << std::endl;
+        logc.error ("vscore", ss);
         is_valid = false;
         return -1;
     }

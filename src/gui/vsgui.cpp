@@ -3,7 +3,6 @@
 #include "imgui_internal.h"
 #include "gui/vsgui.hpp"
 
-logger::ConsoleOutput logc; // as a global variable, we are Ok with this
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -33,13 +32,13 @@ int vs::vsGui::Init(){
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()){
         std::cout << "Failed to initialize GLFW" << std::endl;
-        // logc.error ("main", "Failed to initialize GLFW");
+        logc.error ("main", "Failed to initialize GLFW");
         return 1;
     }
     // Create window with graphics context
     window = glfwCreateWindow(800, 600, "videostrip-mockup", NULL, NULL);   //<---- main window properties can be predefined in the namespace
     if (window == NULL){
-        std::cout << "Failed to create GLFW window" << std::endl;
+        logc.error("vsgui","Failed to create GLFW window");
         return 1;
     }
     glfwMakeContextCurrent(window);
@@ -78,7 +77,7 @@ int vs::vsGui::Init(){
     ImFont* iconfont = io.Fonts->AddFontFromFileTTF("/usr/share/fonts/truetype/font-awesome/fontawesome-webfont.ttf", 16.0f, &config, icon_ranges);
     if (!newfont) {
         // set font to default
-        std::cout << "Error when loading icon font <font-awesome>" << std::endl;
+        logc.error("vsgui","Failed to load font <font-awesome>");
     }
 
     // Setup Platform/Renderer backends

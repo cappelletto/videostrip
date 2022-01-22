@@ -5,6 +5,9 @@
 
 #pragma once
 
+#ifndef _VS_GUI_H_
+#define _VS_GUI_H_
+
 // OpenGL headers
 #include <GLES2/gl2.h>
 #include <GLFW/glfw3.h>
@@ -17,8 +20,6 @@
 #include "../external/ImGuiFileDialog/ImGuiFileDialog.h"
 
 #include "IconsFontAwesome4.h"
-
-#include <helper.h>
 
 
 // let's define the videostrip namespace vs
@@ -64,3 +65,4 @@ namespace vs
 
 } // namespace vs
  
+#endif // _VS_GUI_H_

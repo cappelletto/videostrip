@@ -147,8 +147,9 @@ add_executable(videostrip-gui
                             src/gui/vsgui.cpp
                             src/videostrip/vscore.cpp
                             external/ImGuiFileDialog/ImGuiFileDialog.cpp
-                            ${IMGUI_SOURCES}
-                            ${PROJECT_HEADERS})
+                            ${IMGUI_SOURCES})
+                            #${PROJECT_HEADERS}
+                            # )
 
 target_compile_options(${PROJECT_NAME}  PUBLIC -std=c++17 -mavx2) # the global flags may already have been set with std=c++17 
 target_link_libraries (${PROJECT_NAME}  ${CORE_LIBS} )

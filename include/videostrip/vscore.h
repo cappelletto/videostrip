@@ -3,12 +3,22 @@
 
 #pragma once
 
+#ifndef _VS_CORE_H_
+#define _VS_CORE_H_
+
+#include "headers.h"
+#include "helper.h"
 #include <iostream>
 #include <ctime>
 
 // Let's define the videostrip namespace vs
 
 namespace vs{
+}
+
+namespace vs{
+
+    extern logger::ConsoleOutput logc; // global variable, but resolved in only one translation unit otherwise linker will complain
 
     // Object to store the video file information
     class VideoFile{
@@ -50,3 +60,5 @@ namespace vs{
     };
 
 }
+
+#endif

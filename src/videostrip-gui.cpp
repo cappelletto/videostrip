@@ -29,7 +29,8 @@
 using namespace std;
 using namespace cv;
 
-extern logger::ConsoleOutput logc; // as a global variable, we are Ok with this
+using namespace vs;
+
 
 /*!
     @fn     int main(int argc, char* argv[])
@@ -42,11 +43,11 @@ int main(int argc, char *argv[])
 {
     vs::vsGui       gui;
     vs::VideoFile   video;
-    logc.warn("main", "Dear Imgui mockup implementation - OpenGL renderer");
+    // vs::log.warn("main", "Dear Imgui mockup implementation - OpenGL renderer");
 
     int retval = gui.Init();;   // OpenGL context setup
     if (retval) {
-        logc.error("main", "OpenGL + imgui context setup failed");
+        // vs::logc.error("main", "OpenGL + imgui context setup failed");
         return retval;
     }
 
@@ -56,11 +57,11 @@ int main(int argc, char *argv[])
 
     // let's populate with some data for testing purposes
     if (video.peekFile("/home/cappelletto/Videos/fran01.mp4") == -1) {
-        logc.error("main", "Video file peek failed");
+        vs::logc.error("main", "Video file peek failed");
         return -1;
     }
     else{
-        logc.info("main", "Video file peek success");
+        vs::logc.info("main", "Video file peek success");
     }
 
     static bool window_flag = true;
@@ -108,6 +109,6 @@ int main(int argc, char *argv[])
 
     // Cleanup
     gui.Destroy();
-
+    vs::logc.info("main", "Exiting");
     return 0;
 }
