@@ -94,8 +94,9 @@ pkg_search_module(GLFW REQUIRED glfw3)
 include_directories(${GLFW_INCLUDE_DIRS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${GLFW_INCLUDE_DIRS}")
 
-set (IMGUI_DIR      external/imgui)
+set (IMGUIFILEDIALOG_DIR external/ImGuiFileDialog)
 
+set (IMGUI_DIR      external/imgui)
 set (IMGUI_SOURCES  ${IMGUI_DIR}/imgui.cpp
                     ${IMGUI_DIR}/imgui_draw.cpp
                     ${IMGUI_DIR}/imgui_demo.cpp
@@ -110,6 +111,7 @@ file(GLOB PROJECT_HEADERS include/*.h include/*.hpp external/*.h external/*.hpp 
 include_directories(BEFORE ../include
                     include
                     ${OpenCV_INCLUDE_DIRS}
+                    ${IMGUIFILEDIALOG_DIR}
                     ${IMGUI_DIR}
                     ${IMGUI_DIR}/backends
                     )
@@ -144,6 +146,7 @@ add_executable(videostrip-gui
                             src/helper.cpp
                             src/gui/vsgui.cpp
                             src/videostrip/vscore.cpp
+                            external/ImGuiFileDialog/ImGuiFileDialog.cpp
                             ${IMGUI_SOURCES}
                             ${PROJECT_HEADERS})
 

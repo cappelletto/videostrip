@@ -29,17 +29,19 @@
 using namespace std;
 using namespace cv;
 
-logger::ConsoleOutput logc; // as a global variable, we are Ok with this
+extern logger::ConsoleOutput logc; // as a global variable, we are Ok with this
 
 /*!
     @fn     int main(int argc, char* argv[])
     @brief  Main function
 */
 
+// TODO: Create FIFO queue for console output (window/gui). Could be a replica of the logger::ConsoleOutput class
+
 int main(int argc, char *argv[])
 {
-    vs::vsGui         gui;
-    vs::VideoFileInfo video ("fakename.vdo", 1920, 1080, 30, 100);
+    vs::vsGui       gui;
+    vs::VideoFile   video;
     logc.warn("main", "Dear Imgui mockup implementation - OpenGL renderer");
 
     int retval = gui.Init();;   // OpenGL context setup
@@ -49,8 +51,18 @@ int main(int argc, char *argv[])
     }
 
     // Our state
-    ImGui::SetNextWindowSize(ImVec2(700,500));
+    ImGui::SetNextWindowSize(ImVec2(750,400));
     // Main loop
+
+    // let's populate with some data for testing purposes
+    if (video.peekFile("/home/cappelletto/Videos/fran01.mp4") == -1) {
+        logc.error("main", "Video file peek failed");
+        return -1;
+    }
+    else{
+        logc.info("main", "Video file peek success");
+    }
+
     static bool window_flag = true;
     while (!gui.ShouldClose() && window_flag)
     {
@@ -60,47 +72,35 @@ int main(int argc, char *argv[])
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
-
         gui.NewFrame();
 
-        ImGui::Begin("videostrip-gui", NULL, ImGuiWindowFlags_MenuBar    |
-                                                    //  ImGuiWin
-                                                    //  ImGuiWindowFlags_NoTitleBar |
-                                                     ImGuiWindowFlags_NoCollapse //|
-                                                    //  ImGuiWindowFlags_NoMove     //|
-                                                    //  ImGuiWindowFlags_NoResize
-                                                       );
+        int r = drawWindowInput(video);
 
-        ImGui::SetCursorPos(ImVec2(20,50));
-        ImGui::Text("Filename: %s", video.filename.c_str());
-        ImGui::SetCursorPos(ImVec2(20,70));
-        ImGui::Text("Framerate: %d", video.fps);
-        ImGui::SetCursorPos(ImVec2(20,90));
-        ImGui::Text("Total frames: %d", video.num_frames);
-        ImGui::SetCursorPos(ImVec2(20,120));
-        // ImGui::Text("Total frames: %d");
 
-        ImGui::Text("%s among %d items", ICON_FA_SEARCH, 42);
-        ImGui::Button(ICON_FA_SEARCH " Search");
+        // ImGui::End();
 
-        ImGui::End();
-
-        // *********************************************** >> Next window
-        ImGui::Begin("file-summary", NULL);
-        // ImGui::Begin("file-summary", &window_flag);
-        ImGui::SetCursorPos(ImVec2(15,15));
-        ImGui::Text("Video:");
-        ImGui::SetCursorPos(ImVec2(15,40));
-        ImGui::Text("640x480@30fps");
-        ImGui::SetCursorPos(ImVec2(15,65));
-        ImGui::Text("Duration: 00:11:42.06");
-        ImGui::End();
-
-        // *********************************************** >> Next window
-        ImGui::Begin("another-name", NULL);
-        ImGui::SetCursorPos(ImVec2(10,10));
-        ImGui::Text("Scroll bar or log info");
-        ImGui::End();
+        // // *********************************************** >> Next window
+        // ImGui::Begin("another-name", NULL);
+        //  // open Dialog Simple
+        // if (ImGui::Button("Open File Dialog")){
+        //     // char *file_filter = "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md";
+        //     const char *file_filter = ".*,Video files{.avi,.mov,.mp4}";            
+        //     ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", "Choose File", file_filter, ".");
+        //  }
+        // // display
+        // if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) 
+        // {
+        //     // action if OK
+        //     if (ImGuiFileDialog::Instance()->IsOk())
+        //     {
+        //     std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+        //     std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+        //     // action
+        //     }
+            
+        //     // close
+        //     ImGuiFileDialog::Instance()->Close();
+        // }
 
         // Rendering
         gui.Render();
