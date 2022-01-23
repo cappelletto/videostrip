@@ -186,12 +186,12 @@ int vs::drawWindowInput(vs::VideoFile &video){
             ImGui::SameLine(); // we add a button to load a new video file. Ths will launch a modal dialog ImgGuiDialog::FileDialog()
             if (ImGui::Button(ICON_FA_FILE_VIDEO_O " Load video file")){
                 // char *file_filter = "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md";
-                const char *file_filter = ".*,Video files{.avi,.mov,.mp4}";            
+                const char *file_filter = "Video files{.avi,.mov,.mp4}";    // TODO: Fix problem when using ".*" as file extension            
                 ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", "Choose File", file_filter, ".");
             }
 
             // Now the output folder path
-            ImGui::Text("Output folder:");  ImGui::SameLine();
+            ImGui::Text("Output folder");  ImGui::SameLine();
             if (video.output_folder.empty()) {
                 char _str[] = "<none selected>";
                 ImGui::InputText("##output_folder_path", _str, sizeof(_str));
@@ -201,10 +201,17 @@ int vs::drawWindowInput(vs::VideoFile &video){
                                 const_cast<char*>(video.output_folder.c_str()),
                                 sizeof(video.output_folder.c_str()));
             }
+            ImGui::SameLine(); // we add a button to load a new video file. Ths will launch a modal dialog ImgGuiDialog::FileDialog()
+            if (ImGui::Button(ICON_FA_FOLDER_OPEN " Select folder")){
+                // char *file_filter = "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md";
+                const char *file_filter = "Video files{.avi,.mov,.mp4}";    // TODO: Fix problem when using ".*" as file extension            
+                ImGuiFileDialog::Instance()->OpenModal("ChooseDirDlgKey", "Choose a directory", nullptr, ".");
+            }
 
             ImGui::PopItemWidth();
 
-            // display file dialogbox (if called)
+            // ------------ CHECK OPENED DIALOG BOXES//
+            // check if file dialogbox displayed(if called)
             if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) 
             {
                 // action if OK
@@ -227,6 +234,30 @@ int vs::drawWindowInput(vs::VideoFile &video){
                             logc.info("main", ss);
                         }
 
+                    }
+                }
+                // close
+                ImGuiFileDialog::Instance()->Close();
+            }
+
+
+            if (ImGuiFileDialog::Instance()->Display("ChooseDirDlgKey")) 
+            {
+                // action if OK
+                if (ImGuiFileDialog::Instance()->IsOk())
+                {
+                    // std::string outputPath = ImGuiFileDialog::Instance()->GetFilePathName();
+                    std::string outputPath = ImGuiFileDialog::Instance()->GetCurrentPath();
+                    // then we validate the new user provided filename and path
+                    if (outputPath.empty()) {
+                        logc.error("main", "Invalid output folder path or name");
+                        return -1;
+                    }
+                    else{
+                        video.output_folder = outputPath;
+                        std::ostringstream ss;
+                        ss << "Selected new output folder: " << video.output_folder;
+                        logc.info("main", ss);
                     }
                 }
                 // close
