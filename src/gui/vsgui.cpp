@@ -63,6 +63,27 @@ int vs::vsGui::Init(){
         style.Colors[ImGuiCol_TabActive].z = 0.0f;
     }
 
+    // // Main
+    style.WindowPadding            = ImVec2(9.00f, 6.00f);
+    style.FramePadding             = ImVec2(6.00f, 2.00f);
+    style.ItemSpacing              = ImVec2(5.00f, 4.00f);
+    style.ItemInnerSpacing         = ImVec2(3.00f, 5.00f);
+    style.FrameBorderSize          = 1.0f;
+    style.IndentSpacing            = 12.00f;
+    style.ScrollbarSize            = 15.00f;
+    style.GrabMinSize              = 16.00f;
+
+    // Borders
+    style.PopupBorderSize          = 0.00f;
+    style.TabBorderSize            = 1.00f;
+
+    // Rounding
+    style.WindowRounding           = 6.00f;
+    style.FrameRounding            = 6.00f;
+    style.GrabRounding             = 6.00f;
+
+    // Push back ImGui style
+
     // customize fonts
     ImFont* newfont = io.Fonts->AddFontFromFileTTF("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16.0f);
     if (newfont) {
