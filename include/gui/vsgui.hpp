@@ -26,6 +26,7 @@
 namespace vs
 {
 
+    int drawWindowInfo(vs::VideoFile &v);   // TODO: move as part of vsGui class
     int drawWindowInput(vs::VideoFile &v);
 
     // class vsgui contains all GUI classes, imgui windows management and rendering and opengl context management
@@ -55,6 +56,8 @@ namespace vs
 
             // function to destroy the vsgui class
             void Destroy(); // can be also called Close()
+
+
 
         private:
             GLFWwindow* window; // pointer to the GLFW window

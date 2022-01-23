@@ -28,9 +28,7 @@
 
 using namespace std;
 using namespace cv;
-
 using namespace vs;
-
 
 /*!
     @fn     int main(int argc, char* argv[])
@@ -43,11 +41,10 @@ int main(int argc, char *argv[])
 {
     vs::vsGui       gui;
     vs::VideoFile   video;
-    // vs::log.warn("main", "Dear Imgui mockup implementation - OpenGL renderer");
 
     int retval = gui.Init();;   // OpenGL context setup
     if (retval) {
-        // vs::logc.error("main", "OpenGL + imgui context setup failed");
+        vs::logc.error("main", "OpenGL + imgui context setup failed");
         return retval;
     }
 
@@ -76,32 +73,8 @@ int main(int argc, char *argv[])
         gui.NewFrame();
 
         int r = drawWindowInput(video);
-
-
-        // ImGui::End();
-
-        // // *********************************************** >> Next window
-        // ImGui::Begin("another-name", NULL);
-        //  // open Dialog Simple
-        // if (ImGui::Button("Open File Dialog")){
-        //     // char *file_filter = "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md";
-        //     const char *file_filter = ".*,Video files{.avi,.mov,.mp4}";            
-        //     ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", "Choose File", file_filter, ".");
-        //  }
-        // // display
-        // if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) 
-        // {
-        //     // action if OK
-        //     if (ImGuiFileDialog::Instance()->IsOk())
-        //     {
-        //     std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-        //     std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-        //     // action
-        //     }
-            
-        //     // close
-        //     ImGuiFileDialog::Instance()->Close();
-        // }
+        // now we call to the drawWindowInfo function
+        drawWindowInfo(video);  // read-only, could be const &
 
         // Rendering
         gui.Render();

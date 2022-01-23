@@ -142,128 +142,145 @@ void vs::vsGui::Render(){
 }
 
 
+int vs::drawWindowInfo(vs::VideoFile &video){
+    // begin imgui window without collapse
+    ImGui::Begin("video-info", NULL, ImGuiWindowFlags_NoCollapse |
+                                     ImGuiWindowFlags_NoScrollbar
+                                    );
+        // show the following video info: filename, duration, size, fps, codec, bitrate, resolution
+        ImGui::Text("Filename: %s", video.filename.c_str());
+        ImGui::Text("Duration: %.2f", video.video_duration);
+        // ImGui::Text("Size: %.2f MB", video.size);
+        ImGui::Text("FPS: %.2f", video.fps);
+        // ImGui::Text("Codec: %s", video.codec.c_str());
+        // ImGui::Text("Bitrate: %.2f kbps", video.bitrate);
+        ImGui::Text("Resolution: %dx%d", video.width, video.height);
+    ImGui::End();
+    return 0;
+}
+
 int vs::drawWindowInput(vs::VideoFile &video){
-            // ----------- FIRST WINDOW: INPUT FILE AND OUTPUT FOLDER
-        ImGui::Begin("file-loader", NULL,   ImGuiWindowFlags_MenuBar    |
-                                        //  ImGuiWin
-                                        //  ImGuiWindowFlags_NoTitleBar |
-                                            ImGuiWindowFlags_NoCollapse //|
-                                        //  ImGuiWindowFlags_NoMove     //|
-                                        //  ImGuiWindowFlags_NoResize
-                                            );
+    // ----------- FIRST WINDOW: INPUT FILE AND OUTPUT FOLDER
+    ImGui::Begin("file-loader", NULL,   ImGuiWindowFlags_NoCollapse    |
+                                    //  ImGuiWin
+                                    //  ImGuiWindowFlags_NoTitleBar |
+                                        ImGuiWindowFlags_MenuBar //|
+                                    //  ImGuiWindowFlags_NoMove     //|
+                                    //  ImGuiWindowFlags_NoResize
+                                        );
 
 
-            // Check if video.filename is empty (if empty is also invalid)
-            ImGui::Text("Input video");  ImGui::SameLine();
-            ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
-            if (video.filename.empty()) {
-                char _str[] = "<none selected>";
+        // Check if video.filename is empty (if empty is also invalid)
+        ImGui::Text("Input video");  ImGui::SameLine();
+        ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
+        if (video.filename.empty()) {
+            char _str[] = "<none selected>";
+            ImGui::InputText("##video_file_path", 
+                            _str,
+                            sizeof(_str));
+        }
+        else {
+            // check if currently specified video is valid
+            if (video.isValid()){
+                // push greeen colour
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
                 ImGui::InputText("##video_file_path", 
-                                _str,
-                                sizeof(_str));
+                                const_cast<char*>(video.filename.c_str()), 
+                                sizeof(video.filename.c_str()));
             }
-            else {
-                // check if currently specified video is valid
-                if (video.isValid()){
-                    // push greeen colour
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
-                    ImGui::InputText("##video_file_path", 
-                                    const_cast<char*>(video.filename.c_str()), 
-                                    sizeof(video.filename.c_str()));
+            else{
+                // push red color
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+                ImGui::InputText("##video_file_path", 
+                                const_cast<char*>(video.filename.c_str()), 
+                                sizeof(video.filename.c_str()));
+                // ImGui::SameLine();
+                // ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid video file");
+            }
+            ImGui::PopStyleColor();
+        }
+
+        ImGui::SameLine(); // we add a button to load a new video file. Ths will launch a modal dialog ImgGuiDialog::FileDialog()
+        if (ImGui::Button(ICON_FA_FILE_VIDEO_O " Load video file")){
+            // char *file_filter = "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md";
+            const char *file_filter = "Video files{.avi,.mov,.mp4}";    // TODO: Fix problem when using ".*" as file extension            
+            ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", "Choose File", file_filter, ".");
+        }
+
+        // Now the output folder path
+        ImGui::Text("Output folder");  ImGui::SameLine();
+        if (video.output_folder.empty()) {
+            char _str[] = "<none selected>";
+            ImGui::InputText("##output_folder_path", _str, sizeof(_str));
+        }
+        else {
+            ImGui::InputText("##output_folder_path",
+                            const_cast<char*>(video.output_folder.c_str()),
+                            sizeof(video.output_folder.c_str()));
+        }
+        ImGui::SameLine(); // we add a button to load a new video file. Ths will launch a modal dialog ImgGuiDialog::FileDialog()
+        if (ImGui::Button(ICON_FA_FOLDER_OPEN " Select folder")){
+            // char *file_filter = "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md";
+            const char *file_filter = "Video files{.avi,.mov,.mp4}";    // TODO: Fix problem when using ".*" as file extension            
+            ImGuiFileDialog::Instance()->OpenModal("ChooseDirDlgKey", "Choose a directory", nullptr, ".");
+        }
+
+        ImGui::PopItemWidth();
+
+        // ------------ CHECK OPENED DIALOG BOXES//
+        // check if file dialogbox displayed(if called)
+        if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) 
+        {
+            // action if OK
+            if (ImGuiFileDialog::Instance()->IsOk())
+            {
+                std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+                std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+                // then we validate the new user provided filename and path
+                if (filePathName.empty() || filePath.empty()) {
+                    logc.error("main", "Invalid file path or name");
+                    return -1;
                 }
                 else{
-                    // push red color
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-                    ImGui::InputText("##video_file_path", 
-                                    const_cast<char*>(video.filename.c_str()), 
-                                    sizeof(video.filename.c_str()));
-                    // ImGui::SameLine();
-                    // ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid video file");
-                }
-                ImGui::PopStyleColor();
-            }
-
-            ImGui::SameLine(); // we add a button to load a new video file. Ths will launch a modal dialog ImgGuiDialog::FileDialog()
-            if (ImGui::Button(ICON_FA_FILE_VIDEO_O " Load video file")){
-                // char *file_filter = "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md";
-                const char *file_filter = "Video files{.avi,.mov,.mp4}";    // TODO: Fix problem when using ".*" as file extension            
-                ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", "Choose File", file_filter, ".");
-            }
-
-            // Now the output folder path
-            ImGui::Text("Output folder");  ImGui::SameLine();
-            if (video.output_folder.empty()) {
-                char _str[] = "<none selected>";
-                ImGui::InputText("##output_folder_path", _str, sizeof(_str));
-            }
-            else {
-                ImGui::InputText("##output_folder_path",
-                                const_cast<char*>(video.output_folder.c_str()),
-                                sizeof(video.output_folder.c_str()));
-            }
-            ImGui::SameLine(); // we add a button to load a new video file. Ths will launch a modal dialog ImgGuiDialog::FileDialog()
-            if (ImGui::Button(ICON_FA_FOLDER_OPEN " Select folder")){
-                // char *file_filter = "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md";
-                const char *file_filter = "Video files{.avi,.mov,.mp4}";    // TODO: Fix problem when using ".*" as file extension            
-                ImGuiFileDialog::Instance()->OpenModal("ChooseDirDlgKey", "Choose a directory", nullptr, ".");
-            }
-
-            ImGui::PopItemWidth();
-
-            // ------------ CHECK OPENED DIALOG BOXES//
-            // check if file dialogbox displayed(if called)
-            if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) 
-            {
-                // action if OK
-                if (ImGuiFileDialog::Instance()->IsOk())
-                {
-                    std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-                    std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-                    // then we validate the new user provided filename and path
-                    if (filePathName.empty() || filePath.empty()) {
-                        logc.error("main", "Invalid file path or name");
-                        return -1;
-                    }
-                    else{
-                        video.filename = filePathName;
-                        // video.output_folder 
-                        video.peekFile(); // implicit call to check if the file is valid. Sets internal is_valid flag
-                        if (video.isValid()){
-                            std::ostringstream ss;
-                            ss << "Valid video file: " << video.filename;
-                            logc.info("main", ss);
-                        }
-
-                    }
-                }
-                // close
-                ImGuiFileDialog::Instance()->Close();
-            }
-
-
-            if (ImGuiFileDialog::Instance()->Display("ChooseDirDlgKey")) 
-            {
-                // action if OK
-                if (ImGuiFileDialog::Instance()->IsOk())
-                {
-                    // std::string outputPath = ImGuiFileDialog::Instance()->GetFilePathName();
-                    std::string outputPath = ImGuiFileDialog::Instance()->GetCurrentPath();
-                    // then we validate the new user provided filename and path
-                    if (outputPath.empty()) {
-                        logc.error("main", "Invalid output folder path or name");
-                        return -1;
-                    }
-                    else{
-                        video.output_folder = outputPath;
+                    video.filename = filePathName;
+                    // video.output_folder 
+                    video.peekFile(); // implicit call to check if the file is valid. Sets internal is_valid flag
+                    if (video.isValid()){
                         std::ostringstream ss;
-                        ss << "Selected new output folder: " << video.output_folder;
+                        ss << "Valid video file: " << video.filename;
                         logc.info("main", ss);
                     }
-                }
-                // close
-                ImGuiFileDialog::Instance()->Close();
-            }
 
-        ImGui::End();
-        return 0;
+                }
+            }
+            // close
+            ImGuiFileDialog::Instance()->Close();
+        }
+
+
+        if (ImGuiFileDialog::Instance()->Display("ChooseDirDlgKey")) 
+        {
+            // action if OK
+            if (ImGuiFileDialog::Instance()->IsOk())
+            {
+                // std::string outputPath = ImGuiFileDialog::Instance()->GetFilePathName();
+                std::string outputPath = ImGuiFileDialog::Instance()->GetCurrentPath();
+                // then we validate the new user provided filename and path
+                if (outputPath.empty()) {
+                    logc.error("main", "Invalid output folder path or name");
+                    return -1;
+                }
+                else{
+                    video.output_folder = outputPath;
+                    std::ostringstream ss;
+                    ss << "Selected new output folder: " << video.output_folder;
+                    logc.info("main", ss);
+                }
+            }
+            // close
+            ImGuiFileDialog::Instance()->Close();
+        }
+
+    ImGui::End();
+    return 0;
 }
