@@ -143,17 +143,19 @@ void vs::vsGui::Render(){
 
 
 int vs::drawWindowInfo(vs::VideoFile &video){
+    // TODO: check if the there is a valid file loaded
+    // if not, either show a message or just don't show this window
+
     // begin imgui window without collapse
     ImGui::Begin("video-info", NULL, ImGuiWindowFlags_NoCollapse |
                                      ImGuiWindowFlags_NoScrollbar
                                     );
         // show the following video info: filename, duration, size, fps, codec, bitrate, resolution
         ImGui::Text("Filename: %s", video.filename.c_str());
-        ImGui::Text("Duration: %.2f", video.video_duration);
+        ImGui::Text("Duration: %02d:%02d:%02d", video.video_duration.hours, video.video_duration.minutes, video.video_duration.seconds);
+        ImGui::Text("# frames: %d", video.num_frames);
         // ImGui::Text("Size: %.2f MB", video.size);
-        ImGui::Text("FPS: %.2f", video.fps);
-        // ImGui::Text("Codec: %s", video.codec.c_str());
-        // ImGui::Text("Bitrate: %.2f kbps", video.bitrate);
+        ImGui::Text("Frame rate: %.2f", video.fps);
         ImGui::Text("Resolution: %dx%d", video.width, video.height);
     ImGui::End();
     return 0;
@@ -245,6 +247,7 @@ int vs::drawWindowInput(vs::VideoFile &video){
                     video.filename = filePathName;
                     // video.output_folder 
                     video.peekFile(); // implicit call to check if the file is valid. Sets internal is_valid flag
+                    logc.info("vsgui", "Peeking video file info");
                     if (video.isValid()){
                         std::ostringstream ss;
                         ss << "Valid video file: " << video.filename;

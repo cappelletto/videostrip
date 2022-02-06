@@ -16,7 +16,9 @@ void vs::VideoFile::showInfo(){
     std::cout << "height: " << height << std::endl;
     std::cout << "fps: " << fps << std::endl;
     std::cout << "num_frames: " << num_frames << std::endl;
-    std::cout << "video_duration: " << video_duration << std::endl;
+    std::cout << "video_duration: " << video_duration.hours << ":" \ 
+                                    << video_duration.minutes << ":" \ 
+                                    << video_duration.seconds << std::endl;
 }
 
 int vs::VideoFile::peekFile(){
@@ -48,11 +50,20 @@ int vs::VideoFile::peekFile(std::string inputfile){
     //now we retrieve and print info about input video
     width = capture.get(cv::CAP_PROP_FRAME_WIDTH);
     height = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
-    fps = capture.get(cv::CAP_PROP_FPS);
+    fps = capture.get(cv::CAP_PROP_FPS);    
     num_frames = capture.get(cv::CAP_PROP_FRAME_COUNT);
     // compute the duration of the video using the number of frames and the fps
-    video_duration = (time_t) num_frames / fps; // fractional seconds // <--- integer conversion problem
+    video_duration = duration_to_vd((long int) num_frames / fps); // fractional seconds // <--- integer conversion loss, ok for now
     is_valid = true;
     filename = inputfile; // we update the filename with the input file
     return 0; // everything ok so far
+}
+
+// Function that converts duration in seconds (long int) into a vs::vd structure
+vs::vd vs::duration_to_vd(long int duration){
+    vs::vd _vd;
+    _vd.hours = duration / 3600;
+    _vd.minutes = (duration % 3600) / 60;
+    _vd.seconds = duration % 60;
+    return _vd;
 }

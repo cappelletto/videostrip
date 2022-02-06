@@ -9,7 +9,7 @@
 #include "headers.h"
 #include "helper.h"
 #include <iostream>
-#include <ctime>
+// #include <ctime>
 
 // Let's define the videostrip namespace vs
 
@@ -19,6 +19,16 @@ namespace vs{
 namespace vs{
 
     extern logger::ConsoleOutput logc; // global variable, but resolved in only one translation unit otherwise linker will complain
+
+    // Structure that can hold video duration in hour, minutes and seconds
+    typedef struct _vd{
+        int hours;
+        int minutes;
+        int seconds;
+    }vd;
+
+    // Function that converts a a video duration in seconds (int) to a vd structure
+    vd duration_to_vd(long int);
 
     // Object to store the video file information
     class VideoFile{
@@ -53,8 +63,8 @@ namespace vs{
             int     height;
             float   fps;
             int     num_frames;
-            time_t  video_duration;
-
+            vd      video_duration;
+ 
         private:
             bool is_valid;
     };
