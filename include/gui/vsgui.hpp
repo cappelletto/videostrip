@@ -21,7 +21,42 @@
 
 #include "IconsFontAwesome4.h"
 
-
+// define collection of const colors for imgui interface
+/*
+namespace vsgui{
+    const ImVec4 COLOR_WHITE = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    const ImVec4 COLOR_BLACK = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+    const ImVec4 COLOR_RED = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+    const ImVec4 COLOR_GREEN = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+    const ImVec4 COLOR_BLUE = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
+    const ImVec4 COLOR_YELLOW = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+    const ImVec4 COLOR_CYAN = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
+    const ImVec4 COLOR_MAGENTA = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
+    const ImVec4 COLOR_ORANGE = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+    const ImVec4 COLOR_PURPLE = ImVec4(0.5f, 0.0f, 1.0f, 1.0f);
+    const ImVec4 COLOR_BROWN = ImVec4(0.5f, 0.25f, 0.0f, 1.0f);
+    const ImVec4 COLOR_GREY = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+    const ImVec4 COLOR_LIGHT_GREY = ImVec4(0.75f, 0.75f, 0.75f);
+    const ImVec4 COLOR_DARK_GREY = ImVec4(0.25f, 0.25f, 0.25f);
+    const ImVec4 COLOR_LIGHT_BLUE = ImVec4(0.5f, 0.5f, 1.0f);
+    const ImVec4 COLOR_LIGHT_GREEN = ImVec4(0.5f, 1.0f, 0.5f);
+    const ImVec4 COLOR_LIGHT_RED = ImVec4(1.0f, 0.5f, 0.5f);
+    const ImVec4 COLOR_LIGHT_YELLOW = ImVec4(1.0f, 1.0f, 0.5f);
+    const ImVec4 COLOR_LIGHT_CYAN = ImVec4(0.5f, 1.0f, 1.0f);
+    const ImVec4 COLOR_LIGHT_MAGENTA = ImVec4(1.0f, 0.5f, 1.0f);
+    const ImVec4 COLOR_LIGHT_ORANGE = ImVec4(1.0f, 0.75f, 0.5f);
+    const ImVec4 COLOR_LIGHT_PURPLE = ImVec4(0.75f, 0.5f, 1.0f);
+    const ImVec4 COLOR_LIGHT_BROWN = ImVec4(0.75f, 0.5f, 0.25f);
+    const ImVec4 COLOR_DARK_BLUE = ImVec4(0.25f, 0.25f, 1.0f);
+    const ImVec4 COLOR_DARK_GREEN = ImVec4(0.25f, 1.0f, 0.25f);
+    const ImVec4 COLOR_DARK_RED = ImVec4(1.0f, 0.25f, 0.25f);
+    const ImVec4 COLOR_DARK_YELLOW = ImVec4(1.0f, 1.0f, 0.25f);
+    const ImVec4 COLOR_DARK_CYAN = ImVec4(0.25f, 1.0f, 1.0f);
+    const ImVec4 COLOR_DARK_MAGENTA = ImVec4(1.0f, 0.25f, 1.0f);
+    const ImVec4 COLOR_DARK_ORANGE = ImVec4(1.0f, 0.5f, 0.25f);
+    const ImVec4 COLOR_DARK_PURPLE = ImVec4(0.5f, 0.25f, 1.0f);
+    const ImVec4 COLOR_DARK_BROWN = ImVec4(0.5f, 0.25f, 0.125f);
+}*/
 // let's define the videostrip namespace vs
 namespace vs
 {

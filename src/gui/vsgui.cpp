@@ -3,8 +3,6 @@
 #include "imgui_internal.h"
 #include "gui/vsgui.hpp"
 
-
-
 static void glfw_error_callback(int error, const char* description)
 {
     std::cout << "Glfw Error [" << error << "] "<< description << std::endl;
@@ -151,16 +149,18 @@ int vs::drawWindowInfo(vs::VideoFile &video){
                                      ImGuiWindowFlags_NoScrollbar
                                     );
         // show the following video info: filename, duration, size, fps, codec, bitrate, resolution
-        ImGui::Text("Filename: %s", video.filename.c_str());
-        ImGui::Text("Duration: %02d:%02d:%02d", video.video_duration.hours, video.video_duration.minutes, video.video_duration.seconds);
-        ImGui::Text("# frames: %d", video.num_frames);
-        // ImGui::Text("Size: %.2f MB", video.size);
-        ImGui::Text("Frame rate: %.2f", video.fps);
-        ImGui::Text("Resolution: %dx%d", video.width, video.height);
+        ImGui::Text("Filename:");   ImGui::SameLine(95); ImGui::Text("%s", video.filename.c_str());
+        ImGui::Text("Duration:");   ImGui::SameLine(95); ImGui::Text("%02d:%02d:%02d", video.video_duration.hours, video.video_duration.minutes, video.video_duration.seconds);
+        ImGui::Text("# frames:");   ImGui::SameLine(95); ImGui::Text("%d", video.num_frames);
+        ImGui::Text("Frame rate:"); ImGui::SameLine(95); ImGui::Text(" %.2f", video.fps);
+        ImGui::Text("Resolution:"); ImGui::SameLine(95); ImGui::Text(" %dx%d", video.width, video.height);
     ImGui::End();
     return 0;
 }
 
+/*
+    File loading window
+*/
 int vs::drawWindowInput(vs::VideoFile &video){
     // ----------- FIRST WINDOW: INPUT FILE AND OUTPUT FOLDER
     ImGui::Begin("file-loader", NULL,   ImGuiWindowFlags_NoCollapse    |
@@ -170,11 +170,13 @@ int vs::drawWindowInput(vs::VideoFile &video){
                                     //  ImGuiWindowFlags_NoMove     //|
                                     //  ImGuiWindowFlags_NoResize
                                         );
-
-
+        // for consistency, we make texts with the same width. Each row follows the same order:
+        // Text | InputText | Button 
+        
         // Check if video.filename is empty (if empty is also invalid)
-        ImGui::Text("Input video");  ImGui::SameLine();
-        ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
+        ImGui::AlignTextToFramePadding();
+        ImGui::Text("Input video");  ImGui::SameLine(110);
+        ImGui::PushItemWidth(50 + ImGui::GetWindowWidth() * 0.5f);
         if (video.filename.empty()) {
             char _str[] = "<none selected>";
             ImGui::InputText("##video_file_path", 
@@ -184,7 +186,7 @@ int vs::drawWindowInput(vs::VideoFile &video){
         else {
             // check if currently specified video is valid
             if (video.isValid()){
-                // push greeen colour
+                // push green colour
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
                 ImGui::InputText("##video_file_path", 
                                 const_cast<char*>(video.filename.c_str()), 
@@ -208,9 +210,10 @@ int vs::drawWindowInput(vs::VideoFile &video){
             const char *file_filter = "Video files{.avi,.mov,.mp4}";    // TODO: Fix problem when using ".*" as file extension            
             ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", "Choose File", file_filter, ".");
         }
-
+        // -----------------------------------------------------------> Next row
         // Now the output folder path
-        ImGui::Text("Output folder");  ImGui::SameLine();
+        ImGui::AlignTextToFramePadding();
+        ImGui::Text("Output folder");  ImGui::SameLine(110);
         if (video.output_folder.empty()) {
             char _str[] = "<none selected>";
             ImGui::InputText("##output_folder_path", _str, sizeof(_str));
