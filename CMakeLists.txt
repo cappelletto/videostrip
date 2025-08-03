@@ -1,63 +1,47 @@
-# videostrip-gui project. This build script is for Linux systems using OpenGL + GLFW
-cmake_minimum_required(VERSION 3.18)  # coud be lower, still to be decided
+# videostrip modular build
+cmake_minimum_required(VERSION 3.18)
 
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE Release CACHE STRING
-      "Choose the type of build, options are: None Debug Release RelWithDebug RelWithDebInfo MinSizeRel."
-      FORCE)
-endif()
-
-set(CMAKE_COLOR_MAKEFILE ON)  # For fancy colouring scheme
-if (${FORCE_COLORED_OUTPUT})
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        target_compile_options (project_options INTERFACE -fdiagnostics-color=always)
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        target_compile_options (project_options INTERFACE -fcolor-diagnostics)
-    endif ()
-endif ()
-
-if(NOT WIN32)
-  string(ASCII 27 Esc)
-  set(ColourReset "${Esc}[m")
-  set(ColourBold  "${Esc}[1m")
-  set(Red         "${Esc}[31m")
-  set(Green       "${Esc}[32m")
-  set(Yellow      "${Esc}[33m")
-  set(Blue        "${Esc}[34m")
-  set(Magenta     "${Esc}[35m")
-  set(Cyan        "${Esc}[36m")
-  set(White       "${Esc}[37m")
-  set(BoldRed     "${Esc}[1;31m")
-  set(BoldGreen   "${Esc}[1;32m")
-  set(BoldYellow  "${Esc}[1;33m")
-  set(BoldBlue    "${Esc}[1;34m")
-  set(BoldMagenta "${Esc}[1;35m")
-  set(BoldCyan    "${Esc}[1;36m")
-  set(BoldWhite   "${Esc}[1;37m")
-endif()
-
-# Define project name
 project(videostrip)
-set(CMAKE_CXX_STANDARD 17)          # verify that the compiler supports C++17, as some targets could reversely fallback to c++14
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-message ("${Cyan} Configuring system")
-# GNU compiler flags. If you are using a different compiler, you may need to change these flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3 -Wformat")
-# Additional flags for vectorized/multithread profiling and debugging
-# Ask if compiler is GNU and support this flags, otherwise it could fail
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread -mavx2 -shared-libgcc")
+# Core library (for frame extraction, metadata, etc.)
+add_library(videostrip_core
+    libvideostrip_core/vscore.cpp
+    # Add more core sources here
+)
+target_include_directories(videostrip_core PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/libvideostrip_core
+    ${CMAKE_CURRENT_SOURCE_DIR}/libvideostrip_utils
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
-# if (USE_CUDA)
-#   message ("${BoldBlue} Asked for CUDA, searching... ${ColourReset}")
-#   find_package(CUDA) # FindCUDA is deprecated, future releases will use find_package(CUDAToolkit)
-#   if(CUDA_FOUND)
-#     add_definitions( -DUSE_CUDA=1 )
-#     include(FindCUDA)
-#     message("${BoldGreen}" "CUDA library status: ${ColourReset}")
-#     message(STATUS "    toolkit root dir: ${CUDA_TOOLKIT_ROOT_DIR}")
-#     message(STATUS "    version: ${CUDA_VERSION}")
-#     message(STATUS "    libraries: ${CUDA_LIBRARIES}")
+# Utils library (for helpers, logging, etc.)
+add_library(videostrip_utils
+    libvideostrip_utils/helper.cpp
+    # Add more utils sources here
+)
+target_include_directories(videostrip_utils PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/libvideostrip_utils
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+# CLI frontend (thin wrapper)
+add_executable(videostrip-cli src/videostrip-cli.cpp)
+target_link_libraries(videostrip-cli PRIVATE videostrip_core videostrip_utils)
+
+# GUI frontend (thin wrapper)
+add_executable(videostrip-gui src/videostrip-gui.cpp)
+target_link_libraries(videostrip-gui PRIVATE videostrip_core videostrip_utils)
+
+# TODO: Add OpenCV, ImGui, and other dependencies as needed
+# find_package(OpenCV REQUIRED)
+# target_link_libraries(videostrip_core PRIVATE ${OpenCV_LIBS})
+# ...
+
+# Prepare for tests
+enable_testing()
+add_subdirectory(tests)
 #     message(STATUS "    include path: ${CUDA_INCLUDE_DIRS}")
 #   endif(CUDA_FOUND)
 # endif()
