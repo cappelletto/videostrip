@@ -15,12 +15,37 @@ option(BUILD_TESTS "Build unit tests" OFF)
 # ==========================
 # Dependencies
 # ==========================
-find_package(OpenCV 4 REQUIRED
-    PATHS /usr/local
-    NO_DEFAULT_PATH
-)
-message(STATUS "OpenCV version: ${OpenCV_VERSION}")
+# ==========================
+# OpenCV Detection (Cross-OS)
+# ==========================
+message(STATUS "Searching for OpenCV 4...")
 
+# Try system-wide first
+find_package(OpenCV 4 QUIET)
+
+# Fallback to /usr/local if not found
+if(NOT OpenCV_FOUND)
+    message(STATUS "OpenCV not found system-wide, trying /usr/local ...")
+    find_package(OpenCV 4 QUIET
+        PATHS /usr/local /opt/local
+        NO_DEFAULT_PATH
+    )
+endif()
+
+# If still not found, fail with user guidance
+if(NOT OpenCV_FOUND)
+    message(FATAL_ERROR
+        "OpenCV 4.x was not found.\n"
+        "On Debian/Ubuntu, install with:\n"
+        "  sudo apt update && sudo apt install libopencv-dev\n"
+        "Or specify OpenCV_DIR to your custom build, e.g.:\n"
+        "  cmake -DOpenCV_DIR=/path/to/opencv/build .."
+    )
+endif()
+
+message(STATUS "OpenCV version: ${OpenCV_VERSION}")
+message(STATUS "OpenCV libraries: ${OpenCV_LIBS}")
+message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
 # ==========================
 # Core Library
 # ==========================
