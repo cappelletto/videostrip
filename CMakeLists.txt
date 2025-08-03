@@ -1,11 +1,4 @@
 cmake_minimum_required(VERSION 3.18)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# ========================================
-# CMake Project
-# ========================================
-# Set project meta data
 project(videostrip
   VERSION "0.2.0"
   DESCRIPTION "Smart video frame extraction for 2D/3D reconstruction pipelines"
@@ -13,66 +6,55 @@ project(videostrip
   LANGUAGES CXX
 )
 
-# ========================================
-# Project Options
-# ========================================
-option(BUILD_GUI "Build the GUI frontend (requires OpenGL + GLFW + ImGui)" OFF)
-option(BUILD_TESTS "Build unit testing suite (unavailable)")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# ========================================
+option(BUILD_GUI "Build the GUI frontend (requires OpenGL + GLFW + ImGui)" OFF)
+option(BUILD_TESTS "Build unit tests" OFF)
+
+# ==========================
 # Dependencies
-# ========================================
-# -------------------------
-# OpenCV (always required)
-# -------------------------
+# ==========================
 find_package(OpenCV 4 REQUIRED
     PATHS /usr/local
     NO_DEFAULT_PATH
 )
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
-message(STATUS "OpenCV libraries: ${OpenCV_LIBS}")
-message(STATUS "OpenCV include path: ${OpenCV_INCLUDE_DIRS}")
 
-
-# -------------------------
-# Core library
-# -------------------------
+# ==========================
+# Core Library
+# ==========================
 add_library(videostrip_core
     libvideostrip_core/vscore.cpp
-    # Add more core sources here
 )
-target_include_directories(videostrip_core PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/libvideostrip_core
-    ${CMAKE_CURRENT_SOURCE_DIR}/libvideostrip_utils
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+target_include_directories(videostrip_core
+    PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libvideostrip_core
 )
+target_link_libraries(videostrip_core PRIVATE ${OpenCV_LIBS})
+target_compile_definitions(videostrip_core PUBLIC GIT_COMMIT="${GIT_INFO}")
 
-# -------------------------
-# Utils library
-# -------------------------
+# ==========================
+# Utils Library
+# ==========================
 add_library(videostrip_utils
     libvideostrip_utils/helper.cpp
-    # Add more utils sources here
 )
-target_include_directories(videostrip_utils PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/libvideostrip_utils
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${OpenCV_INCLUDE_DIRS}
+target_include_directories(videostrip_utils
+    PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libvideostrip_utils
 )
+target_link_libraries(videostrip_utils PRIVATE videostrip_core ${OpenCV_LIBS})
 
-# -------------------------
-# CLI frontend
-# -------------------------
+# ==========================
+# CLI Frontend
+# ==========================
 add_executable(videostrip-cli src/videostrip-cli.cpp)
-target_link_libraries(videostrip-cli PRIVATE videostrip_core videostrip_utils)
+target_link_libraries(videostrip-cli PRIVATE videostrip_core videostrip_utils ${OpenCV_LIBS})
 
-
-target_link_libraries(videostrip_core PRIVATE ${OpenCV_LIBS})
-target_include_directories(videostrip_core PUBLIC ${OpenCV_INCLUDE_DIRS})
-
-# -------------------------
-# Optional GUI frontend
-# -------------------------
+# ==========================
+# Optional GUI Frontend
+# ==========================
 if(BUILD_GUI)
     find_package(OpenGL REQUIRED)
     find_package(PkgConfig REQUIRED)
@@ -97,14 +79,13 @@ if(BUILD_GUI)
         ${IMGUI_SOURCES}
     )
 
-    target_include_directories(videostrip-gui PUBLIC
+    target_include_directories(videostrip-gui PRIVATE
         ${OpenGL_INCLUDE_DIR}
         ${GLFW_INCLUDE_DIRS}
         ${IMGUIFILEDIALOG_DIR}
         ${IMGUI_DIR}
         ${IMGUI_DIR}/backends
     )
-
     target_link_libraries(videostrip-gui PRIVATE
         videostrip_core
         videostrip_utils
@@ -114,21 +95,19 @@ if(BUILD_GUI)
     )
 endif()
 
-# -------------------------
-# Embed Git info
-# -------------------------
+# ==========================
+# Git Info
+# ==========================
 execute_process(
     COMMAND git describe --abbrev=4 --dirty --always --tags
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     OUTPUT_VARIABLE GIT_INFO
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-add_definitions(-DGIT_COMMIT="${GIT_INFO}")
-add_definitions(-DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}")
 
-# -------------------------
-# Optional Tests
-# -------------------------
+# ==========================
+# Tests
+# ==========================
 if(BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)

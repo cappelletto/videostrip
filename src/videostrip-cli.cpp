@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     {
         cout << "\tOpenCV version:\t" << yellow << CV_VERSION << reset << endl;
         cout << "\tGit commit:\t" << yellow << GIT_COMMIT << reset << endl;
-        cout << "\tMode:\t\t" << yellow << CMAKE_BUILD_TYPE << reset << endl;
+        // cout << "\tMode:\t\t" << yellow << CMAKE_BUILD_TYPE << reset << endl;
         cout << cv::getBuildInformation() << std::endl;
         s << "Input file: " << inputFileName << endl;
         s << "Output file: " << outputFileName << endl;
