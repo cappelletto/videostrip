@@ -15,6 +15,23 @@ option(BUILD_TESTS "Build unit tests" OFF)
 # ==========================
 # Dependencies
 # ==========================
+
+# ========================================
+# Git Info
+# ========================================
+execute_process(
+    COMMAND git rev-parse HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE PROJECT_COMMIT_ID
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+execute_process(
+    COMMAND git rev-parse --short HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE PROJECT_COMMIT_ID_SHORT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 # ==========================
 # OpenCV Detection (Cross-OS)
 # ==========================
@@ -44,8 +61,7 @@ if(NOT OpenCV_FOUND)
 endif()
 
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
-message(STATUS "OpenCV libraries: ${OpenCV_LIBS}")
-message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
+
 # ==========================
 # Core Library
 # ==========================
@@ -120,15 +136,53 @@ if(BUILD_GUI)
     )
 endif()
 
-# ==========================
-# Git Info
-# ==========================
-execute_process(
-    COMMAND git describe --abbrev=4 --dirty --always --tags
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_INFO
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+# ========================================
+# Display project status
+# ========================================
+message(STATUS "----------------------------------------")
+message(STATUS "Project Configuration Summary")
+message(STATUS "----------------------------------------")
+message(STATUS "")
+message(STATUS "--- Project Information ---")
+message(STATUS "Name                           : ${PROJECT_NAME}")
+message(STATUS "Version                        : ${PROJECT_VERSION}")
+message(STATUS "Commit id                      : ${PROJECT_COMMIT_ID}")
+message(STATUS "Commit id short                : ${PROJECT_COMMIT_ID_SHORT}")
+message(STATUS "Source Dir                     : ${CMAKE_SOURCE_DIR}")
+message(STATUS "Build Dir                      : ${CMAKE_BINARY_DIR}")
+message(STATUS "----------------------------------------")
+message(STATUS "")
+message(STATUS "--- System Information ---")
+message(STATUS "Processor                      : ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "System Name                    : ${CMAKE_SYSTEM_NAME}")
+message(STATUS "Version                        : ${CMAKE_SYSTEM_VERSION}")
+message(STATUS "Compiler                       : ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "----------------------------------------")
+message(STATUS "")
+message(STATUS "--- Build Settings ---")
+if(CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Build type                     : Multi-configuration (${CMAKE_CONFIGURATION_TYPES})")
+else()
+  message(STATUS "Build type                     : ${CMAKE_BUILD_TYPE}")
+endif()
+message(STATUS "C++ Standard                   : ${CMAKE_CXX_STANDARD}")
+message(STATUS "CMake Module Path              : ${CMAKE_MODULE_PATH}")
+message(STATUS "----------------------------------------")
+message(STATUS "")
+message(STATUS "--- CMake Options ---")
+message(STATUS "BUILD_GUI                      : ${BUILD_GUI}")
+message(STATUS "BUILD_TESTS                    : ${BUILD_TESTS}")
+message(STATUS "----------------------------------------")
+message(STATUS "")
+message(STATUS "--- Dependencies ---")
+message(STATUS "OpenCV version                 : ${OpenCV_VERSION}")
+message(STATUS "OpenCV include dirs            : ${OpenCV_INCLUDE_DIRS}")
+message(STATUS "OpenCV libraries               : ${OpenCV_LIBS}")
+if(BUILD_GUI)
+    message(STATUS "OpenGL libraries               : ${OPENGL_LIBRARIES}")
+    message(STATUS "GLFW libraries                 : ${GLFW_LIBRARIES}")
+endif()
+message(STATUS "----------------------------------------")
 
 # ==========================
 # Tests
