@@ -58,4 +58,15 @@ namespace logger{
             string debug(string owner, string message);
             string info (string owner, string message);
 
-            // ...rest of the file remains unchanged...
+            string error(string owner, ostringstream &message);
+            string warn (string owner, ostringstream &message);
+            string debug(string owner, ostringstream &message);
+            string info (string owner, ostringstream &message);
+
+            void clear(); // clear the history log
+            int  size();  // return the number of log entries
+            void dump();  // dump (on screen or file) the log
+    };
+
+};
+#endif // _PROJECT_HELPER_H_

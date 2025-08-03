@@ -58,3 +58,17 @@ namespace vs{
 
             std::string filename;   // filename of the video file
             std::string filepath;   // full filepath including filename (?)
+            std::string output_folder; // this should be a member of the pipeline, not the video
+            int     width;
+            int     height;
+            float   fps;
+            int     num_frames;
+            vd      video_duration;
+ 
+        private:
+            bool is_valid;
+    };
+
+}
+
+#endif
