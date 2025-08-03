@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # ========================================
 # Set project meta data
 project(videostrip
-  VERSION "0.1.0"
+  VERSION "0.2.0"
   DESCRIPTION "Smart video frame extraction for 2D/3D reconstruction pipelines"
   HOMEPAGE_URL "https://github.com/cappelletto/videostrip/"
   LANGUAGES CXX
