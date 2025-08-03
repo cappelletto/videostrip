@@ -7,7 +7,7 @@
 #define _VS_CORE_H_
 
 #include "headers.h"
-#include "helper.h"
+#include "videostrip/utils/helper.h"
 #include <iostream>
 // #include <ctime>
 

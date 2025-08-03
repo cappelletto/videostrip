@@ -1,7 +1,7 @@
 // Core definitions for videostrip module
 // This can be vconverted into an external library that can be called by either the CLI or GUI based frontend
 
-#include "vscore.h"
+#include "videostrip/core/vscore.h"
 
 namespace vs{
     logger::ConsoleOutput logc; // single translation unit allowed to define logc (global variable within the namespace scope)
