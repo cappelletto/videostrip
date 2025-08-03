@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 project(videostrip
-  VERSION "0.2.0"
+  VERSION "0.2.1"
   DESCRIPTION "Smart video frame extraction for 2D/3D reconstruction pipelines"
   HOMEPAGE_URL "https://github.com/cappelletto/videostrip/"
   LANGUAGES CXX
