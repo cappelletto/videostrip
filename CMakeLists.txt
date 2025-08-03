@@ -13,6 +13,15 @@ option(BUILD_GUI "Build the GUI frontend (requires OpenGL + GLFW + ImGui)" OFF)
 option(BUILD_TESTS "Build unit tests" OFF)
 
 # ==========================
+# Build/packaging options
+# ==========================
+# Organize build outputs into bin/ and lib/
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)   # static libs
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)   # shared libs
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)   # executables
+
+
+# ==========================
 # Dependencies
 # ==========================
 
