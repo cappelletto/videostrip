@@ -3,7 +3,7 @@
 
 // Let's define the videostrip namespace vs
 
-#include "videostrip/vscore.h"
+#include "videostrip/core/vscore.h"
 
 namespace vs{
     logger::ConsoleOutput logc; // single translation unit allowed to define logc (global variable within the namespace scope)

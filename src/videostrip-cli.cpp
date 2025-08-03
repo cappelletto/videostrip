@@ -12,7 +12,7 @@
 #include "../external/args.hxx"
 
 #include <headers.h>
-#include <helper.h>
+#include <videostrip/utils/helper.h>
 #include <options.h>
 
 using namespace std;

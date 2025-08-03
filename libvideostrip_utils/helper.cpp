@@ -13,7 +13,7 @@
 #define _PROJECT_HELPER_CPP_
 
 #include "headers.h"
-#include "helper.h"
+#include "videostrip/utils/helper.h"
 using namespace std;
 
 /**
