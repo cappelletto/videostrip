@@ -1,8 +1,6 @@
 // Core definitions for videostrip module
 // This can be vconverted into an external library that can be called by either the CLI or GUI based frontend
 
-// Let's define the videostrip namespace vs
-
 #include "videostrip/core/vscore.h"
 
 namespace vs{
@@ -16,8 +14,8 @@ void vs::VideoFile::showInfo(){
     std::cout << "height: " << height << std::endl;
     std::cout << "fps: " << fps << std::endl;
     std::cout << "num_frames: " << num_frames << std::endl;
-    std::cout << "video_duration: " << video_duration.hours << ":" \ 
-                                    << video_duration.minutes << ":" \ 
+    std::cout << "video_duration: " << video_duration.hours << ":" \
+                                    << video_duration.minutes << ":" \
                                     << video_duration.seconds << std::endl;
 }
 
@@ -57,13 +55,4 @@ int vs::VideoFile::peekFile(std::string inputfile){
     is_valid = true;
     filename = inputfile; // we update the filename with the input file
     return 0; // everything ok so far
-}
-
-// Function that converts duration in seconds (long int) into a vs::vd structure
-vs::vd vs::duration_to_vd(long int duration){
-    vs::vd _vd;
-    _vd.hours = duration / 3600;
-    _vd.minutes = (duration % 3600) / 60;
-    _vd.seconds = duration % 60;
-    return _vd;
 }

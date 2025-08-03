@@ -1,163 +1,193 @@
-# videostrip-gui project. This build script is for Linux systems using OpenGL + GLFW
-cmake_minimum_required(VERSION 3.18)  # coud be lower, still to be decided
+cmake_minimum_required(VERSION 3.18)
+project(videostrip
+  VERSION "0.2.1"
+  DESCRIPTION "Smart video frame extraction for 2D/3D reconstruction pipelines"
+  HOMEPAGE_URL "https://github.com/cappelletto/videostrip/"
+  LANGUAGES CXX
+)
 
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE Release CACHE STRING
-      "Choose the type of build, options are: None Debug Release RelWithDebug RelWithDebInfo MinSizeRel."
-      FORCE)
-endif()
-
-set(CMAKE_COLOR_MAKEFILE ON)  # For fancy colouring scheme
-if (${FORCE_COLORED_OUTPUT})
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        target_compile_options (project_options INTERFACE -fdiagnostics-color=always)
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        target_compile_options (project_options INTERFACE -fcolor-diagnostics)
-    endif ()
-endif ()
-
-if(NOT WIN32)
-  string(ASCII 27 Esc)
-  set(ColourReset "${Esc}[m")
-  set(ColourBold  "${Esc}[1m")
-  set(Red         "${Esc}[31m")
-  set(Green       "${Esc}[32m")
-  set(Yellow      "${Esc}[33m")
-  set(Blue        "${Esc}[34m")
-  set(Magenta     "${Esc}[35m")
-  set(Cyan        "${Esc}[36m")
-  set(White       "${Esc}[37m")
-  set(BoldRed     "${Esc}[1;31m")
-  set(BoldGreen   "${Esc}[1;32m")
-  set(BoldYellow  "${Esc}[1;33m")
-  set(BoldBlue    "${Esc}[1;34m")
-  set(BoldMagenta "${Esc}[1;35m")
-  set(BoldCyan    "${Esc}[1;36m")
-  set(BoldWhite   "${Esc}[1;37m")
-endif()
-
-# Define project name
-project(videostrip)
-set(CMAKE_CXX_STANDARD 17)          # verify that the compiler supports C++17, as some targets could reversely fallback to c++14
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-message ("${Cyan} Configuring system")
-# GNU compiler flags. If you are using a different compiler, you may need to change these flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3 -Wformat")
-# Additional flags for vectorized/multithread profiling and debugging
-# Ask if compiler is GNU and support this flags, otherwise it could fail
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread -mavx2 -shared-libgcc")
+option(BUILD_GUI "Build the GUI frontend (requires OpenGL + GLFW + ImGui)" OFF)
+option(BUILD_TESTS "Build unit tests" OFF)
 
-# if (USE_CUDA)
-#   message ("${BoldBlue} Asked for CUDA, searching... ${ColourReset}")
-#   find_package(CUDA) # FindCUDA is deprecated, future releases will use find_package(CUDAToolkit)
-#   if(CUDA_FOUND)
-#     add_definitions( -DUSE_CUDA=1 )
-#     include(FindCUDA)
-#     message("${BoldGreen}" "CUDA library status: ${ColourReset}")
-#     message(STATUS "    toolkit root dir: ${CUDA_TOOLKIT_ROOT_DIR}")
-#     message(STATUS "    version: ${CUDA_VERSION}")
-#     message(STATUS "    libraries: ${CUDA_LIBRARIES}")
-#     message(STATUS "    include path: ${CUDA_INCLUDE_DIRS}")
-#   endif(CUDA_FOUND)
-# endif()
+# ==========================
+# Dependencies
+# ==========================
 
-# Find OpenCV, you may need to set OpenCV_DIR variable
-# to the absolute path to the directory containing OpenCVConfig.cmake file
-find_package(OpenCV 4   REQUIRED 
-                        PATHS /usr/local /local/software/opencv/4.5.3
-                        NO_DEFAULT_PATH)
+# ========================================
+# Git Info
+# ========================================
+execute_process(
+    COMMAND git rev-parse HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE PROJECT_COMMIT_ID
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+execute_process(
+    COMMAND git rev-parse --short HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE PROJECT_COMMIT_ID_SHORT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
-# If the package has been found, several variables will be set, you can find the full list with descriptions
-# in the OpenCVConfig.cmake file.
-message("${BoldGreen}" "OpenCV library status:" "${ColourReset}")
-message(STATUS "    version: ${OpenCV_VERSION}")
-message(STATUS "    libraries: ${OpenCV_LIBS}")
-message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
+# ==========================
+# OpenCV Detection (Cross-OS)
+# ==========================
+message(STATUS "Searching for OpenCV 4...")
 
-# OpenGL is used as a rendering backend, so we need to find it
-find_package(OpenGL REQUIRED)
-if (OPENGL_FOUND)
-  message("${BoldGreen}" "OpenGL library status:" "${ColourReset}")
-  message(STATUS "    version: ${OPENGL_VERSION}")
-  message(STATUS "    libraries: ${OPENGL_LIBRARIES}")
-  message(STATUS "    include path: ${OPENGL_INCLUDE_DIR}")
+# Try system-wide first
+find_package(OpenCV 4 QUIET)
+
+# Fallback to /usr/local if not found
+if(NOT OpenCV_FOUND)
+    message(STATUS "OpenCV not found system-wide, trying /usr/local ...")
+    find_package(OpenCV 4 QUIET
+        PATHS /usr/local /opt/local
+        NO_DEFAULT_PATH
+    )
 endif()
 
-# find_package(glfw3 3.3 REQUIRED)  # current release for cmake is pretty incomplete. Use pkg-config instead
-# message(STATUS "Found GLFW3 in ${GLFW3_INCLUDE_DIR}")
-# message(STATUS "Found GLFW in ${GLFW_LIBRARIES}")
+# If still not found, fail with user guidance
+if(NOT OpenCV_FOUND)
+    message(FATAL_ERROR
+        "OpenCV 4.x was not found.\n"
+        "On Debian/Ubuntu, install with:\n"
+        "  sudo apt update && sudo apt install libopencv-dev\n"
+        "Or specify OpenCV_DIR to your custom build, e.g.:\n"
+        "  cmake -DOpenCV_DIR=/path/to/opencv/build .."
+    )
+endif()
 
-find_package(PkgConfig REQUIRED)
-pkg_search_module(GLFW REQUIRED glfw3)
+message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 
-include_directories(${GLFW_INCLUDE_DIRS})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${GLFW_INCLUDE_DIRS}")
+# ==========================
+# Core Library
+# ==========================
+add_library(videostrip_core
+    libvideostrip_core/vscore.cpp
+)
+target_include_directories(videostrip_core
+    PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libvideostrip_core
+)
+target_link_libraries(videostrip_core PRIVATE ${OpenCV_LIBS})
+target_compile_definitions(videostrip_core PUBLIC GIT_COMMIT="${GIT_INFO}")
 
-set (IMGUIFILEDIALOG_DIR external/ImGuiFileDialog)
+# ==========================
+# Utils Library
+# ==========================
+add_library(videostrip_utils
+    libvideostrip_utils/helper.cpp
+)
+target_include_directories(videostrip_utils
+    PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libvideostrip_utils
+)
+target_link_libraries(videostrip_utils PRIVATE videostrip_core ${OpenCV_LIBS})
 
-set (IMGUI_DIR      external/imgui)
-set (IMGUI_SOURCES  ${IMGUI_DIR}/imgui.cpp
-                    ${IMGUI_DIR}/imgui_draw.cpp
-                    ${IMGUI_DIR}/imgui_demo.cpp
-                    ${IMGUI_DIR}/imgui_widgets.cpp
-                    ${IMGUI_DIR}/imgui_tables.cpp
-                    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
-                    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp)
+# ==========================
+# CLI Frontend
+# ==========================
+add_executable(videostrip-cli src/videostrip-cli.cpp)
+target_link_libraries(videostrip-cli PRIVATE videostrip_core videostrip_utils ${OpenCV_LIBS})
 
-# Greedy include of all headers
-file(GLOB PROJECT_HEADERS include/*.h include/*.hpp external/*.h external/*.hpp external/*.hxx)
+# ==========================
+# Optional GUI Frontend
+# ==========================
+if(BUILD_GUI)
+    find_package(OpenGL REQUIRED)
+    find_package(PkgConfig REQUIRED)
+    pkg_search_module(GLFW REQUIRED glfw3)
 
-include_directories(BEFORE ../include
-                    include
-                    ${OpenCV_INCLUDE_DIRS}
-                    ${IMGUIFILEDIALOG_DIR}
-                    ${IMGUI_DIR}
-                    ${IMGUI_DIR}/backends
-                    )
+    set(IMGUIFILEDIALOG_DIR external/ImGuiFileDialog)
+    set(IMGUI_DIR external/imgui)
+    set(IMGUI_SOURCES
+        ${IMGUI_DIR}/imgui.cpp
+        ${IMGUI_DIR}/imgui_draw.cpp
+        ${IMGUI_DIR}/imgui_demo.cpp
+        ${IMGUI_DIR}/imgui_widgets.cpp
+        ${IMGUI_DIR}/imgui_tables.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+    )
 
-# Retrieve git commit information, forward it as compiler flags so they can be used during building time
-exec_program(
-    "git"
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ARGS "describe --abbrev=4 --dirty --always --tags"
-    OUTPUT_VARIABLE GIT_INFO )
-add_definitions( -DGIT_COMMIT="${GIT_INFO}" ) # Forward current git info as a single string
-add_definitions( -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" ) # Forward current git info as a single string
+    add_executable(videostrip-gui
+        src/videostrip-gui.cpp
+        src/gui/vsgui.cpp
+        external/ImGuiFileDialog/ImGuiFileDialog.cpp
+        ${IMGUI_SOURCES}
+    )
 
-# collect all the libraries in a single variable
-set(CORE_LIBS ${OpenCV_LIBS} )
-set(GUI_LIBS  ${OPENGL_LIBRARIES} ${GLFW_LIBRARIES} ${IMGUI_LIBS})
+    target_include_directories(videostrip-gui PRIVATE
+        ${OpenGL_INCLUDE_DIR}
+        ${GLFW_INCLUDE_DIRS}
+        ${IMGUIFILEDIALOG_DIR}
+        ${IMGUI_DIR}
+        ${IMGUI_DIR}/backends
+    )
+    target_link_libraries(videostrip-gui PRIVATE
+        videostrip_core
+        videostrip_utils
+        ${OPENGL_LIBRARIES}
+        ${GLFW_LIBRARIES}
+        ${CMAKE_DL_LIBS}
+    )
+endif()
 
-message ("${Cyan} Building system")
-message ("${BoldBlue} Building core libraries: ${ColourReset}")
-message ("CORE_LIBS: ${CORE_LIBS}")
-message ("${BoldBlue} Building GUI libraries: ${ColourReset}")
-message ("GUI_LIBS: ${GUI_LIBS}")
+# ========================================
+# Display project status
+# ========================================
+message(STATUS "----------------------------------------")
+message(STATUS "Project Configuration Summary")
+message(STATUS "----------------------------------------")
+message(STATUS "")
+message(STATUS "--- Project Information ---")
+message(STATUS "Name                           : ${PROJECT_NAME}")
+message(STATUS "Version                        : ${PROJECT_VERSION}")
+message(STATUS "Commit id                      : ${PROJECT_COMMIT_ID}")
+message(STATUS "Commit id short                : ${PROJECT_COMMIT_ID_SHORT}")
+message(STATUS "Source Dir                     : ${CMAKE_SOURCE_DIR}")
+message(STATUS "Build Dir                      : ${CMAKE_BINARY_DIR}")
+message(STATUS "----------------------------------------")
+message(STATUS "")
+message(STATUS "--- System Information ---")
+message(STATUS "Processor                      : ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "System Name                    : ${CMAKE_SYSTEM_NAME}")
+message(STATUS "Version                        : ${CMAKE_SYSTEM_VERSION}")
+message(STATUS "Compiler                       : ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "----------------------------------------")
+message(STATUS "")
+message(STATUS "--- Build Settings ---")
+if(CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Build type                     : Multi-configuration (${CMAKE_CONFIGURATION_TYPES})")
+else()
+  message(STATUS "Build type                     : ${CMAKE_BUILD_TYPE}")
+endif()
+message(STATUS "C++ Standard                   : ${CMAKE_CXX_STANDARD}")
+message(STATUS "CMake Module Path              : ${CMAKE_MODULE_PATH}")
+message(STATUS "----------------------------------------")
+message(STATUS "")
+message(STATUS "--- CMake Options ---")
+message(STATUS "BUILD_GUI                      : ${BUILD_GUI}")
+message(STATUS "BUILD_TESTS                    : ${BUILD_TESTS}")
+message(STATUS "----------------------------------------")
+message(STATUS "")
+message(STATUS "--- Dependencies ---")
+message(STATUS "OpenCV version                 : ${OpenCV_VERSION}")
+message(STATUS "OpenCV include dirs            : ${OpenCV_INCLUDE_DIRS}")
+message(STATUS "OpenCV libraries               : ${OpenCV_LIBS}")
+if(BUILD_GUI)
+    message(STATUS "OpenGL libraries               : ${OPENGL_LIBRARIES}")
+    message(STATUS "GLFW libraries                 : ${GLFW_LIBRARIES}")
+endif()
+message(STATUS "----------------------------------------")
 
-############################ videostrip ####################
-add_executable(${PROJECT_NAME}  src/videostrip-cli.cpp
-                                src/helper.cpp
-                                ${PROJECT_HEADERS})
-
-############################ videostrip ####################
-add_executable(videostrip-gui 
-                            src/videostrip-gui.cpp
-                            src/helper.cpp
-                            src/gui/vsgui.cpp
-                            src/videostrip/vscore.cpp
-                            external/ImGuiFileDialog/ImGuiFileDialog.cpp
-                            ${IMGUI_SOURCES})
-                            #${PROJECT_HEADERS}
-                            # )
-
-target_compile_options(${PROJECT_NAME}  PUBLIC -std=c++17 -mavx2) # the global flags may already have been set with std=c++17 
-target_link_libraries (${PROJECT_NAME}  ${CORE_LIBS} )
-
-target_compile_options(videostrip-gui   PUBLIC -std=c++17 -mavx2) # the global flags may already have been set with std=c++17 
-target_link_libraries (videostrip-gui   ${CORE_LIBS} ${GUI_LIBS} ${CMAKE_DL_LIBS} )
-# target_link_libraries (videostrip-gui   ${CORE_LIBS} ${GUI_LIBS} ${CMAKE_DL_LIBS} glfw glut glu glfw3)
-
-install (TARGETS ${PROJECT_NAME}        DESTINATION $ENV{HOME}/bin)
-install (TARGETS videostrip-gui         DESTINATION $ENV{HOME}/bin)
-# configure_file(scripts/tiff.convert2png.sh  $ENV{HOME}/bin/scripts)
+# ==========================
+# Tests
+# ==========================
+if(BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
