@@ -19,35 +19,48 @@
 #include <GLFW/glfw3.h>
 // imgui headers
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
 
+#include "videostrip/vscore.h"
 #include "gui/vsgui.hpp"
 
 using namespace std;
 using namespace cv;
-
-logger::ConsoleOutput logc; // as a global variable, we are Ok with this
+using namespace vs;
 
 /*!
     @fn     int main(int argc, char* argv[])
     @brief  Main function
 */
 
+// TODO: Create FIFO queue for console output (window/gui). Could be a replica of the logger::ConsoleOutput class
+
 int main(int argc, char *argv[])
 {
-    vs::vsGui gui;
-    logc.warn("main", "Dear Imgui mockup implementation - OpenGL renderer");
+    vs::vsGui       gui;
+    vs::VideoFile   video;
 
     int retval = gui.Init();;   // OpenGL context setup
     if (retval) {
-        logc.error("main", "OpenGL + imgui context setup failed");
+        vs::logc.error("main", "OpenGL + imgui context setup failed");
         return retval;
     }
 
     // Our state
-    ImGui::SetNextWindowSize(ImVec2(700,500));
+    ImGui::SetNextWindowSize(ImVec2(750,400));
     // Main loop
+
+    // let's populate with some data for testing purposes
+    if (video.peekFile("/home/cappelletto/Videos/fran01.mp4") == -1) {
+        vs::logc.error("main", "Video file peek failed");
+        return -1;
+    }
+    else{
+        vs::logc.info("main", "Video file peek success");
+    }
+
     static bool window_flag = true;
     while (!gui.ShouldClose() && window_flag)
     {
@@ -57,40 +70,11 @@ int main(int argc, char *argv[])
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
-
         gui.NewFrame();
 
-        ImGui::Begin("videostrip-gui", &window_flag, ImGuiWindowFlags_MenuBar    | 
-                                                    //  ImGuiWindowFlags_NoTitleBar |
-                                                     ImGuiWindowFlags_NoCollapse //|
-                                                    //  ImGuiWindowFlags_NoMove     //|
-                                                    //  ImGuiWindowFlags_NoResize
-                                                       );
-        ImGui::SetCursorPos(ImVec2(23,62.5));
-        ImGui::Text("filename: <path/to/filename>");
-
-        ImGui::SetCursorPos(ImVec2(182,123.5));
-        ImGui::PushItemWidth(200);
-        static float progress16 = 0.0f;
-        ImGui::ProgressBar(progress16, ImVec2(0.0f, 0.0f));
-        ImGui::PopItemWidth();
-
-        ImGui::SetCursorPos(ImVec2(184.5,94.5));
-        ImGui::Button("Button1", ImVec2(57,19)); //remove size argument (ImVec2) to auto-resize
-
-        ImGui::End();
-
-        // *********************************************** >> Next window
-        ImGui::Begin("file-summary", &window_flag);
-        ImGui::SetCursorPos(ImVec2(15,15));
-        ImGui::Text("Summary information about the input video");
-        ImGui::End();
-
-        // *********************************************** >> Next window
-        ImGui::Begin("another-name", &window_flag);
-        ImGui::SetCursorPos(ImVec2(10,10));
-        ImGui::Text("Scroll bar or log info");
-        ImGui::End();
+        int r = drawWindowInput(video);
+        // now we call to the drawWindowInfo function
+        drawWindowInfo(video);  // read-only, could be const &
 
         // Rendering
         gui.Render();
@@ -98,6 +82,6 @@ int main(int argc, char *argv[])
 
     // Cleanup
     gui.Destroy();
-
+    vs::logc.info("main", "Exiting");
     return 0;
 }

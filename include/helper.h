@@ -11,6 +11,8 @@
 #ifndef _PROJECT_HELPER_H_
 #define _PROJECT_HELPER_H_
 
+#pragma once
+
 #include <mutex>
 #include <sstream>
 #include <iostream>
