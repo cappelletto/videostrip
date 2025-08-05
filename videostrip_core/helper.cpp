@@ -12,8 +12,8 @@
 #ifndef _PROJECT_HELPER_CPP_
 #define _PROJECT_HELPER_CPP_
 
-#include "headers.h"
-#include "videostrip/utils/helper.h"
+#include "headers.hpp"
+#include "helper.hpp"
 using namespace std;
 
 /**

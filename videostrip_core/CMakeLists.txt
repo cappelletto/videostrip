@@ -1,5 +1,6 @@
 add_library(videostrip_core STATIC
     videostrip_core.cpp
+    helper.cpp
     headers.hpp
 )
 

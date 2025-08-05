@@ -46,8 +46,6 @@ message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
 # Add project modules (progressive build)
 # ==========================================
 add_subdirectory(videostrip_core)
-
-# Later we will enable:
 # add_subdirectory(videostrip_utils)
-# add_subdirectory(videostrip_cli)
+add_subdirectory(videostrip_cli)
 # add_subdirectory(videostrip_gui)

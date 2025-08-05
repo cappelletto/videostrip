@@ -9,11 +9,11 @@
  * 
  */
 #include <iostream>
-#include "../external/args.hxx"
+#include <args.hxx>                       // from external/
 
-#include <headers.h>
-#include <videostrip/utils/helper.h>
-#include <options.h>
+#include <headers.hpp>     // was headers.h
+#include <options.hpp>     // was options.h
+#include <helper.hpp>      // helper moved into core
 
 using namespace std;
 using namespace cv;
@@ -47,10 +47,10 @@ int main(int argc, char *argv[])
 
     if (argDumpInfo)
     {
-        cout << "\tOpenCV version:\t" << yellow << CV_VERSION << reset << endl;
-        cout << "\tGit commit:\t" << yellow << GIT_COMMIT << reset << endl;
+        std::cout << "\tOpenCV version:\t" << yellow << CV_VERSION << reset << endl;
+        // cout << "\tGit commit:\t" << yellow << GIT_COMMIT << reset << endl;
         // cout << "\tMode:\t\t" << yellow << CMAKE_BUILD_TYPE << reset << endl;
-        cout << cv::getBuildInformation() << std::endl;
+        std::cout << cv::getBuildInformation() << std::endl;
         s << "Input file: " << inputFileName << endl;
         s << "Output file: " << outputFileName << endl;
         s << "Verbosity level: " << verbosityLevel << endl;
