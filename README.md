@@ -1,7 +1,5 @@
 [![C/C++ CI](https://github.com/cappelletto/videostrip/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/cappelletto/videostrip/actions/workflows/c-cpp.yml)
 
-Here’s a **recommended `README.md`** for the current **videostrip** repository, aligned with the **sandbox status**, **short-term priorities**, and **pipeline user stories**:
-
 ---
 
 # videostrip
@@ -13,14 +11,14 @@ It is designed to produce **SfM-ready frame sets** for tools like **COLMAP, Mesh
 
 ## **Project Status**
 
-> ⚠ **Alpha / Sandbox**: Core functionality is not yet complete.
+> **Alpha / Sandbox**: Core functionality is not yet complete.
 > The repository currently provides:
 >
 > * A **CLI prototype** for argument parsing and basic info logging.
 > * A **GUI stub** using **OpenGL + ImGui** for future interactive workflows.
-> * Initial CMake setup for building CLI and GUI targets.
+> * Initial CMake setup for building core libaries, and CLI and GUI targets.
 
-**Short-term priority** is to **refactor and modularize** the project to prepare for production-ready frame extraction aligned with our **pipeline user stories**.
+**Short-term priority** is to **refactor and modularize** the project to prepare for production-ready frame extraction aligned with the **pipeline user stories**.
 
 ---
 
@@ -58,25 +56,6 @@ It is designed to produce **SfM-ready frame sets** for tools like **COLMAP, Mesh
 
 ---
 
-## **Repository Structure**
-
-```
-videostrip/
-├── src/                 # Source code for CLI and GUI
-│   ├── videostrip-cli.cpp
-│   ├── videostrip-gui.cpp
-│   ├── videostrip/      # Core processing (vscore)
-│   └── gui/             # GUI components
-├── include/             # Public headers
-│   └── videostrip/      
-├── external/            # Third-party dependencies (args.hxx, ImGui)
-├── doc/                 # Documentation and mockups
-├── CMakeLists.txt
-└── README.md
-```
-
----
-
 ## **Build Instructions**
 
 ### **Dependencies**
@@ -101,8 +80,9 @@ cmake --build build -j4
 The build produces:
 
 ```
-build/videostrip        # CLI
-build/videostrip-gui    # GUI prototype
+build/videostrip            # CLI
+build/libvideostrip_core.a  # Core library
+build/libvideostrip_utils.a # Utilities library
 ```
 
 ---
@@ -112,10 +92,10 @@ build/videostrip-gui    # GUI prototype
 Check OpenCV and build info:
 
 ```bash
-./videostrip --dumpinfo
+./videostrip --dump
 ```
 
-Process a single video:
+[TODO] ⏳ Process a single video:
 
 ```bash
 ./videostrip --input=mytransect.mp4 --output=frames
@@ -145,7 +125,7 @@ The first development sprint focuses on **refactor and modularization**:
 
 Future milestones:
 
-* Frame extraction with overlap guarantee
+* Frame extraction with overlap guarantee (to port existing homography based implementation)
 * Feature-based keyframe selection
 * Pipeline-ready metadata (YAML + CSV)
 * Batch + GUI interactive workflows
