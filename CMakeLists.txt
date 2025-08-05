@@ -9,7 +9,7 @@ project(videostrip
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(BUILD_GUI "Build the GUI frontend (requires OpenGL + GLFW + ImGui)" OFF)
+# option(BUILD_GUI "Build the GUI frontend (requires OpenGL + GLFW + ImGui)" OFF)
 option(BUILD_TESTS "Build unit tests" OFF)
 
 # ==========================
@@ -102,48 +102,6 @@ target_link_libraries(videostrip_utils PRIVATE videostrip_core ${OpenCV_LIBS})
 add_executable(videostrip-cli src/videostrip-cli.cpp)
 target_link_libraries(videostrip-cli PRIVATE videostrip_core videostrip_utils ${OpenCV_LIBS})
 
-# ==========================
-# Optional GUI Frontend
-# ==========================
-if(BUILD_GUI)
-    find_package(OpenGL REQUIRED)
-    find_package(PkgConfig REQUIRED)
-    pkg_search_module(GLFW REQUIRED glfw3)
-
-    set(IMGUIFILEDIALOG_DIR external/ImGuiFileDialog)
-    set(IMGUI_DIR external/imgui)
-    set(IMGUI_SOURCES
-        ${IMGUI_DIR}/imgui.cpp
-        ${IMGUI_DIR}/imgui_draw.cpp
-        ${IMGUI_DIR}/imgui_demo.cpp
-        ${IMGUI_DIR}/imgui_widgets.cpp
-        ${IMGUI_DIR}/imgui_tables.cpp
-        ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
-        ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-    )
-
-    add_executable(videostrip-gui
-        src/videostrip-gui.cpp
-        src/gui/vsgui.cpp
-        external/ImGuiFileDialog/ImGuiFileDialog.cpp
-        ${IMGUI_SOURCES}
-    )
-
-    target_include_directories(videostrip-gui PRIVATE
-        ${OpenGL_INCLUDE_DIR}
-        ${GLFW_INCLUDE_DIRS}
-        ${IMGUIFILEDIALOG_DIR}
-        ${IMGUI_DIR}
-        ${IMGUI_DIR}/backends
-    )
-    target_link_libraries(videostrip-gui PRIVATE
-        videostrip_core
-        videostrip_utils
-        ${OPENGL_LIBRARIES}
-        ${GLFW_LIBRARIES}
-        ${CMAKE_DL_LIBS}
-    )
-endif()
 
 # ========================================
 # Display project status
@@ -179,7 +137,6 @@ message(STATUS "CMake Module Path              : ${CMAKE_MODULE_PATH}")
 message(STATUS "----------------------------------------")
 message(STATUS "")
 message(STATUS "--- CMake Options ---")
-message(STATUS "BUILD_GUI                      : ${BUILD_GUI}")
 message(STATUS "BUILD_TESTS                    : ${BUILD_TESTS}")
 message(STATUS "----------------------------------------")
 message(STATUS "")
@@ -187,10 +144,10 @@ message(STATUS "--- Dependencies ---")
 message(STATUS "OpenCV version                 : ${OpenCV_VERSION}")
 message(STATUS "OpenCV include dirs            : ${OpenCV_INCLUDE_DIRS}")
 message(STATUS "OpenCV libraries               : ${OpenCV_LIBS}")
-if(BUILD_GUI)
-    message(STATUS "OpenGL libraries               : ${OPENGL_LIBRARIES}")
-    message(STATUS "GLFW libraries                 : ${GLFW_LIBRARIES}")
-endif()
+# if(BUILD_GUI)
+#     message(STATUS "OpenGL libraries               : ${OPENGL_LIBRARIES}")
+#     message(STATUS "GLFW libraries                 : ${GLFW_LIBRARIES}")
+# endif()
 message(STATUS "----------------------------------------")
 
 # ==========================
