@@ -11,11 +11,14 @@
  */
 
 #include <string>
+#include <iostream>
+#include <fstream>
 #include <vector>
 #include <functional>
 #include <memory>
 #include <cstdint>
 #include <optional>
+#include <mutex>
 
 namespace videostrip
 {
@@ -155,6 +158,49 @@ public:
     virtual void warn(const std::string& msg) = 0;
     virtual void error(const std::string& msg) = 0;
     virtual void debug(const std::string& msg) = 0;
+};
+
+class ConsoleLogger : public Logger {
+public:
+    ConsoleLogger(const std::string& publisher = "core")
+        : m_publisher(publisher) {}
+
+    void info(const std::string& msg) override {
+        publish("INFO", msg);
+    }
+    void warn(const std::string& msg) override {
+        publish("WARN", msg);
+    }
+    void error(const std::string& msg) override {
+        publish("ERROR", msg);
+    }
+    void debug(const std::string& msg) override {
+        publish("DEBUG", msg);
+    }
+
+    // Optionally, overloads with publisher tag
+    void info(const std::string& publisher, const std::string& msg) {
+        publish("INFO", msg, publisher);
+    }
+    void warn(const std::string& publisher, const std::string& msg) {
+        publish("WARN", msg, publisher);
+    }
+    void error(const std::string& publisher, const std::string& msg) {
+        publish("ERROR", msg, publisher);
+    }
+    void debug(const std::string& publisher, const std::string& msg) {
+        publish("DEBUG", msg, publisher);
+    }
+
+private:
+    std::string m_publisher;
+    std::mutex mtx;
+
+    void publish(const std::string& level, const std::string& msg, const std::string& publisher = "") {
+        std::lock_guard<std::mutex> lock(mtx);
+        std::string tag = publisher.empty() ? m_publisher : publisher;
+        std::cout << "[" << level << "] <" << tag << "> " << msg << std::endl;
+    }
 };
 
 } // namespace videostrip

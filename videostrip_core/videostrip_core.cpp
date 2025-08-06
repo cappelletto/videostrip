@@ -27,6 +27,7 @@ public:
     void debug(const std::string& msg) override {}
 };
 
+
 // =======================
 // FeatureExtractor stub
 // =======================
@@ -77,7 +78,7 @@ std::unique_ptr<FeatureExtractor> make_default_extractor(const std::string& type
 VideoFrameExtractor::VideoFrameExtractor(const ExtractorConfig& config)
     : m_config(config),
       m_feature_extractor(make_default_extractor(config.feature_type)),
-      m_logger(std::make_shared<StubLogger>())
+      m_logger(std::make_shared<ConsoleLogger>("VideoFrameExtractor"))
 {
 }
 

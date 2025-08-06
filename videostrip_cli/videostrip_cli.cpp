@@ -1,66 +1,108 @@
 /**
- * @file main.cpp
- * @author Jose Cappelletto (cappelletto@gmail.com)
- * @brief [videostrip] as stand-alone module for video processing. Rework from scracth, based on the original uwimgproc/videostrip.cpp
- * @version 3.6-DualEnv [local + Iridis5]
- * @date 2021-11-18
- * 
- * @copyright Copyright (c) 2020-2021
- * 
+ * @file videostrip_cli.cpp
+ * @brief Command-line entry for videostrip frame extraction pipeline.
  */
+
 #include <iostream>
-#include <args.hxx>                       // from external/
+#include <filesystem>
+#include <sstream>
+#include <exception>
+#include <iomanip>
+#include "videostrip_core.hpp"
+// #include "logger.hpp"
+#include <args.hxx>  // adjust as needed if in external/
 
-#include <headers.hpp>     // was headers.h
-#include <options.hpp>     // was options.h
-#include <helper.hpp>      // helper moved into core
+namespace fs = std::filesystem;
+using namespace videostrip;
 
-using namespace std;
-using namespace cv;
-
-/*!
-    @fn     int main(int argc, char* argv[])
-    @brief  Main function
-*/
-
-logger::ConsoleOutput logc; // as a global variable, we are Ok with this
-
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
+    // --- Argument parsing ---
+    args::ArgumentParser parser("videostrip - Video frame extractor for mapping pipelines", "");
+    args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
+    args::ValueFlag<std::string> input_video(parser, "video", "Input video file", {'i', "input"});
+    args::ValueFlag<std::string> out_dir(parser, "dir", "Output base directory", {'o', "output"});
+    args::ValueFlag<std::string> feature_type(parser, "feature", "Feature type (SIFT/ORB/KAZE/SURF)", {'f', "feature"});
+    args::ValueFlag<std::string> image_format(parser, "fmt", "Output image format (png, jpg, ...)", {'t', "format"});
+    args::ValueFlag<float> overlap(parser, "overlap", "Overlap/confidence threshold [0.0–1.0]", {'c', "conf"});
+    args::ValueFlag<int> max_skip(parser, "max-skip", "Max consecutive images to skip", {'s', "skip"});
+    args::Flag enhance(parser, "enhance", "Apply image enhancement", {'e', "enhance"});
+    args::ValueFlag<std::string> log_file(parser, "log", "Log file path", {'l', "log"});
 
-    logc.warn("main", "Alpha version. Sandbox for module building and testing");
-
-    int retval = initParser(argc, argv);    // initial argument validation, populates arg parsing structure args
-    if (retval != 0)                        // some error ocurred, we have been signaled to stop
-        return retval;
-    std::ostringstream s;
-
-    // Input file priority: must be defined either by the config.yaml or --input argument
-    string inputFileName    = ""; // command arg or config defined
-    string outputFileName   = ""; // if empty, output filenames will be the same as the standard. If non-null, will be used as prefix
-    string outputFilePath   = ""; // absolut/relative folder path were output will be stored
-    int verbosityLevel      = 0;  // verbosity level, 0 - 3
-
-    if (argInput)   inputFileName    = args::get(argInput);   //input file is mandatory positional argument. Overrides any definition in configuration.yaml
-    if (argOutput)  outputFileName   = args::get(argOutput);  //input file is mandatory positional argument. Overrides any definition in configuration.yaml
-    if (argVerbose) verbosityLevel   = args::get(argVerbose); // retrieve user defined verbosity level
-
-    if (argDumpInfo)
-    {
-        std::cout << "\tOpenCV version:\t" << yellow << CV_VERSION << reset << endl;
-        // cout << "\tGit commit:\t" << yellow << GIT_COMMIT << reset << endl;
-        // cout << "\tMode:\t\t" << yellow << CMAKE_BUILD_TYPE << reset << endl;
-        std::cout << cv::getBuildInformation() << std::endl;
-        s << "Input file: " << inputFileName << endl;
-        s << "Output file: " << outputFileName << endl;
-        s << "Verbosity level: " << verbosityLevel << endl;
-        logc.info("main", s.str());
+    try {
+        parser.ParseCLI(argc, argv);
+    } catch (const args::Help&) {
+        std::cout << parser;
         return 0;
+    } catch (const args::ParseError& e) {
+        std::cerr << e.what() << std::endl << parser;
+        return 1;
+    } catch (const args::ValidationError& e) {
+        std::cerr << e.what() << std::endl << parser;
+        return 2;
     }
 
-    if (inputFileName.empty()){ //not defined as command line argument? let's use config.yaml definition
-        logc.error ("main", "Input file missing. Please define it using --input=<filename>");
-        return -1;
+    // --- Config construction ---
+    ExtractorConfig config;
+    if (input_video) config.input_video_path = args::get(input_video);
+    else {
+        std::cerr << "Error: --input required\n";
+        return 1;
+    }
+
+    // Output dir base (default: ./output)
+    std::string base_out = out_dir ? args::get(out_dir) : "output";
+    config.output_images_dir = fs::path(base_out) / "images";
+    config.output_features_dir = fs::path(base_out) / "features";
+    config.output_metadata_csv = fs::path(base_out) / "frames.csv";
+    config.output_summary_yaml = fs::path(base_out) / "summary.yaml";
+    config.output_log_file = log_file ? args::get(log_file) : std::string((fs::path(base_out) / "run.log"));
+
+    if (feature_type) config.feature_type = args::get(feature_type);
+    if (image_format) config.image_format = args::get(image_format);
+    if (overlap) config.overlap_threshold = args::get(overlap);
+    if (max_skip) config.max_skipped_frames = args::get(max_skip);
+    config.apply_enhancement = enhance ? true : false;
+
+    config.create_output_dirs = true;
+    config.enable_logging = true;
+
+    // --- Logger setup ---
+    auto logger = std::make_shared<ConsoleLogger>("videostrip_cli");
+
+    try {
+        logger->info("Starting videostrip run");
+
+        // --- Extraction object ---
+        VideoFrameExtractor extractor(config);
+        extractor.setLogger(logger);
+
+        // --- Progress callback ---
+        extractor.setProgressCallback(
+            [](size_t idx, size_t total, float progress, const std::string& msg) {
+                std::cout << "\r["
+                          << std::setw(3) << int(progress * 100.0f) << "%] "
+                          << msg << " (frame " << idx << "/" << total << ")   " << std::flush;
+            });
+
+        // --- Main extraction ---
+        bool ok = extractor.run();
+        std::cout << std::endl;
+        if (!ok) {
+            logger->error("Extraction failed (non-fatal). Check logs for details.");
+            return 3;
+        }
+
+        // --- Final reporting ---
+        const auto& meta = extractor.getExtractedMetadata();
+        const auto& summary = extractor.getRunSummary();
+        logger->info("Extracted " + std::to_string(meta.size()) + " frames");
+        logger->info("Metadata written to: " + config.output_metadata_csv);
+        logger->info("Summary written to: " + config.output_summary_yaml);
+
+    } catch (const std::exception& ex) {
+        logger->error(std::string("Fatal error: ") + ex.what());
+        return 10;
     }
 
     return 0;
