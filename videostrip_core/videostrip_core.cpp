@@ -17,18 +17,6 @@ namespace videostrip
 {
 
 // =======================
-// Logger stub
-// =======================
-class StubLogger : public Logger {
-public:
-    void info(const std::string& msg) override {}
-    void warn(const std::string& msg) override {}
-    void error(const std::string& msg) override {}
-    void debug(const std::string& msg) override {}
-};
-
-
-// =======================
 // FeatureExtractor stub
 // =======================
 class SIFTFeatureExtractor : public FeatureExtractor {
