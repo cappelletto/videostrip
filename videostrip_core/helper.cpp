@@ -14,7 +14,9 @@
 
 #include "headers.hpp"
 #include "helper.hpp"
-using namespace std;
+
+using std::string;  // limiting std namespace usage to this translation unit
+using std::cout; 
 
 /**
  * @brief Convert OpenCV data type into human readable format (e.g. CV32FC1)
@@ -22,7 +24,7 @@ using namespace std;
  * @param type 
  * @return std::string 
  */
-std::string type2str(int type) {
+string type2str(int type) {
   string r;
 
   uchar depth = type & CV_MAT_DEPTH_MASK;
@@ -52,7 +54,7 @@ std::string type2str(int type) {
  * @param length desired string lenght
  * @return std::string resulting zero-padded string
  */
-std::string makeFixedLength(const int i, const int length)
+string makeFixedLength(const int i, const int length)
 {
     std::ostringstream ostr;
     if (i < 0)

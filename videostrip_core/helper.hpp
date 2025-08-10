@@ -1,15 +1,16 @@
 /**
- * @file    helper.h
+ * @file    helper.hpp
  * @author  Jose Cappelletto (cappelletto@gmail.com)
  * @brief   Collection of general helper functions
- * @version 0.2
+ * @version 0.2.1
  * @date    2020-07-03
  * 
- * @copyright Copyright (c) 2020
+ * @copyright Copyright (c) 2020-2025
  * 
  */
-#ifndef _PROJECT_HELPER_H_
-#define _PROJECT_HELPER_H_
+
+#ifndef _PROJECT_HELPER_HPP_
+#define _PROJECT_HELPER_HPP_
 
 #pragma once
 
@@ -87,4 +88,4 @@ namespace logger{
     };
 
 };
-#endif // _PROJECT_HELPER_H_
+#endif // _PROJECT_HELPER_HPP_
