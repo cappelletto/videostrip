@@ -9,8 +9,6 @@
  *
  */
 
-#ifndef _PROJECT_HELPER_CPP_
-#define _PROJECT_HELPER_CPP_
 
 #include <headers.hpp>
 #include <helper.hpp>
@@ -101,7 +99,7 @@ string ConsoleOutput::publish(LogLevel type, std::string publisher,
   std::ostringstream out;
 
   // thread_safe_log log = safe_cout();
-  this->mtx.lock();
+  std::lock_guard<std::mutex> lock(this->mtx);
   switch (type) {
   case logger::LogLevel::MSG_ERROR:
     out << red << "[error]" << light_cyan << " <" << publisher << "> " << reset
@@ -125,7 +123,6 @@ string ConsoleOutput::publish(LogLevel type, std::string publisher,
     break;
   }
   cout << out.str();
-  this->mtx.unlock();
   return out.str();
 }
 
@@ -238,4 +235,3 @@ string ConsoleOutput::info(string publisher, ostringstream &message) {
 }
 } // namespace logger
 
-#endif //_PROJECT_HELPER_CPP_
