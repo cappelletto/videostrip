@@ -7,34 +7,33 @@
  */
 
 #ifndef _PROJECT_OPTIONS_H_
-
 #define _PROJECT_OPTIONS_H_
 
 #include <headers.hpp>
-// #include <args.hxx> // should be included via headers.h
 #include <iostream>
 
-args::ArgumentParser argParser("","");
-args::HelpFlag 	     argHelp(argParser, "help", "Display this help menu", {'h', "help"});
+args::ArgumentParser argParser("", "");
+args::HelpFlag argHelp(argParser, "help", "Display this help menu", {'h', "help"});
 // args::CompletionFlag completion(argParser, {"complete"});	//TODO: figure out why is missing in current version of args.hxx
 
-args::Flag 			            argDumpInfo(argParser, "dump", "Show compilation time related information", {'d', "dump"});
-args::ValueFlag <std::string> 	argInput(argParser, "input", "Path to video input file", {"input"});
-args::ValueFlag	<std::string> 	argOutput(argParser,    "output",   "Output filename prefix",{'o',"output"});
-args::ValueFlag	<int> 	        argVerbose(argParser,   "verbose",  "Define verbosity level, 0 - 3", {"verbose"});
+args::Flag argDumpInfo(argParser, "dump", "Show compilation time related information", {'d', "dump"});
+args::ValueFlag<std::string> argInput(argParser, "input", "Path to video input file", {"input"});
+args::ValueFlag<std::string> argOutput(argParser, "output", "Output filename prefix", {'o', "output"});
+args::ValueFlag<int> argVerbose(argParser, "verbose", "Define verbosity level, 0 - 3", {"verbose"});
 
 // Free parameters for debugging
-args::ValueFlag	<int> 	argIntParam(argParser,  "param",    "User defined parameter INTEGER for testing purposes",  {"int"});
-args::ValueFlag	<float> argFloatParam(argParser,"param",    "User defined parameter FLOAT for testing purposes",    {"float"});
+args::ValueFlag<int> argIntParam(argParser, "param", "User defined parameter INTEGER for testing purposes", {"int"});
+args::ValueFlag<float> argFloatParam(argParser, "param", "User defined parameter FLOAT for testing purposes", {"float"});
 
 /**
  * @brief Default initializer for argument parsing object
- * 
+ *
  * @param argc cli argc (count)
  * @param argv cli argv (value)
  * @return int error code if any
  */
-int initParser(int argc, char *argv[]){
+int initParser(int argc, char *argv[])
+{
     /* PARSER section */
     std::string descriptionString =
         "videostrip - Complete description \
@@ -61,7 +60,7 @@ int initParser(int argc, char *argv[]){
         return -1;
     }
     catch (args::ParseError e)
-    { //if some error ocurr while parsing, show summary
+    { // if some error ocurr while parsing, show summary
         std::cerr << e.what() << std::endl;
         std::cerr << "Use -h, --help command to see usage" << std::endl;
         return -1;

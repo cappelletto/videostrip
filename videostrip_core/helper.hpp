@@ -1,72 +1,114 @@
 /**
- * @file    helper.h
+ * @file    helper.hpp
  * @author  Jose Cappelletto (cappelletto@gmail.com)
  * @brief   Collection of general helper functions
- * @version 0.2
+ * @version 0.2.1
  * @date    2020-07-03
- * 
- * @copyright Copyright (c) 2020
- * 
+ *
+ * @copyright Copyright (c) 2020-2025
+ *
  */
-#ifndef _PROJECT_HELPER_H_
-#define _PROJECT_HELPER_H_
+
+#ifndef _PROJECT_HELPER_HPP_
+#define _PROJECT_HELPER_HPP_
 
 #pragma once
 
-#include <mutex>
-#include <sstream>
 #include <iostream>
 #include <fstream>
+#include <mutex>
+#include <sstream>
 
-using namespace std;
+using std::ostringstream;
 
+// escape based colour codes for console output
+const std::string red("\033[1;31m");
+const std::string green("\033[1;32m");
+const std::string yellow("\033[1;33m");
+const std::string blue("\033[1;34m");
+const std::string purple("\033[1;35m");
+const std::string cyan("\033[1;36m");
+
+const std::string light_red("\033[0;31m");
+const std::string light_green("\033[0;32m");
+const std::string light_yellow("\033[0;33m");
+const std::string light_blue("\033[0;34m");
+const std::string light_purple("\033[0;35m");
+const std::string light_cyan("\033[0;36m");
+
+const std::string reset("\033[0m");
+const std::string highlight("\033[30;43m");
+
+// TODO: promote as members of utility functions class
 std::string type2str(int type);
 std::string makeFixedLength(const int i, const int length);
 
 /**
  * @brief logger class that provides thread safe cout output to the console, with additional colour-coded formatting
- * 
+ *
  */
 
-namespace logger{
-    enum class LogLevel : unsigned int{
-        MSG_INFO    = 1,    // Standard informative message
-        MSG_WARNING = 2,    // non-critical warning message
-        MSG_DEBUG   = 3,    // debug (verbose) message
-        MSG_ERROR   = 4     // critical error message
+/**
+ * @namespace logger
+ * @brief Provides logging utilities for console output with various log levels.
+ *
+ * The logger namespace contains classes and enumerations to facilitate structured logging
+ * in applications. It supports multiple log levels (info, warning, debug, error) and
+ * provides thread-safe console output functionality.
+ *
+ * @section Usage
+ * Example usage:
+ * @code
+ * logger::ConsoleOutput console;
+ * console.info("moduleName", "Initialization complete.");
+ * @endcode
+ *
+ * @author Jose Cappelletto
+ * @date 2025
+ */
+namespace logger
+{
+    enum class LogLevel : unsigned int
+    {
+        MSG_INFO = 1,    // Standard informative message
+        MSG_WARNING = 2, // non-critical warning message
+        MSG_DEBUG = 3,   // debug (verbose) message
+        MSG_ERROR = 4    // critical error message
     };
 
-    class ConsoleOutput{
-        private:
-            // std::vector<std::string> logHistory; // history of all received messages
-            // int counter; //number of calls to publish. It should match logHistory size
-            std::mutex mtx;
-        protected:
-        public:
-            ConsoleOutput(){
-                // counter = 0; //
-            };
-            ~ConsoleOutput(){
-                // this->logHistory.clear();
-            };
+    class ConsoleOutput
+    {
+    private:
+        // std::vector<std::string> logHistory; // history of all received messages
+        // int counter; //number of calls to publish. It should match logHistory size
+        std::mutex mtx;
 
-            string publish(logger::LogLevel type, std::string owner, std::string message);
-            string publisher(string name);
+    protected:
+    public:
+        ConsoleOutput(){
+            // counter = 0; //
+        };
+        ~ConsoleOutput(){
+            // this->logHistory.clear();
+        };
 
-            string error(string owner, string message);
-            string warn (string owner, string message);
-            string debug(string owner, string message);
-            string info (string owner, string message);
+        std::string publish(logger::LogLevel type, std::string owner, std::string message);
+        std::string publisher(std::string name);
 
-            string error(string owner, ostringstream &message);
-            string warn (string owner, ostringstream &message);
-            string debug(string owner, ostringstream &message);
-            string info (string owner, ostringstream &message);
+        std::string error(std::string owner, std::string message);
+        std::string warn(std::string owner, std::string message);
+        std::string debug(std::string owner, std::string message);
+        std::string info(std::string owner, std::string message);
 
-            void clear(); // clear the history log
-            int  size();  // return the number of log entries
-            void dump();  // dump (on screen or file) the log
+        std::string error(std::string owner, std::ostringstream &message);
+        std::string warn(std::string owner, std::ostringstream &message);
+        std::string debug(std::string owner, std::ostringstream &message);
+        std::string info(std::string owner, std::ostringstream &message);
+
+        void clear(); // clear the history log
+        int size();   // return the number of log entries
+        void dump();  // dump (on screen or file) the log
     };
 
 };
-#endif // _PROJECT_HELPER_H_
+#endif // _PROJECT_HELPER_HPP_

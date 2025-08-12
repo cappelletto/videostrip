@@ -1,76 +1,267 @@
 #pragma once
-// Public API header for videostrip_core
+/**
+ * @file videostrip_core.hpp
+ * @author J. Cappelletto
+ * @brief Core API for the video frame extraction and feature metadata for underwater mapping pipelines.
+ * @version 0.3.0
+ * @date 2024-08-05
+ *
+ * Public API for the core library of the videostrip pipeline.
+ * All public API is within the `videostrip` namespace.
+ */
 
-// Core definitions for videostrip module
-// This can be vconverted into an external library that can be called by either the CLI or GUI based frontend
-
-
-#ifndef _VS_CORE_H_
-#define _VS_CORE_H_
-
-#include "headers.hpp"
-#include "helper.hpp"
+#include <cstdint>
 #include <iostream>
-// #include <ctime>
+#include <fstream>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <string>
+#include <vector>
 
-// Let's define the videostrip namespace vs
+/**
+ * @namespace videostrip
+ * @brief Core types and API for video frame extraction and feature analysis.
+ */
 
-namespace vs{
-}
+namespace videostrip
+{
 
-namespace vs{
+    // -------------------------------------------------------------
+    // ExtractorConfig: user-facing config object (YAML/JSON ready)
+    // -------------------------------------------------------------
+    /**
+     * @struct ExtractorConfig
+     * @brief User-facing configuration object for video frame extraction.
+     *
+     * Contains input/output paths, frame selection parameters, feature extraction options,
+     * output/robustness flags, logging options, and reserved extension fields.
+     */
+    struct ExtractorConfig
+    {
+        // Input video and output folders
+        std::string input_video_path;
+        std::string output_images_dir;
+        std::string output_features_dir;
+        std::string output_metadata_csv;
+        std::string output_summary_yaml;
+        std::string output_log_file;
 
-    extern logger::ConsoleOutput logc; // global variable, but resolved in only one translation unit otherwise linker will complain
+        // Frame selection
+        float overlap_threshold = 0.7f; ///< [0.0 - 1.0], min overlap/confidence for selecting frames
+        int max_skipped_frames = 5;     ///< Max consecutive frames that may be ignored
 
-    // Structure that can hold video duration in hour, minutes and seconds
-    typedef struct _vd{
-        int hours;
-        int minutes;
-        int seconds;
-    }vd;
+        // Image writing
+        std::string image_format = "png"; ///< Output format for images
 
-    // Function that converts a a video duration in seconds (int) to a vd structure
-    vd duration_to_vd(long int);
+        // Feature extraction
+        std::string feature_type = "SIFT"; ///< e.g., SIFT, SURF, ORB, KAZE
+        bool apply_enhancement = false;    ///< Optional image enhancement
 
-    // Object to store the video file information
-    class VideoFile{
-        public:
-            VideoFile(){
-                // create as empty invalid object
-                is_valid = false;
-                filename = "";
-                output_folder="";
-                width = height = fps = num_frames = 0;
-            }
-            VideoFile(std::string inputfile){
-                is_valid = false;       //invalidate any preloaded video file info
-                peekFile(inputfile);    // peek data from provided file
-            }
+        // Output/robustness
+        bool create_output_dirs = true; ///< If true, will create folders if missing
 
-            ~VideoFile(){
-                // nothing to do, as no memory has been allocated so far
-            }
+        // Logging
+        bool enable_logging = true; ///< If true, log to output_log_file
 
-            int     peekFile(); // given the filename, peek the file and populate the object. <filename> is the implicit argument
-            int     peekFile(std::string filename); // given the filename, peek the file and populate the object.
-
-            void    showInfo(); // dump the video file information to the console (could be a file or string)
-            inline
-            bool    isValid(){ return is_valid; }; // getter method for is_valid
-
-            std::string filename;   // filename of the video file
-            std::string filepath;   // full filepath including filename (?)
-            std::string output_folder; // this should be a member of the pipeline, not the video
-            int     width;
-            int     height;
-            float   fps;
-            int     num_frames;
-            vd      video_duration;
- 
-        private:
-            bool is_valid;
+        // Reserved for extension (georef, etc.)
+        std::optional<std::string> georef; ///< Georef tag for session (optional)
     };
 
-}
+    // -------------------------------------------------------------
+    // FrameMetadata: One row per extracted frame (CSV)
+    // -------------------------------------------------------------
+    /**
+     * @struct FrameMetadata
+     * @brief Metadata for each extracted video frame.
+     *
+     * Represents a row in the output CSV, including frame index, timestamp, output image name,
+     * feature count, quality score, and optional georeferencing.
+     */
+   struct FrameMetadata
+    {
+        int frame_idx;                     ///< Sequential index in video
+        uint64_t timestamp_ms;             ///< Timestamp of frame in ms
+        std::string output_image_name;     ///< Name of image file for this frame
+        int feature_count;                 ///< Keypoints/features found
+        double quality_score;              ///< E.g., sharpness, entropy, or similar
+        std::optional<std::string> georef; ///< Optional geotag, if present
+    };
 
-#endif
+    // -------------------------------------------------------------
+    // RunSummary: Info for YAML sidecar
+    // -------------------------------------------------------------
+
+    /**
+     * @struct RunSummary
+     * @brief Summary information for a video extraction run.
+     *
+     * Used for YAML sidecar output, includes input video basename, config used, total frames extracted,
+     * list of extracted images, and run timestamp.
+     */
+    struct RunSummary
+    {
+        std::string input_video_basename;
+        ExtractorConfig config_used;
+        int total_frames_extracted;
+        std::vector<std::string> extracted_images;
+        std::string run_datetime; ///< ISO8601 timestamp of execution
+    };
+
+    // -------------------------------------------------------------
+    // Abstract Base for Feature Extractors
+    // -------------------------------------------------------------
+    /**
+     * @class FeatureExtractor
+     * @brief Abstract base class for feature extraction implementations.
+     *
+     * Defines the interface for extracting keypoints/features from images and reporting feature type.
+     */
+    class FeatureExtractor
+    {
+    public:
+        virtual ~FeatureExtractor() = default;
+        /// Compute keypoints/features for the given image file, return number found
+        virtual int extract(const std::string &image_path,
+                            std::string &feature_file_out,
+                            double &quality_score_out) = 0;
+        /// Return feature type name (e.g., "SIFT")
+        virtual std::string type() const = 0;
+    };
+
+    // -------------------------------------------------------------
+    // Main API Class: VideoFrameExtractor
+    // -------------------------------------------------------------
+    /**
+     * @class VideoFrameExtractor
+     * @brief Main API class for extracting frames and features from video.
+     *
+     * Handles configuration, progress callbacks, logging, running extraction, and accessing results.
+     */
+    class VideoFrameExtractor
+    {
+    public:
+        /// Progress callback: (current_frame_idx, total_frames, progress_0_1, message)
+        using ProgressCallback = std::function<void(size_t, size_t, float, const std::string &)>;
+
+        /// Construct with config and optional logger
+        explicit VideoFrameExtractor(const ExtractorConfig &config);
+
+        /// Set an optional progress callback (may be called from multiple threads)
+        void setProgressCallback(ProgressCallback cb);
+
+        /// (Optional) Set an external logger or log level
+        void setLogger(std::shared_ptr<class Logger> logger);
+
+        /// Run extraction on the input video. Returns true on success, false on recoverable error.
+        /// Throws std::runtime_error on critical/fatal errors (bad config, can't open video, etc).
+        bool run();
+
+        /// Get vector of all per-frame metadata (populated after run)
+        const std::vector<FrameMetadata> &getExtractedMetadata() const;
+
+        /// Get run summary (populated after run)
+        const RunSummary &getRunSummary() const;
+
+        /// Set a different feature extractor (advanced/extensibility)
+        void setFeatureExtractor(std::unique_ptr<FeatureExtractor> extractor);
+
+        /// Destructor
+        ~VideoFrameExtractor();
+
+    private:
+        ExtractorConfig m_config;
+        std::vector<FrameMetadata> m_metadata;
+        RunSummary m_summary;
+        ProgressCallback m_progress_cb;
+        std::unique_ptr<FeatureExtractor> m_feature_extractor;
+        std::shared_ptr<class Logger> m_logger;
+
+        // Internal helpers (not public API)
+        void writeMetadataCSV() const;
+        void writeSummaryYAML() const;
+        void writeLog(const std::string &msg, const std::string &level = "INFO") const;
+        void ensureOutputFolders() const;
+    };
+
+    /// Provide a default FeatureExtractor for a given type (factory helper)
+    std::unique_ptr<FeatureExtractor> make_default_extractor(const std::string &type);
+
+    /// Minimal logger interface for file logging and in-memory debugging
+    /**
+     * @class Logger
+     * @brief Minimal logger interface for file logging and in-memory debugging.
+     *
+     * Provides methods for info, warning, error, and debug messages.
+     */
+    class Logger
+    {
+    public:
+        virtual ~Logger() = default;
+        virtual void info(const std::string &msg) = 0;
+        virtual void warn(const std::string &msg) = 0;
+        virtual void error(const std::string &msg) = 0;
+        virtual void debug(const std::string &msg) = 0;
+    };
+
+    /**
+     * @class ConsoleLogger
+     * @brief Simple console logger implementation of Logger.
+     *
+     * Supports optional publisher tags and thread-safe output to std::cout.
+     */
+    class ConsoleLogger : public Logger
+    {
+    public:
+        ConsoleLogger(const std::string &publisher = "core")
+            : m_publisher(publisher) {}
+
+        void info(const std::string &msg) override
+        {
+            publish("INFO", msg);
+        }
+        void warn(const std::string &msg) override
+        {
+            publish("WARN", msg);
+        }
+        void error(const std::string &msg) override
+        {
+            publish("ERROR", msg);
+        }
+        void debug(const std::string &msg) override
+        {
+            publish("DEBUG", msg);
+        }
+
+        // Optionally, overloads with publisher tag
+        void info(const std::string &publisher, const std::string &msg)
+        {
+            publish("INFO", msg, publisher);
+        }
+        void warn(const std::string &publisher, const std::string &msg)
+        {
+            publish("WARN", msg, publisher);
+        }
+        void error(const std::string &publisher, const std::string &msg)
+        {
+            publish("ERROR", msg, publisher);
+        }
+        void debug(const std::string &publisher, const std::string &msg)
+        {
+            publish("DEBUG", msg, publisher);
+        }
+
+    private:
+        std::string m_publisher;
+        std::mutex mtx;
+
+        void publish(const std::string &level, const std::string &msg, const std::string &publisher = "")
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            std::string tag = publisher.empty() ? m_publisher : publisher;
+            std::cout << "[" << level << "] <" << tag << "> " << msg << std::endl;
+        }
+    };
+
+} // namespace videostrip
