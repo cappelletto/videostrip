@@ -10,12 +10,12 @@
 #include <iomanip>
 #include "videostrip_core.hpp"
 // #include "logger.hpp"
-#include <args.hxx>  // adjust as needed if in external/
+#include <args.hxx> // adjust as needed if in external/
 
 namespace fs = std::filesystem;
 using namespace videostrip;
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     // --- Argument parsing ---
     args::ArgumentParser parser("videostrip - Video frame extractor for mapping pipelines", "");
@@ -29,23 +29,34 @@ int main(int argc, char* argv[])
     args::Flag enhance(parser, "enhance", "Apply image enhancement", {'e', "enhance"});
     args::ValueFlag<std::string> log_file(parser, "log", "Log file path", {'l', "log"});
 
-    try {
+    try
+    {
         parser.ParseCLI(argc, argv);
-    } catch (const args::Help&) {
+    }
+    catch (const args::Help &)
+    {
         std::cout << parser;
         return 0;
-    } catch (const args::ParseError& e) {
-        std::cerr << e.what() << std::endl << parser;
+    }
+    catch (const args::ParseError &e)
+    {
+        std::cerr << e.what() << std::endl
+                  << parser;
         return 1;
-    } catch (const args::ValidationError& e) {
-        std::cerr << e.what() << std::endl << parser;
+    }
+    catch (const args::ValidationError &e)
+    {
+        std::cerr << e.what() << std::endl
+                  << parser;
         return 2;
     }
 
     // --- Config construction ---
     ExtractorConfig config;
-    if (input_video) config.input_video_path = args::get(input_video);
-    else {
+    if (input_video)
+        config.input_video_path = args::get(input_video);
+    else
+    {
         std::cerr << "Error: --input required\n";
         return 1;
     }
@@ -58,10 +69,14 @@ int main(int argc, char* argv[])
     config.output_summary_yaml = fs::path(base_out) / "summary.yaml";
     config.output_log_file = log_file ? args::get(log_file) : std::string((fs::path(base_out) / "run.log"));
 
-    if (feature_type) config.feature_type = args::get(feature_type);
-    if (image_format) config.image_format = args::get(image_format);
-    if (overlap) config.overlap_threshold = args::get(overlap);
-    if (max_skip) config.max_skipped_frames = args::get(max_skip);
+    if (feature_type)
+        config.feature_type = args::get(feature_type);
+    if (image_format)
+        config.image_format = args::get(image_format);
+    if (overlap)
+        config.overlap_threshold = args::get(overlap);
+    if (max_skip)
+        config.max_skipped_frames = args::get(max_skip);
     config.apply_enhancement = enhance ? true : false;
 
     config.create_output_dirs = true;
@@ -70,7 +85,8 @@ int main(int argc, char* argv[])
     // --- Logger setup ---
     auto logger = std::make_shared<ConsoleLogger>("videostrip_cli");
 
-    try {
+    try
+    {
         logger->info("Starting videostrip run");
 
         // --- Extraction object ---
@@ -79,7 +95,8 @@ int main(int argc, char* argv[])
 
         // --- Progress callback ---
         extractor.setProgressCallback(
-            [](size_t idx, size_t total, float progress, const std::string& msg) {
+            [](size_t idx, size_t total, float progress, const std::string &msg)
+            {
                 std::cout << "\r["
                           << std::setw(3) << int(progress * 100.0f) << "%] "
                           << msg << " (frame " << idx << "/" << total << ")   " << std::flush;
@@ -88,19 +105,21 @@ int main(int argc, char* argv[])
         // --- Main extraction ---
         bool ok = extractor.run();
         std::cout << std::endl;
-        if (!ok) {
+        if (!ok)
+        {
             logger->error("Extraction failed (non-fatal). Check logs for details.");
             return 3;
         }
 
         // --- Final reporting ---
-        const auto& meta = extractor.getExtractedMetadata();
-        const auto& summary = extractor.getRunSummary();
+        const auto &meta = extractor.getExtractedMetadata();
+        const auto &summary = extractor.getRunSummary();
         logger->info("Extracted " + std::to_string(meta.size()) + " frames");
         logger->info("Metadata written to: " + config.output_metadata_csv);
         logger->info("Summary written to: " + config.output_summary_yaml);
-
-    } catch (const std::exception& ex) {
+    }
+    catch (const std::exception &ex)
+    {
         logger->error(std::string("Fatal error: ") + ex.what());
         return 10;
     }
