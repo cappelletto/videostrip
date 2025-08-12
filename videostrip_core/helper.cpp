@@ -108,23 +108,23 @@ namespace logger
         {
         case logger::LogLevel::MSG_ERROR:
             out << red << "[error]" << light_cyan << " <" << publisher << "> " << reset
-                << message << reset << endl;
+                << message << reset << std::endl;
             break;
         case logger::LogLevel::MSG_DEBUG:
             out << green << "[debug]" << light_cyan << " <" << publisher << "> "
-                << reset << message << reset << endl;
+                << reset << message << reset << std::endl;
             break;
         case logger::LogLevel::MSG_WARNING:
             out << yellow << "[warn] " << light_cyan << " <" << publisher << "> "
-                << reset << message << reset << endl;
+                << reset << message << reset << std::endl;
             break;
         case logger::LogLevel::MSG_INFO:
             out << reset << "[info] " << light_cyan << " <" << publisher << "> "
-                << reset << message << reset << endl;
+                << reset << message << reset << std::endl;
             break;
         default:
             out << reset << "[-]" << light_cyan << " <" << publisher << "> " << reset
-                << message << reset << endl;
+                << message << reset << std::endl;
             break;
         }
         cout << out.str();

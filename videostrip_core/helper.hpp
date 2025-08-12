@@ -14,12 +14,12 @@
 
 #pragma once
 
-#include <mutex>
-#include <sstream>
 #include <iostream>
 #include <fstream>
+#include <mutex>
+#include <sstream>
 
-using namespace std;
+using std::ostringstream;
 
 // escape based colour codes for console output
 const std::string red("\033[1;31m");
@@ -73,18 +73,18 @@ namespace logger
             // this->logHistory.clear();
         };
 
-        string publish(logger::LogLevel type, std::string owner, std::string message);
-        string publisher(string name);
+        std::string publish(logger::LogLevel type, std::string owner, std::string message);
+        std::string publisher(std::string name);
 
-        string error(string owner, string message);
-        string warn(string owner, string message);
-        string debug(string owner, string message);
-        string info(string owner, string message);
+        std::string error(std::string owner, std::string message);
+        std::string warn(std::string owner, std::string message);
+        std::string debug(std::string owner, std::string message);
+        std::string info(std::string owner, std::string message);
 
-        string error(string owner, ostringstream &message);
-        string warn(string owner, ostringstream &message);
-        string debug(string owner, ostringstream &message);
-        string info(string owner, ostringstream &message);
+        std::string error(std::string owner, std::ostringstream &message);
+        std::string warn(std::string owner, std::ostringstream &message);
+        std::string debug(std::string owner, std::ostringstream &message);
+        std::string info(std::string owner, std::ostringstream &message);
 
         void clear(); // clear the history log
         int size();   // return the number of log entries
