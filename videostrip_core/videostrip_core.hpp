@@ -10,15 +10,20 @@
  * All public API is within the `videostrip` namespace.
  */
 
-#include <string>
+#include <cstdint>
 #include <iostream>
 #include <fstream>
-#include <vector>
 #include <functional>
 #include <memory>
-#include <cstdint>
-#include <optional>
 #include <mutex>
+#include <optional>
+#include <string>
+#include <vector>
+
+/**
+ * @namespace videostrip
+ * @brief Core types and API for video frame extraction and feature analysis.
+ */
 
 namespace videostrip
 {
@@ -26,6 +31,13 @@ namespace videostrip
     // -------------------------------------------------------------
     // ExtractorConfig: user-facing config object (YAML/JSON ready)
     // -------------------------------------------------------------
+    /**
+     * @struct ExtractorConfig
+     * @brief User-facing configuration object for video frame extraction.
+     *
+     * Contains input/output paths, frame selection parameters, feature extraction options,
+     * output/robustness flags, logging options, and reserved extension fields.
+     */
     struct ExtractorConfig
     {
         // Input video and output folders
@@ -60,7 +72,14 @@ namespace videostrip
     // -------------------------------------------------------------
     // FrameMetadata: One row per extracted frame (CSV)
     // -------------------------------------------------------------
-    struct FrameMetadata
+    /**
+     * @struct FrameMetadata
+     * @brief Metadata for each extracted video frame.
+     *
+     * Represents a row in the output CSV, including frame index, timestamp, output image name,
+     * feature count, quality score, and optional georeferencing.
+     */
+   struct FrameMetadata
     {
         int frame_idx;                     ///< Sequential index in video
         uint64_t timestamp_ms;             ///< Timestamp of frame in ms
@@ -73,6 +92,14 @@ namespace videostrip
     // -------------------------------------------------------------
     // RunSummary: Info for YAML sidecar
     // -------------------------------------------------------------
+
+    /**
+     * @struct RunSummary
+     * @brief Summary information for a video extraction run.
+     *
+     * Used for YAML sidecar output, includes input video basename, config used, total frames extracted,
+     * list of extracted images, and run timestamp.
+     */
     struct RunSummary
     {
         std::string input_video_basename;
@@ -85,6 +112,12 @@ namespace videostrip
     // -------------------------------------------------------------
     // Abstract Base for Feature Extractors
     // -------------------------------------------------------------
+    /**
+     * @class FeatureExtractor
+     * @brief Abstract base class for feature extraction implementations.
+     *
+     * Defines the interface for extracting keypoints/features from images and reporting feature type.
+     */
     class FeatureExtractor
     {
     public:
@@ -100,6 +133,12 @@ namespace videostrip
     // -------------------------------------------------------------
     // Main API Class: VideoFrameExtractor
     // -------------------------------------------------------------
+    /**
+     * @class VideoFrameExtractor
+     * @brief Main API class for extracting frames and features from video.
+     *
+     * Handles configuration, progress callbacks, logging, running extraction, and accessing results.
+     */
     class VideoFrameExtractor
     {
     public:
@@ -150,6 +189,12 @@ namespace videostrip
     std::unique_ptr<FeatureExtractor> make_default_extractor(const std::string &type);
 
     /// Minimal logger interface for file logging and in-memory debugging
+    /**
+     * @class Logger
+     * @brief Minimal logger interface for file logging and in-memory debugging.
+     *
+     * Provides methods for info, warning, error, and debug messages.
+     */
     class Logger
     {
     public:
@@ -160,6 +205,12 @@ namespace videostrip
         virtual void debug(const std::string &msg) = 0;
     };
 
+    /**
+     * @class ConsoleLogger
+     * @brief Simple console logger implementation of Logger.
+     *
+     * Supports optional publisher tags and thread-safe output to std::cout.
+     */
     class ConsoleLogger : public Logger
     {
     public:

@@ -39,6 +39,7 @@ const std::string light_cyan("\033[0;36m");
 const std::string reset("\033[0m");
 const std::string highlight("\033[30;43m");
 
+// TODO: promote as members of utility functions class
 std::string type2str(int type);
 std::string makeFixedLength(const int i, const int length);
 
@@ -47,6 +48,24 @@ std::string makeFixedLength(const int i, const int length);
  *
  */
 
+/**
+ * @namespace logger
+ * @brief Provides logging utilities for console output with various log levels.
+ *
+ * The logger namespace contains classes and enumerations to facilitate structured logging
+ * in applications. It supports multiple log levels (info, warning, debug, error) and
+ * provides thread-safe console output functionality.
+ *
+ * @section Usage
+ * Example usage:
+ * @code
+ * logger::ConsoleOutput console;
+ * console.info("moduleName", "Initialization complete.");
+ * @endcode
+ *
+ * @author Jose Cappelletto
+ * @date 2025
+ */
 namespace logger
 {
     enum class LogLevel : unsigned int

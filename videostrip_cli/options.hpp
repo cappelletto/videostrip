@@ -7,11 +7,9 @@
  */
 
 #ifndef _PROJECT_OPTIONS_H_
-
 #define _PROJECT_OPTIONS_H_
 
 #include <headers.hpp>
-// #include <args.hxx> // should be included via headers.h
 #include <iostream>
 
 args::ArgumentParser argParser("", "");
