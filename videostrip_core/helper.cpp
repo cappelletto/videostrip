@@ -9,7 +9,6 @@
  *
  */
 
-
 #include <headers.hpp>
 #include <helper.hpp>
 
@@ -234,4 +233,3 @@ string ConsoleOutput::info(string publisher, ostringstream &message) {
   return r;
 }
 } // namespace logger
-
