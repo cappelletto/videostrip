@@ -9,7 +9,8 @@
 #include <exception>
 #include <iomanip>
 #include "videostrip_core.hpp"
-// #include "logger.hpp"
+#include <logging/logger.hpp>
+
 #include <args.hxx> // adjust as needed if in external/
 
 namespace fs = std::filesystem;
