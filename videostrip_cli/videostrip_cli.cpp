@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     config.enable_logging = true;
 
     // --- Logger setup ---
-    auto logger = std::make_shared<ConsoleLogger>("videostrip_cli");
+    auto logger = std::make_shared<videostrip::logger::ConsoleLogger>("videostrip_cli");
 
     try
     {

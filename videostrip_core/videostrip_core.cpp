@@ -70,7 +70,7 @@ namespace videostrip
     VideoFrameExtractor::VideoFrameExtractor(const ExtractorConfig &config)
         : m_config(config),
           m_feature_extractor(make_default_extractor(config.feature_type)),
-          m_logger(std::make_shared<videostrip::ConsoleLogger>("VideoFrameExtractor"))
+          m_logger(std::make_shared<videostrip::logger::ConsoleLogger>("VideoFrameExtractor"))
     {
     }
 
