@@ -38,7 +38,7 @@ namespace videostrip
     {
         /**
          * @class ConsoleLogger
-         * @brief Simple console logger implementation of Logger.
+         * @brief Simple console logger implementation of Logger class
          *
          * Supports optional publisher tags and thread-safe output to std::cout.
          */
@@ -48,6 +48,7 @@ namespace videostrip
             explicit ConsoleLogger(const std::string &publisher = "core")
                 : m_publisher(publisher) {}
 
+            // default methods from Logger interface, uses default tag
             void info(const std::string &msg) override  { publish("INFO",  msg); }
             void warn(const std::string &msg) override  { publish("WARN",  msg); }
             void error(const std::string &msg) override { publish("ERROR", msg); }
@@ -60,8 +61,8 @@ namespace videostrip
             void debug(const std::string &publisher, const std::string &msg) { publish("DEBUG", msg, publisher); }
 
         private:
-            std::string m_publisher;
-            std::mutex mtx;
+            std::string m_publisher;    // publisher tag for log messages
+            std::mutex mtx;             // mutex for thread-safe output   
 
             void publish(const std::string &level, const std::string &msg, const std::string &publisher = "")
             {

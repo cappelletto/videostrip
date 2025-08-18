@@ -3,8 +3,8 @@
  * @brief Implementation of VideoFrameExtractor for the videostrip pipeline.
  */
 
-#include <videostrip_core.hpp>
-#include <logging/logger.hpp>
+#include <videostrip_core/videostrip_core.hpp>
+#include <videostrip_core/logging/logger.hpp>
 #include <opencv2/opencv.hpp>
 #include <fstream>
 #include <chrono>

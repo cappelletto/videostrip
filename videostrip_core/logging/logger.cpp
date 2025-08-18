@@ -3,7 +3,7 @@
  * @brief Implementation of thread-safe console logger
  */
 
-#include "logger.hpp"
+#include <videostrip_core/logging/logger.hpp>
 // #include <videostrip_core/logging/logger.hpp>
 
 namespace videostrip
