@@ -1,4 +1,8 @@
 # videostrip_core/CMakeLists.txt
+message(STATUS "*******************")
+message(STATUS "Configuring module: videostrip_core")
+message(STATUS "*******************")
+
 add_library(videostrip_core STATIC
     videostrip_core.cpp
     feature/feature_extractor.cpp

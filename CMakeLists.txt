@@ -11,10 +11,14 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+message(STATUS "--------------------")
+message(STATUS "Configuring project: ${PROJECT_NAME} v${PROJECT_VERSION}")
+message(STATUS "--------------------")
+
 # ==========================================
 # OpenCV Detection (Cross-OS)
 # ==========================================
-message(STATUS "Searching for OpenCV 4...")
+message(STATUS "Searching for OpenCV 4.5 or higher...")
 
 # Try system-wide first
 find_package(OpenCV 4 QUIET)
@@ -22,7 +26,7 @@ find_package(OpenCV 4 QUIET)
 # Fallback to /usr/local or /opt/local
 if(NOT OpenCV_FOUND)
     message(STATUS "OpenCV not found system-wide, trying /usr/local ...")
-    find_package(OpenCV 4 QUIET
+    find_package(OpenCV 4.5 QUIET
         PATHS /usr/local /opt/local
         NO_DEFAULT_PATH
     )
@@ -31,7 +35,7 @@ endif()
 # If still not found, fail with user guidance
 if(NOT OpenCV_FOUND)
     message(FATAL_ERROR
-        "OpenCV 4.x was not found.\n"
+        "OpenCV 4.5 or higher was not found.\n"
         "On Debian/Ubuntu:\n"
         "  sudo apt update && sudo apt install libopencv-dev\n"
         "Or specify OpenCV_DIR:\n"
@@ -46,7 +50,6 @@ message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
 # Global include path (so <videostrip_core/...> works everywhere)
 # ==========================================
 # All headers live in subfolders inside ${CMAKE_SOURCE_DIR}
-# This avoids per-module hacks with /..
 include_directories(${CMAKE_SOURCE_DIR})
 
 # ==========================================

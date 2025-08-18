@@ -1,4 +1,8 @@
 # Build the CLI executable
+message(STATUS "*******************")
+message(STATUS "Configuring module: videostrip_cli")
+message(STATUS "*******************")
+
 add_executable(videostrip_cli
     videostrip_cli.cpp
 )
