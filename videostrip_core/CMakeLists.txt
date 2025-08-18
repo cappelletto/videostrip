@@ -7,7 +7,7 @@ add_library(videostrip_core STATIC
 
 # Public headers live in this folder (P1204R0)
 target_include_directories(videostrip_core
-    PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/..        # so <videostrip_core/...> works
+    PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}       # so <videostrip_core/...> works
 )
 
 target_compile_definitions(videostrip_core

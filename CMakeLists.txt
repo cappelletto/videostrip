@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(videostrip VERSION 0.3.0 LANGUAGES CXX)
+project(videostrip VERSION 0.3.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -43,12 +43,20 @@ message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
 
 # ==========================================
+# Global include path (so <videostrip_core/...> works everywhere)
+# ==========================================
+# All headers live in subfolders inside ${CMAKE_SOURCE_DIR}
+# This avoids per-module hacks with /..
+include_directories(${CMAKE_SOURCE_DIR})
+
+# ==========================================
 # Add project modules (progressive build)
 # ==========================================
 add_subdirectory(videostrip_core)
 # add_subdirectory(videostrip_utils)
 add_subdirectory(videostrip_cli)
 # add_subdirectory(videostrip_gui)
+
 
 # ========================================
 # Display project status (if options selected)
