@@ -11,6 +11,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# ==========================================
+# Build options
+# ==========================================
+option(BUILD_TESTS "Build unit/integration tests" ON)
+option(BUILD_GUI "Build GUI module" OFF)
+
+
 message(STATUS "--------------------")
 message(STATUS "Configuring project: ${PROJECT_NAME} v${PROJECT_VERSION}")
 message(STATUS "--------------------")
@@ -58,8 +65,15 @@ include_directories(${CMAKE_SOURCE_DIR})
 add_subdirectory(videostrip_core)
 # add_subdirectory(videostrip_utils)
 add_subdirectory(videostrip_cli)
-# add_subdirectory(videostrip_gui)
 
+if(BUILD_GUI)
+    add_subdirectory(videostrip_gui)
+endif()
+
+if(BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
 
 # ========================================
 # Display project status (if options selected)
