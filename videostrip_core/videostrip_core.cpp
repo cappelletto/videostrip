@@ -196,11 +196,24 @@ namespace videostrip
 
     void VideoFrameExtractor::ensureOutputFolders() const
     {
-        if (m_config.create_output_dirs)
-        {
-            fs::create_directories(m_config.output_images_dir);
-            fs::create_directories(m_config.output_features_dir);
-            fs::create_directories(fs::path(m_config.output_log_file).parent_path());
+        if (!m_config.create_output_dirs) return;
+
+        try {
+            if (!m_config.output_images_dir.empty())
+                fs::create_directories(m_config.output_images_dir);
+            if (!m_config.output_features_dir.empty())
+                fs::create_directories(m_config.output_features_dir);
+            if (!m_config.output_log_file.empty()) {
+                auto p = fs::path(m_config.output_log_file).parent_path();
+                if (!p.empty()) fs::create_directories(p);
+            }
+            // CSV/YAML parent dirs
+            if (!m_config.output_metadata_csv.empty())
+                fs::create_directories(fs::path(m_config.output_metadata_csv).parent_path());
+            if (!m_config.output_summary_yaml.empty())
+                fs::create_directories(fs::path(m_config.output_summary_yaml).parent_path());
+        } catch (...) {
+            // Best-effort: let subsequent I/O report failures
         }
     }
 
