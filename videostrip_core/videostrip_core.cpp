@@ -4,6 +4,7 @@
  */
 
 #include <videostrip_core/videostrip_core.hpp>
+// #include <videostrip_core/feature/feature_extractor.hpp>    // already included by core.hpp
 #include <videostrip_core/logging/logger.hpp>
 #include <opencv2/opencv.hpp>
 #include <fstream>
@@ -205,17 +206,18 @@ namespace videostrip
 
     void VideoFrameExtractor::writeMetadataCSV() const
     {
+        if (m_config.output_metadata_csv.empty()) return;
         std::ofstream ofs(m_config.output_metadata_csv);
+        if (!ofs) return;
+
         ofs << "frame_idx,timestamp_ms,output_image_name,feature_count,quality_score,georef\n";
-        for (const auto &md : m_metadata)
-        {
+        for (const auto& md : m_metadata) {
             ofs << md.frame_idx << ","
                 << md.timestamp_ms << ","
                 << md.output_image_name << ","
                 << md.feature_count << ","
                 << md.quality_score << ",";
-            if (md.georef.has_value())
-                ofs << md.georef.value();
+            if (md.georef.has_value()) ofs << md.georef.value();
             ofs << "\n";
         }
     }
