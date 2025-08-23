@@ -224,16 +224,27 @@ namespace videostrip
 
     void VideoFrameExtractor::writeSummaryYAML() const
     {
+        if (m_config.output_summary_yaml.empty()) return;
         std::ofstream ofs(m_config.output_summary_yaml);
-        // Minimal YAML summary
+        if (!ofs) return;
+
+        // Minimal YAML summary (no external deps)
         ofs << "input_video_basename: " << m_summary.input_video_basename << "\n";
         ofs << "total_frames_extracted: " << m_summary.total_frames_extracted << "\n";
         ofs << "run_datetime: " << m_summary.run_datetime << "\n";
+        ofs << "config:\n";
+        ofs << "  feature_type: " << m_config.feature_type << "\n";
+        ofs << "  image_format: " << m_config.image_format << "\n";
+        ofs << "  overlap_threshold: " << m_config.overlap_threshold << "\n";
+        ofs << "  max_skipped_frames: " << m_config.max_skipped_frames << "\n";
+        ofs << "  apply_enhancement: " << (m_config.apply_enhancement ? "true" : "false") << "\n";
+        if (m_config.georef.has_value())
+            ofs << "  georef: " << *m_config.georef << "\n";
         ofs << "images:\n";
-        for (const auto &img : m_summary.extracted_images)
+        for (const auto& img : m_summary.extracted_images)
             ofs << "  - " << img << "\n";
-        // TODO: Write out config fields
     }
+
 
     void VideoFrameExtractor::writeLog(const std::string &msg, const std::string &level) const
     {
