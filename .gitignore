@@ -1,5 +1,9 @@
 .vscode/*
 
+# Doxygen
+doc/html/*
+doc/latex/*
+
 # Prerequisites
 *.d
 
