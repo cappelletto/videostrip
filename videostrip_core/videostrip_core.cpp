@@ -19,52 +19,6 @@ namespace videostrip
 {
 
     // =======================
-    // FeatureExtractor stub
-    // =======================
-    class SIFTFeatureExtractor : public FeatureExtractor
-    {
-    public:
-        std::string type() const override { return "SIFT"; }
-
-        int extract(const std::string &image_path,
-                    std::string &feature_file_out,
-                    double &quality_score_out) override
-        {
-            // Placeholder: load image, use OpenCV SIFT, write features to file
-            cv::Mat img = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
-            if (img.empty())
-                return 0;
-
-            // Compute sharpness as quality score (variance of Laplacian)
-            cv::Mat lap;
-            cv::Laplacian(img, lap, CV_64F);
-            quality_score_out = cv::mean(lap.mul(lap))[0];
-
-            // TODO: Call OpenCV SIFT or use another method if license/availability
-            // For now, pretend we found 42 features
-            std::ofstream feats(feature_file_out);
-            feats << "# Features for " << image_path << "\n";
-            feats << "keypoint1 ...\n";
-            feats << "keypoint2 ...\n";
-            feats.close();
-
-            return 42; // Placeholder
-        }
-    };
-
-    // =======================
-    // Factory for extractors
-    // =======================
-    std::unique_ptr<FeatureExtractor> make_default_extractor(const std::string &type)
-    {
-        // TODO: support more types as needed
-        if (type == "SIFT")
-            return std::make_unique<SIFTFeatureExtractor>();
-        // Add: ORBFeatureExtractor, KAZEFeatureExtractor, etc.
-        return std::make_unique<SIFTFeatureExtractor>();
-    }
-
-    // =======================
     // VideoFrameExtractor
     // =======================
 

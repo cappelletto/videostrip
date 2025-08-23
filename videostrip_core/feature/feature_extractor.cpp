@@ -48,11 +48,45 @@ namespace
 } // anonymous namespace
 
 
+// =======================
+// FeatureExtractor 
+// =======================
 // ------------------------------
 // ORB implementation (internal)
 // ------------------------------
-namespace
-{
+// namespace feature // TODO: evaluate need for nested namespace
+// {
+    class SIFTFeatureExtractor final : public FeatureExtractor
+    {
+    public:
+        std::string type() const override { return "SIFT"; }
+
+        int extract(const std::string &image_path,
+                    std::string &feature_file_out,
+                    double &quality_score_out) override
+        {
+            // Placeholder: load image, use OpenCV SIFT, write features to file
+            cv::Mat img = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
+            if (img.empty())
+                return 0;
+
+            // Compute sharpness as quality score (variance of Laplacian)
+            cv::Mat lap;
+            cv::Laplacian(img, lap, CV_64F);
+            quality_score_out = cv::mean(lap.mul(lap))[0];
+
+            // For now, pretend we found 42 features
+            std::ofstream feats(feature_file_out);
+            feats << "# Features for " << image_path << "\n";
+            feats << "keypoint1 ...\n";
+            feats << "keypoint2 ...\n";
+            feats.close();
+
+            return 42; // Placeholder
+        }
+    };
+
+
     class ORBFeatureExtractor final : public FeatureExtractor
     {
     public:
@@ -96,7 +130,6 @@ namespace
     private:
         cv::Ptr<cv::ORB> orb_;
     };
-} // anonymous namespace
 
 
 // ------------------------------
@@ -104,10 +137,15 @@ namespace
 // ------------------------------
 std::unique_ptr<FeatureExtractor> make_default_extractor(const std::string& type)
 {
-    // As of now, return ORB for anything (safe default; no contrib/nonfree)
-    // In the future, add SIFT/KAZE/SURF implementations here as needed.
-    (void)type; // suppress unused warning
-    return std::make_unique<ORBFeatureExtractor>();
+    // TODO: support more types as needed
+    if (type == "SIFT")
+        return std::make_unique<videostrip::SIFTFeatureExtractor>();
+    if (type == "ORB") {
+        // Placeholder: return ORB extractor
+        return std::make_unique<ORBFeatureExtractor>();
+    }
+    // Add: ORBFeatureExtractor, KAZEFeatureExtractor, etc.
+    return std::make_unique<videostrip::SIFTFeatureExtractor>();
 }
 
 } // namespace videostrip
