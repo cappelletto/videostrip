@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+#include <videostrip_core/feature/feature_extractor.hpp>  
+
 /**
  * @namespace videostrip
  * @brief Core types and API for video frame extraction and feature analysis.
@@ -107,27 +109,6 @@ namespace videostrip
         int total_frames_extracted;
         std::vector<std::string> extracted_images;
         std::string run_datetime; ///< ISO8601 timestamp of execution
-    };
-
-    // -------------------------------------------------------------
-    // Abstract Base for Feature Extractors
-    // -------------------------------------------------------------
-    /**
-     * @class FeatureExtractor
-     * @brief Abstract base class for feature extraction implementations.
-     *
-     * Defines the interface for extracting keypoints/features from images and reporting feature type.
-     */
-    class FeatureExtractor
-    {
-    public:
-        virtual ~FeatureExtractor() = default;
-        /// Compute keypoints/features for the given image file, return number found
-        virtual int extract(const std::string &image_path,
-                            std::string &feature_file_out,
-                            double &quality_score_out) = 0;
-        /// Return feature type name (e.g., "SIFT")
-        virtual std::string type() const = 0;
     };
 
     // -------------------------------------------------------------
