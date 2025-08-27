@@ -19,52 +19,6 @@ namespace videostrip
 {
 
     // =======================
-    // FeatureExtractor stub
-    // =======================
-    class SIFTFeatureExtractor : public FeatureExtractor
-    {
-    public:
-        std::string type() const override { return "SIFT"; }
-
-        int extract(const std::string &image_path,
-                    std::string &feature_file_out,
-                    double &quality_score_out) override
-        {
-            // Placeholder: load image, use OpenCV SIFT, write features to file
-            cv::Mat img = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
-            if (img.empty())
-                return 0;
-
-            // Compute sharpness as quality score (variance of Laplacian)
-            cv::Mat lap;
-            cv::Laplacian(img, lap, CV_64F);
-            quality_score_out = cv::mean(lap.mul(lap))[0];
-
-            // TODO: Call OpenCV SIFT or use another method if license/availability
-            // For now, pretend we found 42 features
-            std::ofstream feats(feature_file_out);
-            feats << "# Features for " << image_path << "\n";
-            feats << "keypoint1 ...\n";
-            feats << "keypoint2 ...\n";
-            feats.close();
-
-            return 42; // Placeholder
-        }
-    };
-
-    // =======================
-    // Factory for extractors
-    // =======================
-    std::unique_ptr<FeatureExtractor> make_default_extractor(const std::string &type)
-    {
-        // TODO: support more types as needed
-        if (type == "SIFT")
-            return std::make_unique<SIFTFeatureExtractor>();
-        // Add: ORBFeatureExtractor, KAZEFeatureExtractor, etc.
-        return std::make_unique<SIFTFeatureExtractor>();
-    }
-
-    // =======================
     // VideoFrameExtractor
     // =======================
 
@@ -140,6 +94,8 @@ namespace videostrip
         int skip_count = 0;
 
         cv::Mat frame;
+        // For homography based selection, we need to keep previous keyframe and keypoints
+        // This imposes some statefulness and sequential read; consider refactoring later
         while (cap.read(frame)) {
             // crude stride: export when we've skipped >= max_skipped_frames
             bool select = (skip_count >= m_config.max_skipped_frames);
@@ -167,11 +123,14 @@ namespace videostrip
                     double quality_score = 0.0;
                     int feature_count = 0;
 
+                    // TODO: default feature extractor can be created once in ctor
+                    // We do not expect to change it per-frame
                     try {
                         if (!m_feature_extractor) {
                             // fall back to default ORB if not set
                             m_feature_extractor = make_default_extractor(m_config.feature_type);
                         }
+                        // TODO: use cv::Mat input and in-memory output later for faster processing
                         feature_count = m_feature_extractor->extract(image_path, const_cast<std::string&>(feature_path), quality_score);
                     } catch (const std::exception& e) {
                         writeLog(std::string("Feature extraction failed for ") + image_name + ": " + e.what(), "WARN");
