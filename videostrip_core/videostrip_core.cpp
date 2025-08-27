@@ -94,6 +94,8 @@ namespace videostrip
         int skip_count = 0;
 
         cv::Mat frame;
+        // For homography based selection, we need to keep previous keyframe and keypoints
+        // This imposes some statefulness and sequential read; consider refactoring later
         while (cap.read(frame)) {
             // crude stride: export when we've skipped >= max_skipped_frames
             bool select = (skip_count >= m_config.max_skipped_frames);
@@ -121,11 +123,14 @@ namespace videostrip
                     double quality_score = 0.0;
                     int feature_count = 0;
 
+                    // TODO: default feature extractor can be created once in ctor
+                    // We do not expect to change it per-frame
                     try {
                         if (!m_feature_extractor) {
                             // fall back to default ORB if not set
                             m_feature_extractor = make_default_extractor(m_config.feature_type);
                         }
+                        // TODO: use cv::Mat input and in-memory output later for faster processing
                         feature_count = m_feature_extractor->extract(image_path, const_cast<std::string&>(feature_path), quality_score);
                     } catch (const std::exception& e) {
                         writeLog(std::string("Feature extraction failed for ") + image_name + ": " + e.what(), "WARN");
