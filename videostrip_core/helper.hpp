@@ -48,67 +48,7 @@ std::string makeFixedLength(const int i, const int length);
  *
  */
 
-/**
- * @namespace logger
- * @brief Provides logging utilities for console output with various log levels.
- *
- * The logger namespace contains classes and enumerations to facilitate structured logging
- * in applications. It supports multiple log levels (info, warning, debug, error) and
- * provides thread-safe console output functionality.
- *
- * @section Usage
- * Example usage:
- * @code
- * logger::ConsoleOutput console;
- * console.info("moduleName", "Initialization complete.");
- * @endcode
- *
- * @author Jose Cappelletto
- * @date 2025
- */
 namespace logger
 {
-    enum class LogLevel : unsigned int
-    {
-        MSG_INFO = 1,    // Standard informative message
-        MSG_WARNING = 2, // non-critical warning message
-        MSG_DEBUG = 3,   // debug (verbose) message
-        MSG_ERROR = 4    // critical error message
-    };
-
-    class ConsoleOutput
-    {
-    private:
-        // std::vector<std::string> logHistory; // history of all received messages
-        // int counter; //number of calls to publish. It should match logHistory size
-        std::mutex mtx;
-
-    protected:
-    public:
-        ConsoleOutput(){
-            // counter = 0; //
-        };
-        ~ConsoleOutput(){
-            // this->logHistory.clear();
-        };
-
-        std::string publish(logger::LogLevel type, std::string owner, std::string message);
-        std::string publisher(std::string name);
-
-        std::string error(std::string owner, std::string message);
-        std::string warn(std::string owner, std::string message);
-        std::string debug(std::string owner, std::string message);
-        std::string info(std::string owner, std::string message);
-
-        std::string error(std::string owner, std::ostringstream &message);
-        std::string warn(std::string owner, std::ostringstream &message);
-        std::string debug(std::string owner, std::ostringstream &message);
-        std::string info(std::string owner, std::ostringstream &message);
-
-        void clear(); // clear the history log
-        int size();   // return the number of log entries
-        void dump();  // dump (on screen or file) the log
-    };
-
 };
 #endif // _PROJECT_HELPER_HPP_
