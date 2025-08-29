@@ -6,6 +6,7 @@ message(STATUS "*******************")
 add_library(videostrip_core STATIC
     videostrip_core.cpp
     feature/feature_extractor.cpp
+    keyframe/keyframe_selector.cpp
     logging/logger.cpp
     logging/file_logger.hpp
 )
