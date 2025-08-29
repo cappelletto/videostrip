@@ -7,6 +7,7 @@ add_library(videostrip_core STATIC
     videostrip_core.cpp
     feature/feature_extractor.cpp
     logging/logger.cpp
+    logging/file_logger.hpp
 )
 
 # Public headers live in this folder (P1204R0)
