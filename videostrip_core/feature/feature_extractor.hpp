@@ -17,7 +17,8 @@ namespace videostrip
  * Implementations should:
  *  - Read the image from @p image_path
  *  - Compute keypoints/features and a quality score
- *  - Write features to @p feature_file_out (text for now)
+ *  - Write features to @p feature_file_out (text for now, can be binary later)
+ * TODO: Add feature descriptor exporter to be compatible with Meshroom 
  *  - Return the number of features; set @p quality_score_out
  */
 class FeatureExtractor {
@@ -31,6 +32,8 @@ public:
      * @param quality_score_out  Output: quality score (e.g., sharpness).
      * @return Number of features detected (>=0). Return 0 on failure or no features.
      */
+    // TODO: this is file based for now; consider cv::Mat input and in-memory output later
+    // Maybe using either a shared memory structure or a polymorphic descriptor container
     virtual int extract(const std::string& image_path,
                         std::string& feature_file_out,
                         double& quality_score_out) = 0;
@@ -42,7 +45,7 @@ public:
 /**
  * @brief Factory for default extractors.
  *
- * Supported names (case-sensitive): "ORB" (always available).
+ * Supported names (case-sensitive): "ORB" (always available, built-in).
  * Other names ("SIFT", "KAZE", "SURF") currently fall back to ORB to avoid nonfree/contrib deps.
  *
  * @param type Feature type requested.
