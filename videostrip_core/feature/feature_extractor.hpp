@@ -2,25 +2,32 @@
 /**
  * @file feature_extractor.hpp
  * @brief Feature extraction interfaces and factory for videostrip_core.
- * @note Public surface keeps implementation hidden; concrete extractors live in the .cpp.
+ *
+ * Supported types (case-insensitive):
+ *  - "ORB"   : always available (default)
+ *  - "AKAZE" : available in core OpenCV
+ *  - "SURF"  : available only if OpenCV xfeatures2d (nonfree) is present
+ *
+ * Notes:
+ *  - The extractor writes a simple TEXT keypoint file (one per line).
+ *  - The quality score is a simple sharpness proxy (variance of Laplacian).
  */
 
 #include <memory>
 #include <string>
 
+// TODO: We can convert this into a CMake stage xfeatures2d check 
+// Conditionally enable SURF if headers exist
+#if __has_include(<opencv2/xfeatures2d.hpp>)
+  #include <opencv2/xfeatures2d.hpp>
+  #define VS_HAVE_XFEATURES2D 1
+#else
+  #define VS_HAVE_XFEATURES2D 0
+#endif
+
 namespace videostrip
 {
 
-/**
- * @brief Abstract base for feature extractors.
- *
- * Implementations should:
- *  - Read the image from @p image_path
- *  - Compute keypoints/features and a quality score
- *  - Write features to @p feature_file_out (text for now, can be binary later)
- * TODO: Add feature descriptor exporter to be compatible with Meshroom 
- *  - Return the number of features; set @p quality_score_out
- */
 class FeatureExtractor {
 public:
     virtual ~FeatureExtractor() = default;
@@ -32,24 +39,20 @@ public:
      * @param quality_score_out  Output: quality score (e.g., sharpness).
      * @return Number of features detected (>=0). Return 0 on failure or no features.
      */
-    // TODO: this is file based for now; consider cv::Mat input and in-memory output later
-    // Maybe using either a shared memory structure or a polymorphic descriptor container
     virtual int extract(const std::string& image_path,
                         std::string& feature_file_out,
                         double& quality_score_out) = 0;
 
-    /// @return An identifier for the extractor (e.g., "ORB", "SIFT", "KAZE", "SURF").
+    /// @return An identifier for the extractor (e.g., "ORB", "AKAZE", "SURF").
     virtual std::string type() const = 0;
 };
 
 /**
  * @brief Factory for default extractors.
  *
- * Supported names (case-sensitive): "ORB" (always available, built-in).
- * Other names ("SIFT", "KAZE", "SURF") currently fall back to ORB to avoid nonfree/contrib deps.
- *
- * @param type Feature type requested.
- * @return std::unique_ptr<FeatureExtractor> A ready-to-use extractor.
+ * Recognized @p type strings (case-insensitive): "ORB", "AKAZE", "SURF".
+ * If a requested type is unavailable (e.g., SURF without xfeatures2d), the
+ * factory will fall back to ORB.
  */
 std::unique_ptr<FeatureExtractor> make_default_extractor(const std::string& type);
 
