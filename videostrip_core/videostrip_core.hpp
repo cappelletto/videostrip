@@ -58,7 +58,7 @@ namespace videostrip
         std::string image_format = "png"; ///< Output format for images
 
         // Feature extraction
-        std::string feature_type = "SIFT"; ///< e.g., SIFT, SURF, ORB, KAZE
+        std::string feature_type = "SIFT"; ///< e.g., SIFT, SURF, ORB, AKAZE
         bool apply_enhancement = false;    ///< Optional image enhancement
 
         // Output/robustness

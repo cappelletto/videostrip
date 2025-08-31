@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
     args::ValueFlag<std::string> input_video(parser, "video", "Input video file", {'i', "input"});
     args::ValueFlag<std::string> out_dir(parser, "dir", "Output base directory", {'o', "output"});
-    args::ValueFlag<std::string> feature_type(parser, "feature", "Feature type (SIFT/ORB/KAZE/SURF)", {'f', "feature"});
+    args::ValueFlag<std::string> feature_type(parser, "feature", "Feature type (SIFT/ORB/AKAZE/SURF)", {'f', "feature"});
     args::ValueFlag<std::string> image_format(parser, "fmt", "Output image format (png, jpg, ...)", {'t', "format"});
     args::ValueFlag<float>       overlap(parser, "overlap", "Overlap/confidence threshold [0.0–1.0]", {'c', "conf"});
     args::ValueFlag<int>         max_skip(parser, "max-skip", "Max consecutive images to skip", {'s', "skip"});
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
         config.feature_type = to_upper(args::get(feature_type));
     }
     if (config.feature_type != "ORB" && config.feature_type != "SIFT"
-        && config.feature_type != "KAZE" && config.feature_type != "SURF") {
+        && config.feature_type != "AKAZE" && config.feature_type != "SURF") {
         std::cerr << "Warning: unsupported feature type '" << config.feature_type
                   << "' → falling back to ORB\n";
         config.feature_type = "ORB";
