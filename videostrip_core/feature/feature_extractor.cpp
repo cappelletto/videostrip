@@ -25,7 +25,6 @@ namespace videostrip
         // Simple sharpness measure: variance of Laplacian
         // TODO: THe variance and the standard deviation are the same for ranking purposes
         // as both are monotonic functions of each other.
-        // TODO: rename quality score method to the chosen metric (in this case, sharpness)
         // TODO: this helper could be moved to a common utility, maybe rely on forward declaration if needed here
         double compute_quality_score(const cv::Mat &gray)
         {
