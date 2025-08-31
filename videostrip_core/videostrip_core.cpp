@@ -93,15 +93,19 @@ namespace videostrip
             m_feature_extractor = make_default_extractor(m_config.feature_type);
         }
 
+        // Note: this gives the number of expected frames, according to the header
+        // The effective number of frames read may be lower (e.g. error decoding frames)
         const int total_frames = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_COUNT));
         int frame_idx   = 0;
         int extracted   = 0;
 
         // Selection state
         cv::Mat keyframe_analyze;      // resized/gray/bgr as passed to overlap (we keep original color frame separately on export)
-        bool     have_keyframe = false;
+        bool have_keyframe = false;
 
         // Helper lambda: write out one selected frame (image + features + CSV row)
+        //------------------------------------------------------------------------------
+        // Note: captures by reference; make sure to call only within run()
         auto export_frame = [&](const cv::Mat& bgr_frame, int source_frame_idx, double quality_score) {
             std::ostringstream img_name;
             img_name << "frame_" << std::setw(6) << std::setfill('0') << source_frame_idx << "." << m_config.image_format;
@@ -114,6 +118,8 @@ namespace videostrip
                 writeLog("Enhancement not implemented; skipping", "WARN");
             }
 
+            // TODO: Once profiled, consider parallelizing image write, via deferred batch or thread pool
+            // Most likely will require to promote from lambda to a proper member function
             // Save image
             if (!cv::imwrite(image_path, bgr_frame)) {
                 writeLog("Failed to write image: " + image_path, "WARN");
@@ -145,7 +151,8 @@ namespace videostrip
             m_metadata.push_back(md);
             m_summary.extracted_images.push_back(image_name);
             ++extracted;
-        };
+        };  // end of lambda
+        //------------------------------------------------------------------------------
 
         // Read loop
         cv::Mat frame_bgr;
