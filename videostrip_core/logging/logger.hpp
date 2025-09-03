@@ -27,10 +27,10 @@ namespace videostrip
 
     enum class LogLevel : unsigned int
     {
-        MSG_INFO    = 1,    ///< Standard informative message
-        MSG_WARNING = 2,    ///< Non-critical warning message
-        MSG_DEBUG   = 3,    ///< Debug (verbose) message
-        MSG_ERROR   = 4     ///< Critical error message
+        MSG_INFO = 1,    ///< Standard informative message
+        MSG_WARNING = 2, ///< Non-critical warning message
+        MSG_DEBUG = 3,   ///< Debug (verbose) message
+        MSG_ERROR = 4    ///< Critical error message
     };
 
     // Implementation namespace for concrete loggers
@@ -49,20 +49,20 @@ namespace videostrip
                 : m_publisher(publisher) {}
 
             // default methods from Logger interface, uses default tag
-            void info(const std::string &msg) override  { publish("INFO",  msg); }
-            void warn(const std::string &msg) override  { publish("WARN",  msg); }
+            void info(const std::string &msg) override { publish("INFO", msg); }
+            void warn(const std::string &msg) override { publish("WARN", msg); }
             void error(const std::string &msg) override { publish("ERROR", msg); }
             void debug(const std::string &msg) override { publish("DEBUG", msg); }
 
             // Optional overloads with explicit publisher tag
-            void info (const std::string &publisher, const std::string &msg) { publish("INFO",  msg, publisher); }
-            void warn (const std::string &publisher, const std::string &msg) { publish("WARN",  msg, publisher); }
+            void info(const std::string &publisher, const std::string &msg) { publish("INFO", msg, publisher); }
+            void warn(const std::string &publisher, const std::string &msg) { publish("WARN", msg, publisher); }
             void error(const std::string &publisher, const std::string &msg) { publish("ERROR", msg, publisher); }
             void debug(const std::string &publisher, const std::string &msg) { publish("DEBUG", msg, publisher); }
 
         private:
-            std::string m_publisher;    // publisher tag for log messages
-            std::mutex mtx;             // mutex for thread-safe output   
+            std::string m_publisher; // publisher tag for log messages
+            std::mutex mtx;          // mutex for thread-safe output
 
             void publish(const std::string &level, const std::string &msg, const std::string &publisher = "")
             {

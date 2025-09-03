@@ -1,4 +1,3 @@
-#pragma once
 /**
  * @file videostrip_core.hpp
  * @author J. Cappelletto
@@ -9,6 +8,7 @@
  * Public API for the core library of the videostrip pipeline.
  * All public API is within the `videostrip` namespace.
  */
+#pragma once
 
 #include <cstdint>
 #include <iostream>
@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include <videostrip_core/feature/feature_extractor.hpp>  
+#include <videostrip_core/feature/feature_extractor.hpp>
 
 /**
  * @namespace videostrip
@@ -81,7 +81,7 @@ namespace videostrip
      * Represents a row in the output CSV, including frame index, timestamp, output image name,
      * feature count, quality score, and optional georeferencing.
      */
-   struct FrameMetadata
+    struct FrameMetadata
     {
         int frame_idx;                     ///< Sequential index in video
         uint64_t timestamp_ms;             ///< Timestamp of frame in ms
@@ -168,6 +168,5 @@ namespace videostrip
 
     /// Provide a default FeatureExtractor for a given type (factory helper)
     std::unique_ptr<FeatureExtractor> make_default_extractor(const std::string &type);
-
 
 } // namespace videostrip

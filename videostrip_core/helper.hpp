@@ -48,7 +48,4 @@ std::string makeFixedLength(const int i, const int length);
  *
  */
 
-namespace logger
-{
-};
 #endif // _PROJECT_HELPER_HPP_
