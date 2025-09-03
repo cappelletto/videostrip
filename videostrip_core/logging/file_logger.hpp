@@ -1,8 +1,10 @@
 // videostrip_core/logging/file_logger.hpp
 #pragma once
-#include <videostrip_core/logging/logger.hpp>
+
 #include <fstream>
 #include <mutex>
+
+#include <videostrip_core/logging/logger.hpp>
 
 
 // TODO: implement log rotation, max file size (optional)

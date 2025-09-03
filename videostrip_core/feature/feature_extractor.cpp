@@ -3,17 +3,17 @@
  * @brief Feature extraction implementations (kept private to this TU).
  */
 
-#include <videostrip_core/feature/feature_extractor.hpp>
+#include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <string>
+#include <stdexcept>
+#include <vector>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/features2d.hpp>
 
-#include <algorithm>
-#include <fstream>
-#include <filesystem>
-#include <string>
-#include <vector>
-#include <stdexcept>
+#include <videostrip_core/feature/feature_extractor.hpp>
 
 namespace fs = std::filesystem;
 

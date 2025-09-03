@@ -1,4 +1,3 @@
-#pragma once
 /**
  * @file feature_extractor.hpp
  * @brief Feature extraction interfaces and factory for videostrip_core.
@@ -12,6 +11,7 @@
  *  - The extractor writes a simple TEXT keypoint file (one per line).
  *  - The quality score is a simple sharpness proxy (variance of Laplacian).
  */
+#pragma once
 
 #include <memory>
 #include <string>
