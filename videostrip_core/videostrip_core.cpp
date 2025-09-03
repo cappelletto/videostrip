@@ -3,15 +3,17 @@
  * @brief Implementation of VideoFrameExtractor for the videostrip pipeline.
  */
 
+#include <chrono>
+#include <iomanip>
+#include <fstream>
+#include <filesystem>
+#include <sstream>
+
+#include <opencv2/opencv.hpp>
+
 #include <videostrip_core/videostrip_core.hpp>
 #include <videostrip_core/keyframe/keyframe_selector.hpp>
 #include <videostrip_core/logging/logger.hpp>
-#include <opencv2/opencv.hpp>
-#include <fstream>
-#include <chrono>
-#include <filesystem>
-#include <iomanip>
-#include <sstream>
 
 namespace fs = std::filesystem;
 

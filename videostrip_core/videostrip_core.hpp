@@ -1,4 +1,3 @@
-#pragma once
 /**
  * @file videostrip_core.hpp
  * @author J. Cappelletto
@@ -9,6 +8,7 @@
  * Public API for the core library of the videostrip pipeline.
  * All public API is within the `videostrip` namespace.
  */
+#pragma once
 
 #include <cstdint>
 #include <iostream>
