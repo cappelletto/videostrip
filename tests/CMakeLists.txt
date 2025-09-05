@@ -26,3 +26,26 @@ target_include_directories(test_core_smoke PRIVATE ${CMAKE_SOURCE_DIR})
 
 include(Catch)
 catch_discover_tests(test_core_smoke)
+
+# ---- Config YAML test ----
+# Test: config YAML
+add_executable(test_config_yaml
+    test_config_yaml.cpp
+    ${CMAKE_SOURCE_DIR}/videostrip_cli/config_loader.cpp  # reuse the loader impl
+)
+
+target_include_directories(test_config_yaml PRIVATE
+    ${CMAKE_SOURCE_DIR}/videostrip_cli
+)
+
+target_link_libraries(test_config_yaml PRIVATE
+    videostrip_core
+    Catch2::Catch2WithMain
+    yaml-cpp
+)
+
+add_test(NAME config_yaml COMMAND test_config_yaml)
+# might be redundant with Catch2 auto-discovery, but no harm
+
+include(Catch)
+catch_discover_tests(test_config_yaml)
