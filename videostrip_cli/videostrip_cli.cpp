@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <algorithm>
 
+#include <videostrip_cli/config_loader.hpp>
 #include <videostrip_core/videostrip_core.hpp>
 #include <videostrip_core/logging/logger.hpp>
 
