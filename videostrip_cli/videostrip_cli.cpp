@@ -39,6 +39,8 @@ int main(int argc, char *argv[])
     args::ValueFlag<int> max_skip(parser, "max-skip", "Max consecutive images to skip", {'s', "skip"});
     args::Flag enhance(parser, "enhance", "Apply image enhancement", {'e', "enhance"});
     args::ValueFlag<std::string> log_file(parser, "log", "Log file path", {'l', "log"});
+    args::ValueFlag<std::string> config_file(parser, "file", "YAML config file", {"config"});
+    args::ValueFlag<std::string> overlap_mode(parser, "mode", "Overlap mode (FEATURE|FLOW|ECC)", {"overlap-mode"});
 
     try
     {
