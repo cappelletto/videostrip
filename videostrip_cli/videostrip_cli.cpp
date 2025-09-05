@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <algorithm>
 
+#include <videostrip_cli/config_loader.hpp>
 #include <videostrip_core/videostrip_core.hpp>
 #include <videostrip_core/logging/logger.hpp>
 
@@ -38,6 +39,8 @@ int main(int argc, char *argv[])
     args::ValueFlag<int> max_skip(parser, "max-skip", "Max consecutive images to skip", {'s', "skip"});
     args::Flag enhance(parser, "enhance", "Apply image enhancement", {'e', "enhance"});
     args::ValueFlag<std::string> log_file(parser, "log", "Log file path", {'l', "log"});
+    args::ValueFlag<std::string> config_file(parser, "file", "YAML config file", {"config"});
+    args::ValueFlag<std::string> overlap_mode(parser, "mode", "Overlap mode (FEATURE|FLOW|ECC)", {"overlap-mode"});
 
     try
     {
@@ -61,73 +64,112 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    // --- Config construction ---
-    ExtractorConfig config;
+    // --- Config construction (YAML optional + CLI overrides) ---
+    ExtractorConfig config; // compiled defaults
 
-    if (!input_video)
-    {
-        std::cerr << "Error: --input is required\n";
-        return 1;
-    }
-    config.input_video_path = args::get(input_video);
-
-    // Basic validation: input file exists
-    if (!fs::exists(config.input_video_path))
-    {
-        std::cerr << "Error: input video does not exist: " << config.input_video_path << "\n";
-        return 1;
-    }
-
-    // Output base directory (default: ./output)
-    const fs::path base_out = out_dir ? fs::path(args::get(out_dir)) : fs::path("output");
-    config.output_images_dir = (base_out / "images").string();
-    config.output_features_dir = (base_out / "features").string();
-    config.output_metadata_csv = (base_out / "frames.csv").string();
-    config.output_summary_yaml = (base_out / "summary.yaml").string();
-    config.output_log_file = log_file ? args::get(log_file) : (base_out / "run.log").string();
-
-    // Feature type: normalize and fallback to ORB
-    if (feature_type)
-    {
-        config.feature_type = to_upper(args::get(feature_type));
-    }
-    if (config.feature_type != "ORB" && config.feature_type != "SIFT" && config.feature_type != "AKAZE" && config.feature_type != "SURF")
-    {
-        std::cerr << "Warning: unsupported feature type '" << config.feature_type
-                  << "' → falling back to ORB\n";
-        config.feature_type = "ORB";
-    }
-
-    if (image_format)
-        config.image_format = args::get(image_format);
-
-    if (overlap)
-    {
-        const float v = args::get(overlap);
-        if (v < 0.0f || v > 1.0f)
-        {
-            std::cerr << "Warning: --conf out of range [0,1]; clamping\n";
+    // Load YAML first (optional)
+    if (config_file) {
+        std::string err;
+        ExtractorConfig y;
+        if (!videostrip::cli::load_yaml_config(args::get(config_file), y, err)) {
+            std::cerr << "Config error: " << err << "\n";
+            return 2;
         }
+        videostrip::cli::merge_yaml_into(config, y);
+    }
+
+    // Input (CLI > YAML)
+    if (input_video) config.input_video_path = args::get(input_video);
+    if (config.input_video_path.empty()) {
+        std::cerr << "Error: --input (or input.video in YAML) is required\n";
+        return 1;
+    }
+
+    // ===== Preserve explicit base_out logic =====
+    fs::path base_out;
+    if (out_dir) {
+        // CLI overrides everything for outputs
+        base_out = fs::path(args::get(out_dir));
+        config.output_images_dir   = (base_out / "images").string();
+        config.output_features_dir = (base_out / "features").string();
+        config.output_metadata_csv = (base_out / "frames.csv").string();
+        config.output_summary_yaml = (base_out / "summary.yaml").string();
+        // log can still be overridden by --log below
+        if (log_file) {
+            config.output_log_file = args::get(log_file);
+        } else {
+            config.output_log_file = (base_out / "run.log").string();
+        }
+    } else {
+        // No --output: use YAML outputs if provided; otherwise default to ./output/*
+        base_out = fs::path("output");
+
+        const bool yaml_set_any =
+            !config.output_images_dir.empty() ||
+            !config.output_features_dir.empty() ||
+            !config.output_metadata_csv.empty() ||
+            !config.output_summary_yaml.empty() ||
+            !config.output_log_file.empty();
+
+        if (!yaml_set_any) {
+            // Build canonical layout under ./output (original behavior)
+            config.output_images_dir   = (base_out / "images").string();
+            config.output_features_dir = (base_out / "features").string();
+            config.output_metadata_csv = (base_out / "frames.csv").string();
+            config.output_summary_yaml = (base_out / "summary.yaml").string();
+            config.output_log_file     = (base_out / "run.log").string();
+        } else {
+            // YAML provided paths: if any are relative, normalize under YAML base (handled by loader)
+            // Honor --log override if present
+            if (log_file) config.output_log_file = args::get(log_file);
+        }
+    }
+    // ============================================
+
+    // Feature type: normalize & validate (fallback to ORB)
+    if (feature_type) config.feature_type = to_upper(args::get(feature_type));
+    {
+        const std::string& ft = config.feature_type;
+        const bool ok =
+            (ft == "ORB" || ft == "AKAZE" || ft == "KAZE" || ft == "SURF" ||
+            ft == "GRID_ORB" || ft == "GRID_AKAZE");
+        if (!ok) {
+            std::cerr << "Warning: unsupported feature type '" << ft << "' → falling back to ORB\n";
+            config.feature_type = "ORB";
+        }
+    }
+
+    // Image format
+    if (image_format) config.image_format = args::get(image_format);
+
+    // Overlap/conf threshold
+    if (overlap) {
+        const float v = args::get(overlap);
+        if (v < 0.0f || v > 1.0f) std::cerr << "Warning: --conf out of range [0,1]; clamping\n";
         config.overlap_threshold = std::clamp(v, 0.0f, 1.0f);
     }
 
-    if (max_skip)
-    {
+    // Max skipped frames
+    if (max_skip) {
         const int ms = args::get(max_skip);
-        if (ms < 0)
-        {
-            std::cerr << "Warning: --skip negative; setting to 0\n";
-            config.max_skipped_frames = 0;
-        }
-        else
-        {
-            config.max_skipped_frames = ms;
-        }
+        config.max_skipped_frames = ms < 0 ? 0 : ms;
     }
 
-    config.apply_enhancement = enhance ? true : false;
+    // Enhancement
+    config.apply_enhancement = enhance ? true : config.apply_enhancement;
+
+    // Optional: overlap-mode passthrough (harmless if core ignores it now)
+    // if (overlap_mode) config.overlap_mode = to_upper(args::get(overlap_mode));
+
+    // Always allow creating dirs and logging by default (YAML can override earlier)
     config.create_output_dirs = true;
-    config.enable_logging = true;
+    config.enable_logging     = true;
+
+    // Final validation
+    if (!fs::exists(config.input_video_path)) {
+        std::cerr << "Error: input video does not exist: " << config.input_video_path << "\n";
+        return 1;
+    }
 
     // --- Logger setup ---
     auto logger = std::make_shared<videostrip::logger::ConsoleLogger>("videostrip_cli");

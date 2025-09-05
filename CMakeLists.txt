@@ -60,6 +60,16 @@ message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
 include_directories(${CMAKE_SOURCE_DIR})
 
 # ==========================================
+# Promoted to top-level as it is needed by multiple modules
+find_package(yaml-cpp QUIET)
+if(NOT yaml-cpp_FOUND)
+  message(STATUS "yaml-cpp not found; fetching...")
+  include(FetchContent)
+  FetchContent_Declare(yaml_cpp GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git GIT_TAG 0.8.0)
+  FetchContent_MakeAvailable(yaml_cpp)
+endif()
+
+# ==========================================
 # Add project modules (progressive build)
 # ==========================================
 add_subdirectory(videostrip_core)

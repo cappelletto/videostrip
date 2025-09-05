@@ -1,0 +1,22 @@
+version: 1
+
+input:
+  video: ./data/example_video.avi
+
+output:
+  base_dir: ./_tmp_out
+  images_dir: images
+  features_dir: features
+  csv: frames.csv
+  yaml: summary.yaml
+  log: run.log
+
+processing:
+  feature_type: ORB
+  image_format: png
+  overlap_threshold: 0.75
+  max_skipped_frames: 4
+  apply_enhancement: false
+  create_output_dirs: true
+  enable_logging: true
+  # overlap_mode: FEATURE  # (optional, harmless for now)

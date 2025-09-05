@@ -5,6 +5,7 @@ message(STATUS "*******************")
 
 add_executable(videostrip_cli
     videostrip_cli.cpp
+    config_loader.cpp
 )
 
 # Include directories:
@@ -23,4 +24,5 @@ target_link_libraries(videostrip_cli
     PRIVATE
         videostrip_core
         ${OpenCV_LIBS}
+        yaml-cpp
 )
