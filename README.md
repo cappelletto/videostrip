@@ -22,7 +22,7 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshr
 
 ---
 
-## **Key Features (v0.6.0)**
+## **Key Features (v0.4.0)**
 
 * ✅ **CLI support** for video processing with YAML or CLI configs.
 * ✅ **Frame extraction with stride or overlap-based selection**.
@@ -105,6 +105,26 @@ With YAML config:
 CLI overrides YAML:
 ```bash
 ./videostrip_cli --config configs/sample_min.yaml --feature AKAZE --output ./out
+```
+
+### **Minimal YAML Config Example**
+
+```yaml
+version: 1
+
+input:
+  video: ./data/example_video.avi
+
+output:
+  base_dir: ./output
+
+processing:
+  feature_type: ORB
+  image_format: png
+  overlap_threshold: 0.8
+  max_skipped_frames: 4
+  apply_enhancement: false
+  enable_logging: true
 ```
 
 ---
