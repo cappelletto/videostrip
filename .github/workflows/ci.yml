@@ -62,6 +62,21 @@ jobs:
             & $env:VCPKG_ROOT\bootstrap-vcpkg.bat
           }
 
+      - name: Create vcpkg-configuration.json (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $baseline = & git -C $env:VCPKG_ROOT rev-parse HEAD
+          $json = @"
+{
+  "default-registry": {
+    "kind": "builtin",
+    "baseline": "$baseline"
+  }
+}
+"@
+          Set-Content -Path "${{ github.workspace }}\vcpkg-configuration.json" -Value $json -Encoding UTF8
+
       # Manifest mode: do NOT pass package names
       - name: vcpkg install (Windows, manifest)
         if: matrix.os == 'windows-latest'
