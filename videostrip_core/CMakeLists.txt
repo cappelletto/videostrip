@@ -7,6 +7,7 @@ add_library(videostrip_core STATIC
     videostrip_core.cpp
     feature/feature_extractor.cpp
     keyframe/keyframe_selector.cpp
+    io/metadata_writer.cpp
     logging/logger.cpp
     logging/file_logger.hpp
 )
