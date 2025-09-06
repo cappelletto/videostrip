@@ -37,7 +37,7 @@ jobs:
                                   doxygen graphviz \
                                   libyaml-cpp-dev
 
-      # -------- Windows toolchain --------
+        # -------- Windows toolchain --------
       - name: Setup MSVC (Windows)
         if: matrix.os == 'windows-latest'
         uses: ilammy/msvc-dev-cmd@v1
@@ -46,68 +46,53 @@ jobs:
         if: matrix.os == 'windows-latest'
         uses: actions/cache@v4
         with:
-          path: |
-            ${{ env.VCPKG_ROOT }}
-            ~/.cache/vcpkg/archives
-          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
-          restore-keys: |
-            vcpkg-${{ runner.os }}-
+            key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json','vcpkg-lock.json') }}
+            path: |
+              ${{ env.VCPKG_ROOT }}
+              ~/.cache/vcpkg/archives
+            restore-keys: |
+              vcpkg-${{ runner.os }}-
 
       - name: Install vcpkg (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          if (!(Test-Path -Path $env:VCPKG_ROOT)) {
+            if (!(Test-Path -Path $env:VCPKG_ROOT)) {
             git clone https://github.com/microsoft/vcpkg $env:VCPKG_ROOT
             & $env:VCPKG_ROOT\bootstrap-vcpkg.bat
-          }
-
-      - name: Create vcpkg-configuration.json (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          $baseline = & git -C $env:VCPKG_ROOT rev-parse HEAD
-          $json = @"
-          {
-            "default-registry": {
-              "kind": "builtin",
-              "baseline": "$baseline"
             }
-          }
-          "@
-          Set-Content -Path "${{ github.workspace }}\vcpkg-configuration.json" -Value $json -Encoding UTF8
 
-      # Manifest mode: do NOT pass package names
+        # Manifest mode: do NOT pass package names
       - name: vcpkg install (Windows, manifest)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          & $env:VCPKG_ROOT\vcpkg.exe install --triplet x64-windows
-          echo "VCPKG_TOOLCHAIN=${env:VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
-          echo "VCPKG_TARGET_TRIPLET=x64-windows" >> $env:GITHUB_ENV
-          echo "VCPKG_HOST_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+            & $env:VCPKG_ROOT\vcpkg.exe install --triplet x64-windows
+            echo "VCPKG_TOOLCHAIN=${env:VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
+            echo "VCPKG_TARGET_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+            echo "VCPKG_HOST_TRIPLET=x64-windows" >> $env:GITHUB_ENV
 
-      # -------- Configure --------
+        # -------- Configure --------
       - name: Configure (CMake)
         shell: pwsh
         run: |
-          $cmakeArgs = @(
+            $cmakeArgs = @(
             "-S", ".", "-B", "build",
             "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}",
             "-DBUILD_TESTS=ON",
             "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=build/bin",
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=build/lib",
             "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=build/lib"
-          )
-          if ("${{ matrix.os }}" -eq "windows-latest") {
-            $cmakeArgs += @(
-              "-DCMAKE_TOOLCHAIN_FILE=${env:VCPKG_TOOLCHAIN}",
-              "-DVCPKG_TARGET_TRIPLET=${env:VCPKG_TARGET_TRIPLET}",
-              "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}"
             )
-          }
-          cmake @cmakeArgs
-
+            if ("${{ matrix.os }}" -eq "windows-latest") {
+            $cmakeArgs += @(
+                "-DCMAKE_TOOLCHAIN_FILE=${env:VCPKG_TOOLCHAIN}",
+                "-DVCPKG_TARGET_TRIPLET=${env:VCPKG_TARGET_TRIPLET}",
+                "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}"
+            )
+            }
+            cmake @cmakeArgs
+            
       # -------- Build --------
       - name: Build
         run: cmake --build build --config ${{ env.BUILD_TYPE }} -- -v
