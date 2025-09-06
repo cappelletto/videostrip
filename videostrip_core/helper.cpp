@@ -12,7 +12,6 @@
 #include <headers.hpp>
 #include <helper.hpp>
 
-using std::cout;
 using std::string; // limiting std namespace usage to this translation unit
 
 /**
@@ -127,7 +126,7 @@ namespace logger
                 << message << reset << std::endl;
             break;
         }
-        cout << out.str();
+        std::cout << out.str();
         return out.str();
     }
 

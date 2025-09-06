@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(videostrip VERSION 0.5.1 LANGUAGES CXX)
+project(videostrip VERSION 0.6.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -58,6 +58,16 @@ message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
 # ==========================================
 # All headers live in subfolders inside ${CMAKE_SOURCE_DIR}
 include_directories(${CMAKE_SOURCE_DIR})
+
+# ==========================================
+# Promoted to top-level as it is needed by multiple modules
+find_package(yaml-cpp QUIET)
+if(NOT yaml-cpp_FOUND)
+  message(STATUS "yaml-cpp not found; fetching...")
+  include(FetchContent)
+  FetchContent_Declare(yaml_cpp GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git GIT_TAG 0.8.0)
+  FetchContent_MakeAvailable(yaml_cpp)
+endif()
 
 # ==========================================
 # Add project modules (progressive build)

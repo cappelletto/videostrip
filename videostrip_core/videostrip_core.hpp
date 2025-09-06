@@ -1,4 +1,3 @@
-#pragma once
 /**
  * @file videostrip_core.hpp
  * @author J. Cappelletto
@@ -9,6 +8,7 @@
  * Public API for the core library of the videostrip pipeline.
  * All public API is within the `videostrip` namespace.
  */
+#pragma once
 
 #include <cstdint>
 #include <iostream>
@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include <videostrip_core/feature/feature_extractor.hpp>  
+#include <videostrip_core/feature/feature_extractor.hpp>
 
 /**
  * @namespace videostrip
@@ -49,6 +49,8 @@ namespace videostrip
         std::string output_metadata_csv;
         std::string output_summary_yaml;
         std::string output_log_file;
+        std::string overlap_mode; ///< Reserved for future use, from args, options are FEATURE|FLOW|ECC
+
 
         // Frame selection
         float overlap_threshold = 0.7f; ///< [0.0 - 1.0], min overlap/confidence for selecting frames
@@ -81,7 +83,7 @@ namespace videostrip
      * Represents a row in the output CSV, including frame index, timestamp, output image name,
      * feature count, quality score, and optional georeferencing.
      */
-   struct FrameMetadata
+    struct FrameMetadata
     {
         int frame_idx;                     ///< Sequential index in video
         uint64_t timestamp_ms;             ///< Timestamp of frame in ms
@@ -106,7 +108,8 @@ namespace videostrip
     {
         std::string input_video_basename;
         ExtractorConfig config_used;
-        int total_frames_extracted;
+        int total_frames;            ///< Total frames in input video
+        int total_frames_extracted;  ///< Number of frames extracted
         std::vector<std::string> extracted_images;
         std::string run_datetime; ///< ISO8601 timestamp of execution
     };
@@ -168,6 +171,5 @@ namespace videostrip
 
     /// Provide a default FeatureExtractor for a given type (factory helper)
     std::unique_ptr<FeatureExtractor> make_default_extractor(const std::string &type);
-
 
 } // namespace videostrip
