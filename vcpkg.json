@@ -1,0 +1,9 @@
+{
+  "name": "videostrip",
+  "version-string": "0.6.0",
+  "dependencies": [
+    "opencv",
+    "yaml-cpp"
+  ]
+}
+
