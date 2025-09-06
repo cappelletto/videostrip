@@ -73,6 +73,7 @@ jobs:
         run: |
           cmake -S . -B build `
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
+            -DBUILD_TESTS=ON `
             -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=build/bin `
             -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=build/lib `
             -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=build/lib `
