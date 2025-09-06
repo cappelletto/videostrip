@@ -68,13 +68,13 @@ jobs:
         run: |
           $baseline = & git -C $env:VCPKG_ROOT rev-parse HEAD
           $json = @"
-{
-  "default-registry": {
-    "kind": "builtin",
-    "baseline": "$baseline"
-  }
-}
-"@
+          {
+            "default-registry": {
+              "kind": "builtin",
+              "baseline": "$baseline"
+            }
+          }
+          "@
           Set-Content -Path "${{ github.workspace }}\vcpkg-configuration.json" -Value $json -Encoding UTF8
 
       # Manifest mode: do NOT pass package names
