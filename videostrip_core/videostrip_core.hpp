@@ -49,6 +49,8 @@ namespace videostrip
         std::string output_metadata_csv;
         std::string output_summary_yaml;
         std::string output_log_file;
+        std::string overlap_mode; ///< Reserved for future use, from args, options are FEATURE|FLOW|ECC
+
 
         // Frame selection
         float overlap_threshold = 0.7f; ///< [0.0 - 1.0], min overlap/confidence for selecting frames
@@ -106,7 +108,8 @@ namespace videostrip
     {
         std::string input_video_basename;
         ExtractorConfig config_used;
-        int total_frames_extracted;
+        int total_frames;            ///< Total frames in input video
+        int total_frames_extracted;  ///< Number of frames extracted
         std::vector<std::string> extracted_images;
         std::string run_datetime; ///< ISO8601 timestamp of execution
     };
