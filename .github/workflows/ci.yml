@@ -19,7 +19,6 @@ jobs:
 
     env:
       BUILD_TYPE: ${{ matrix.build_type }}
-      # vcpkg cache location (Windows only)
       VCPKG_ROOT: ${{ github.workspace }}/vcpkg
 
     steps:
@@ -28,7 +27,7 @@ jobs:
         with:
           submodules: recursive
 
-      # -------- Install deps --------
+      # -------- Install deps (Ubuntu) --------
       - name: Install dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -38,6 +37,7 @@ jobs:
                                   doxygen graphviz \
                                   libyaml-cpp-dev
 
+      # -------- Windows toolchain --------
       - name: Setup MSVC (Windows)
         if: matrix.os == 'windows-latest'
         uses: ilammy/msvc-dev-cmd@v1
@@ -49,36 +49,49 @@ jobs:
           path: |
             ${{ env.VCPKG_ROOT }}
             ~/.cache/vcpkg/archives
-          key: vcpkg-${{ runner.os }}-${{ hashFiles('**/vcpkg.json') }}
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
           restore-keys: |
             vcpkg-${{ runner.os }}-
 
       - name: Install vcpkg (Windows)
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
           if (!(Test-Path -Path $env:VCPKG_ROOT)) {
             git clone https://github.com/microsoft/vcpkg $env:VCPKG_ROOT
             & $env:VCPKG_ROOT\bootstrap-vcpkg.bat
           }
 
-      - name: vcpkg install (Windows)
+      # Manifest mode: do NOT pass package names
+      - name: vcpkg install (Windows, manifest)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          & $env:VCPKG_ROOT\vcpkg.exe install opencv yaml-cpp --triplet x64-windows
+          & $env:VCPKG_ROOT\vcpkg.exe install --triplet x64-windows
           echo "VCPKG_TOOLCHAIN=${env:VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
+          echo "VCPKG_TARGET_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+          echo "VCPKG_HOST_TRIPLET=x64-windows" >> $env:GITHUB_ENV
 
       # -------- Configure --------
       - name: Configure (CMake)
-        run: |
-          cmake -S . -B build `
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
-            -DBUILD_TESTS=ON `
-            -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=build/bin `
-            -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=build/lib `
-            -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=build/lib `
-            ${{ matrix.os == 'windows-latest' && format('-DCMAKE_TOOLCHAIN_FILE={0}', env.VCPKG_TOOLCHAIN) || '' }}
         shell: pwsh
+        run: |
+          $cmakeArgs = @(
+            "-S", ".", "-B", "build",
+            "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}",
+            "-DBUILD_TESTS=ON",
+            "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=build/bin",
+            "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=build/lib",
+            "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=build/lib"
+          )
+          if ("${{ matrix.os }}" -eq "windows-latest") {
+            $cmakeArgs += @(
+              "-DCMAKE_TOOLCHAIN_FILE=${env:VCPKG_TOOLCHAIN}",
+              "-DVCPKG_TARGET_TRIPLET=${env:VCPKG_TARGET_TRIPLET}",
+              "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}"
+            )
+          }
+          cmake @cmakeArgs
 
       # -------- Build --------
       - name: Build
