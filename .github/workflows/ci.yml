@@ -8,6 +8,10 @@ on:
     branches: [ master ]
   workflow_dispatch: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-test:
     strategy:
@@ -35,7 +39,15 @@ jobs:
           sudo apt-get install -y build-essential cmake ninja-build \
                                   libopencv-dev \
                                   doxygen graphviz \
-                                  libyaml-cpp-dev
+                                  libyaml-cpp-dev \
+                                  ccache
+
+      - name: Enable ccache (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "CMAKE_C_COMPILER_LAUNCHER=ccache"  >> $GITHUB_ENV
+          echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> $GITHUB_ENV
+          ccache --max-size=250M || true
 
       # -------- Windows toolchain --------
       - name: Setup MSVC (Windows)
@@ -79,7 +91,6 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          # ensure the binary cache directory still exists (defensive)
           if (!(Test-Path -Path $env:VCPKG_DEFAULT_BINARY_CACHE)) {
             New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
           }
@@ -94,6 +105,7 @@ jobs:
         run: |
           $cmakeArgs = @(
             "-S", ".", "-B", "build",
+            "-G", "Ninja",
             "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}",
             "-DBUILD_TESTS=ON",
             "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=build/bin",
@@ -107,22 +119,18 @@ jobs:
               "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}",
               "-DVCPKG_DEFAULT_BINARY_CACHE=${env:VCPKG_DEFAULT_BINARY_CACHE}"
             )
+          } else {
+            $cmakeArgs += @(
+              "-DCMAKE_C_COMPILER_LAUNCHER=$env:CMAKE_C_COMPILER_LAUNCHER",
+              "-DCMAKE_CXX_COMPILER_LAUNCHER=$env:CMAKE_CXX_COMPILER_LAUNCHER"
+            )
           }
           cmake @cmakeArgs
 
       # -------- Build --------
-      - name: Build (Windows)
-        if: matrix.os == 'windows-latest'
-        run: cmake --build build --config ${{ env.BUILD_TYPE }} -- /m /v:m
-
-      - name: Build (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Build (all)
         run: cmake --build build --config ${{ env.BUILD_TYPE }} -- -v
 
-      # -------- Build test executables (Linux) --------
-      - name: Build tests (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: cmake --build build --config ${{ env.BUILD_TYPE }} --target test_core_smoke test_config_yaml
 
       # -------- Test --------
       - name: CTest
@@ -172,4 +180,4 @@ jobs:
             build/bin/videostrip_cli
             build/lib/**/*.a
             build/*.tar.gz
-          retention-days: 30
+          retention-days: 14

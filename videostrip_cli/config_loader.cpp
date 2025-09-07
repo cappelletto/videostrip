@@ -1,8 +1,9 @@
 // config_loader.cpp
-#include "config_loader.hpp"
 
 #include <filesystem>
 #include <yaml-cpp/yaml.h>
+
+#include <videostrip_cli/config_loader.hpp>
 
 namespace fs = std::filesystem;
 
