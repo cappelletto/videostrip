@@ -20,6 +20,8 @@ jobs:
     env:
       BUILD_TYPE: ${{ matrix.build_type }}
       VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      # A persistent binary cache location that we can cache via actions/cache
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg_cache
 
     steps:
       - name: Checkout
@@ -27,7 +29,7 @@ jobs:
         with:
           submodules: recursive
 
-      # -------- Install deps (Ubuntu) --------
+      # ---------- Ubuntu deps ----------
       - name: Install dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -35,85 +37,106 @@ jobs:
           sudo apt-get install -y build-essential cmake ninja-build \
                                   libopencv-dev \
                                   doxygen graphviz \
-                                  libyaml-cpp-dev
+                                  libyaml-cpp-dev \
+                                  ccache
+        # Speed up C++ compilations on Linux
+      - name: Enable ccache (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "CMAKE_C_COMPILER_LAUNCHER=ccache"  >> $GITHUB_ENV
+          echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> $GITHUB_ENV
+          ccache --max-size=250M || true
 
-        # -------- Windows toolchain --------
+      # ---------- Windows toolchain ----------
       - name: Setup MSVC (Windows)
         if: matrix.os == 'windows-latest'
         uses: ilammy/msvc-dev-cmd@v1
 
+      # Cache the vcpkg repo + its binary cache
       - name: Cache vcpkg (Windows)
         if: matrix.os == 'windows-latest'
         uses: actions/cache@v4
         with:
-            key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json','vcpkg-lock.json') }}
-            path: |
-              ${{ env.VCPKG_ROOT }}
-              ~/.cache/vcpkg/archives
-            restore-keys: |
-              vcpkg-${{ runner.os }}-
+          # Include triplet + manifest hash so cache is correct per ABI + deps
+          key: vcpkg-${{ runner.os }}-x64-windows-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-x64-windows-
+            vcpkg-${{ runner.os }}-
+          path: |
+            ${{ env.VCPKG_ROOT }}
+            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+            ~/.cache/vcpkg/archives
 
       - name: Install vcpkg (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-            if (!(Test-Path -Path $env:VCPKG_ROOT)) {
+          if (!(Test-Path -Path $env:VCPKG_ROOT)) {
             git clone https://github.com/microsoft/vcpkg $env:VCPKG_ROOT
             & $env:VCPKG_ROOT\bootstrap-vcpkg.bat
-            }
+          }
 
-        # Manifest mode: do NOT pass package names
+      # Manifest mode: do NOT pass package names
       - name: vcpkg install (Windows, manifest)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-            & $env:VCPKG_ROOT\vcpkg.exe install --triplet x64-windows
-            echo "VCPKG_TOOLCHAIN=${env:VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
-            echo "VCPKG_TARGET_TRIPLET=x64-windows" >> $env:GITHUB_ENV
-            echo "VCPKG_HOST_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+          # Make sure vcpkg uses our persistent cache folder
+          echo "VCPKG_DEFAULT_BINARY_CACHE=$env:VCPKG_DEFAULT_BINARY_CACHE" >> $env:GITHUB_ENV
 
-        # -------- Configure --------
+          # Install according to vcpkg.json, using x64 triplet
+          & $env:VCPKG_ROOT\vcpkg.exe install --triplet x64-windows
+
+          # Expose toolchain & triplets to CMake
+          echo "VCPKG_TOOLCHAIN=${env:VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
+          echo "VCPKG_TARGET_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+          echo "VCPKG_HOST_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+
+      # ---------- Configure ----------
       - name: Configure (CMake)
         shell: pwsh
         run: |
-            $cmakeArgs = @(
+          $cmakeArgs = @(
             "-S", ".", "-B", "build",
+            # Use Ninja on both platforms for faster builds
+            "-G", "Ninja",
             "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}",
             "-DBUILD_TESTS=ON",
             "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=build/bin",
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=build/lib",
             "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=build/lib"
-            )
-            if ("${{ matrix.os }}" -eq "windows-latest") {
+          )
+          if ("${{ matrix.os }}" -eq "windows-latest") {
             $cmakeArgs += @(
-                "-DCMAKE_TOOLCHAIN_FILE=${env:VCPKG_TOOLCHAIN}",
-                "-DVCPKG_TARGET_TRIPLET=${env:VCPKG_TARGET_TRIPLET}",
-                "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}"
+              "-DCMAKE_TOOLCHAIN_FILE=${env:VCPKG_TOOLCHAIN}",
+              "-DVCPKG_TARGET_TRIPLET=${env:VCPKG_TARGET_TRIPLET}",
+              "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}",
+              "-DVCPKG_DEFAULT_BINARY_CACHE=${env:VCPKG_DEFAULT_BINARY_CACHE}"
             )
-            }
-            cmake @cmakeArgs
+          } else {
+            # Propagate ccache launchers on Linux
+            $cmakeArgs += @(
+              "-DCMAKE_C_COMPILER_LAUNCHER=$env:CMAKE_C_COMPILER_LAUNCHER",
+              "-DCMAKE_CXX_COMPILER_LAUNCHER=$env:CMAKE_CXX_COMPILER_LAUNCHER"
+            )
+          }
+          cmake @cmakeArgs
 
-        # -------- Build --------
-      - name: Build (Windows)
-        if: matrix.os == 'windows-latest'
-        run: cmake --build build --config ${{ env.BUILD_TYPE }} -- /m /v:m
-
-      - name: Build (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      # ---------- Build ----------
+      - name: Build (all)
         run: cmake --build build --config ${{ env.BUILD_TYPE }} -- -v
 
-      # -------- Build test executables (Linux) --------
+      # ---------- Ensure test discovery (Linux) ----------
       - name: Build tests (Linux)
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          cmake --build build --config ${{ env.BUILD_TYPE }} --target test_core_smoke test_config_yaml
+        run: cmake --build build --config ${{ env.BUILD_TYPE }} --target test_core_smoke test_config_yaml
 
-      # -------- Test --------
+      # ---------- Test ----------
       - name: CTest
         working-directory: build
         run: ctest --output-on-failure -C ${{ env.BUILD_TYPE }}
 
-      # -------- Upload logs on failure --------
+      # ---------- Upload logs on failure ----------
       - name: Upload test artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -126,7 +149,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
-      # -------- Package (CPack) --------
+      # ---------- Package (CPack) ----------
       - name: CPack (package binaries)
         if: (github.ref == 'refs/heads/master') || startsWith(github.ref, 'refs/tags/v')
         working-directory: build
@@ -134,7 +157,7 @@ jobs:
           cpack -G ZIP
           cpack -G TGZ
 
-      # -------- Upload artifacts on master/tags --------
+      # ---------- Upload artifacts ----------
       - name: Upload artifacts (Windows ZIP)
         if: (matrix.os == 'windows-latest') && ((github.ref == 'refs/heads/master') || startsWith(github.ref, 'refs/tags/v'))
         uses: actions/upload-artifact@v4
@@ -143,7 +166,7 @@ jobs:
           path: |
             build/bin/**/*.exe
             build/bin/**/*.pdb
-            build/lib/**/*.lib
+            build/lib/**/*.*
             build/*.zip
           retention-days: 30
 
