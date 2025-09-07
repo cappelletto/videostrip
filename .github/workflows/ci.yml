@@ -8,6 +8,10 @@ on:
     branches: [ master ]
   workflow_dispatch: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-test:
     strategy:
@@ -35,23 +39,43 @@ jobs:
           sudo apt-get install -y build-essential cmake ninja-build \
                                   libopencv-dev \
                                   doxygen graphviz \
-                                  libyaml-cpp-dev
+                                  libyaml-cpp-dev \
+                                  ccache
+
+      - name: Enable ccache (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "CMAKE_C_COMPILER_LAUNCHER=ccache"  >> $GITHUB_ENV
+          echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> $GITHUB_ENV
+          ccache --max-size=250M || true
 
       # -------- Windows toolchain --------
       - name: Setup MSVC (Windows)
         if: matrix.os == 'windows-latest'
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Cache vcpkg (Windows)
+      # Set a persistent binary cache path (Windows)
+      - name: Define vcpkg binary cache path (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $cache = "${{ github.workspace }}\.vcpkg_cache"
+          New-Item -ItemType Directory -Force -Path $cache | Out-Null
+          echo "VCPKG_DEFAULT_BINARY_CACHE=$cache" >> $env:GITHUB_ENV
+          echo "VCPKG_FEATURE_FLAGS=manifests,binarycaching" >> $env:GITHUB_ENV
+
+      - name: Cache vcpkg repo + binary cache (Windows)
         if: matrix.os == 'windows-latest'
         uses: actions/cache@v4
         with:
+          key: vcpkg-${{ runner.os }}-x64-windows-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-x64-windows-
+            vcpkg-${{ runner.os }}-
           path: |
             ${{ env.VCPKG_ROOT }}
+            ${{ github.workspace }}\.vcpkg_cache
             ~/.cache/vcpkg/archives
-          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
-          restore-keys: |
-            vcpkg-${{ runner.os }}-
 
       - name: Install vcpkg (Windows)
         if: matrix.os == 'windows-latest'
@@ -67,6 +91,9 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
+          if (!(Test-Path -Path $env:VCPKG_DEFAULT_BINARY_CACHE)) {
+            New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
+          }
           & $env:VCPKG_ROOT\vcpkg.exe install --triplet x64-windows
           echo "VCPKG_TOOLCHAIN=${env:VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
           echo "VCPKG_TARGET_TRIPLET=x64-windows" >> $env:GITHUB_ENV
@@ -78,6 +105,7 @@ jobs:
         run: |
           $cmakeArgs = @(
             "-S", ".", "-B", "build",
+            "-G", "Ninja",
             "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}",
             "-DBUILD_TESTS=ON",
             "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=build/bin",
@@ -88,14 +116,21 @@ jobs:
             $cmakeArgs += @(
               "-DCMAKE_TOOLCHAIN_FILE=${env:VCPKG_TOOLCHAIN}",
               "-DVCPKG_TARGET_TRIPLET=${env:VCPKG_TARGET_TRIPLET}",
-              "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}"
+              "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}",
+              "-DVCPKG_DEFAULT_BINARY_CACHE=${env:VCPKG_DEFAULT_BINARY_CACHE}"
+            )
+          } else {
+            $cmakeArgs += @(
+              "-DCMAKE_C_COMPILER_LAUNCHER=$env:CMAKE_C_COMPILER_LAUNCHER",
+              "-DCMAKE_CXX_COMPILER_LAUNCHER=$env:CMAKE_CXX_COMPILER_LAUNCHER"
             )
           }
           cmake @cmakeArgs
 
       # -------- Build --------
-      - name: Build
+      - name: Build (all)
         run: cmake --build build --config ${{ env.BUILD_TYPE }} -- -v
+
 
       # -------- Test --------
       - name: CTest
@@ -145,4 +180,4 @@ jobs:
             build/bin/videostrip_cli
             build/lib/**/*.a
             build/*.tar.gz
-          retention-days: 30
+          retention-days: 14

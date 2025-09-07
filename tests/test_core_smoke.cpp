@@ -31,7 +31,7 @@ static fs::path make_tmp_dir(const std::string& name) {
 //     return base;
 // }
 
-TEST_CASE("core: synthetic video → images + CSV + YAML", "[core][smoke]") {
+TEST_CASE("core: synthetic video to images + CSV + YAML", "[core][smoke]") {
     // --- 1) Make synthetic video (20 frames @ 10 fps) ---
     const int W=320, H=240, FPS=10, N=20;
     auto tmp = make_tmp_dir("smoke");
