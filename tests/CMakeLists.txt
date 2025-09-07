@@ -83,7 +83,7 @@ if (EXISTS ${CONFIG_YAML_SRC})
         WORKING_DIRECTORY $<TARGET_FILE_DIR:test_config_yaml>
       )
       # Optional explicit CTest name, if you kept add_test() elsewhere:
-      # add_test(NAME config_yaml COMMAND test_config_yaml)
+      add_test(NAME config_yaml COMMAND test_config_yaml)
     endif()
   else()
     message(WARNING "yaml-cpp not found; skipping test_config_yaml")
