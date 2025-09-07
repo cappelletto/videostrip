@@ -122,3 +122,51 @@ if (PROJECT_SUMMARY)
   message(STATUS "CMake Module Path              : ${CMAKE_MODULE_PATH}")
 endif()
 message(STATUS "----------------------------------------")
+
+# -------------------------
+# Install rules (what goes into the package)
+# -------------------------
+# Binaries
+install(TARGETS videostrip_cli
+  RUNTIME DESTINATION bin
+)
+
+# Libraries (adjust if SHARED; this is STATIC right now)
+install(TARGETS videostrip_core
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+)
+
+# Public headers (install only .hpp files from videostrip_core/)
+# If your headers live in subdirs (feature/, logging/), this will include them.
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/videostrip_core/
+  DESTINATION include/videostrip_core
+  FILES_MATCHING
+    PATTERN "*.hpp"
+)
+
+# Licenses / docs
+install(FILES ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_SOURCE_DIR}/LICENSE
+  DESTINATION .
+)
+
+# -------------------------
+# CPack configuration
+# -------------------------
+set(CPACK_PACKAGE_NAME "videostrip")
+set(CPACK_PACKAGE_VENDOR "cappelletto")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Smart video frame extraction for 2D/3D reconstruction pipelines")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README  "${CMAKE_SOURCE_DIR}/README.md")
+
+# Nice archive base name: videostrip-0.7.0-Linux-x86_64, etc.
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" _sysname_lc)
+set(CPACK_PACKAGE_FILE_NAME
+  "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}"
+)
+
+# Generators we use in CI
+set(CPACK_GENERATOR "ZIP;TGZ")
+
+include(CPack)
