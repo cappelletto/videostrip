@@ -151,12 +151,19 @@ jobs:
           retention-days: 30
 
       # -------- Package (CPack) --------
-      - name: CPack (package binaries)
+    #   - name: CPack (package binaries)
+    #     if: (github.ref == 'refs/heads/master') || startsWith(github.ref, 'refs/tags/v')
+    #     working-directory: build
+    #     run: |
+    #       cpack -G ZIP
+    #       cpack -G TGZ
+
+      # -------- Package (CPack via CMake target) --------
+      - name: Package (CPack)
         if: (github.ref == 'refs/heads/master') || startsWith(github.ref, 'refs/tags/v')
         working-directory: build
-        run: |
-          cpack -G ZIP
-          cpack -G TGZ
+        run: cmake --build . --target package --config ${{ env.BUILD_TYPE }}
+
 
       # -------- Upload artifacts on master/tags --------
       - name: Upload artifacts (Windows ZIP)
