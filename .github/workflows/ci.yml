@@ -20,8 +20,6 @@ jobs:
     env:
       BUILD_TYPE: ${{ matrix.build_type }}
       VCPKG_ROOT: ${{ github.workspace }}/vcpkg
-      # A persistent binary cache location that we can cache via actions/cache
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg_cache
 
     steps:
       - name: Checkout
@@ -29,7 +27,7 @@ jobs:
         with:
           submodules: recursive
 
-      # ---------- Ubuntu deps ----------
+      # -------- Install deps (Ubuntu) --------
       - name: Install dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -37,34 +35,34 @@ jobs:
           sudo apt-get install -y build-essential cmake ninja-build \
                                   libopencv-dev \
                                   doxygen graphviz \
-                                  libyaml-cpp-dev \
-                                  ccache
-        # Speed up C++ compilations on Linux
-      - name: Enable ccache (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          echo "CMAKE_C_COMPILER_LAUNCHER=ccache"  >> $GITHUB_ENV
-          echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> $GITHUB_ENV
-          ccache --max-size=250M || true
+                                  libyaml-cpp-dev
 
-      # ---------- Windows toolchain ----------
+      # -------- Windows toolchain --------
       - name: Setup MSVC (Windows)
         if: matrix.os == 'windows-latest'
         uses: ilammy/msvc-dev-cmd@v1
 
-      # Cache the vcpkg repo + its binary cache
-      - name: Cache vcpkg (Windows)
+      # Set a persistent binary cache path (Windows)
+      - name: Define vcpkg binary cache path (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $cache = "${{ github.workspace }}\.vcpkg_cache"
+          New-Item -ItemType Directory -Force -Path $cache | Out-Null
+          echo "VCPKG_DEFAULT_BINARY_CACHE=$cache" >> $env:GITHUB_ENV
+          echo "VCPKG_FEATURE_FLAGS=manifests,binarycaching" >> $env:GITHUB_ENV
+
+      - name: Cache vcpkg repo + binary cache (Windows)
         if: matrix.os == 'windows-latest'
         uses: actions/cache@v4
         with:
-          # Include triplet + manifest hash so cache is correct per ABI + deps
           key: vcpkg-${{ runner.os }}-x64-windows-${{ hashFiles('vcpkg.json') }}
           restore-keys: |
             vcpkg-${{ runner.os }}-x64-windows-
             vcpkg-${{ runner.os }}-
           path: |
             ${{ env.VCPKG_ROOT }}
-            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+            ${{ github.workspace }}\.vcpkg_cache
             ~/.cache/vcpkg/archives
 
       - name: Install vcpkg (Windows)
@@ -81,25 +79,21 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          # Make sure vcpkg uses our persistent cache folder
-          echo "VCPKG_DEFAULT_BINARY_CACHE=$env:VCPKG_DEFAULT_BINARY_CACHE" >> $env:GITHUB_ENV
-
-          # Install according to vcpkg.json, using x64 triplet
+          # ensure the binary cache directory still exists (defensive)
+          if (!(Test-Path -Path $env:VCPKG_DEFAULT_BINARY_CACHE)) {
+            New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
+          }
           & $env:VCPKG_ROOT\vcpkg.exe install --triplet x64-windows
-
-          # Expose toolchain & triplets to CMake
           echo "VCPKG_TOOLCHAIN=${env:VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
           echo "VCPKG_TARGET_TRIPLET=x64-windows" >> $env:GITHUB_ENV
           echo "VCPKG_HOST_TRIPLET=x64-windows" >> $env:GITHUB_ENV
 
-      # ---------- Configure ----------
+      # -------- Configure --------
       - name: Configure (CMake)
         shell: pwsh
         run: |
           $cmakeArgs = @(
             "-S", ".", "-B", "build",
-            # Use Ninja on both platforms for faster builds
-            "-G", "Ninja",
             "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}",
             "-DBUILD_TESTS=ON",
             "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=build/bin",
@@ -113,30 +107,29 @@ jobs:
               "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}",
               "-DVCPKG_DEFAULT_BINARY_CACHE=${env:VCPKG_DEFAULT_BINARY_CACHE}"
             )
-          } else {
-            # Propagate ccache launchers on Linux
-            $cmakeArgs += @(
-              "-DCMAKE_C_COMPILER_LAUNCHER=$env:CMAKE_C_COMPILER_LAUNCHER",
-              "-DCMAKE_CXX_COMPILER_LAUNCHER=$env:CMAKE_CXX_COMPILER_LAUNCHER"
-            )
           }
           cmake @cmakeArgs
 
-      # ---------- Build ----------
-      - name: Build (all)
+      # -------- Build --------
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        run: cmake --build build --config ${{ env.BUILD_TYPE }} -- /m /v:m
+
+      - name: Build (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: cmake --build build --config ${{ env.BUILD_TYPE }} -- -v
 
-      # ---------- Ensure test discovery (Linux) ----------
+      # -------- Build test executables (Linux) --------
       - name: Build tests (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: cmake --build build --config ${{ env.BUILD_TYPE }} --target test_core_smoke test_config_yaml
 
-      # ---------- Test ----------
+      # -------- Test --------
       - name: CTest
         working-directory: build
         run: ctest --output-on-failure -C ${{ env.BUILD_TYPE }}
 
-      # ---------- Upload logs on failure ----------
+      # -------- Upload logs on failure --------
       - name: Upload test artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -149,7 +142,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
-      # ---------- Package (CPack) ----------
+      # -------- Package (CPack) --------
       - name: CPack (package binaries)
         if: (github.ref == 'refs/heads/master') || startsWith(github.ref, 'refs/tags/v')
         working-directory: build
@@ -157,7 +150,7 @@ jobs:
           cpack -G ZIP
           cpack -G TGZ
 
-      # ---------- Upload artifacts ----------
+      # -------- Upload artifacts on master/tags --------
       - name: Upload artifacts (Windows ZIP)
         if: (matrix.os == 'windows-latest') && ((github.ref == 'refs/heads/master') || startsWith(github.ref, 'refs/tags/v'))
         uses: actions/upload-artifact@v4
@@ -166,7 +159,7 @@ jobs:
           path: |
             build/bin/**/*.exe
             build/bin/**/*.pdb
-            build/lib/**/*.*
+            build/lib/**/*.lib
             build/*.zip
           retention-days: 30
 
