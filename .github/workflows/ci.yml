@@ -8,6 +8,11 @@ on:
     branches: [ master ]
   workflow_dispatch: {}
 
+# Cancel older in-flight runs for the same ref
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-test:
     strategy:
@@ -20,6 +25,8 @@ jobs:
     env:
       BUILD_TYPE: ${{ matrix.build_type }}
       VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      # persistent vcpkg binary cache (Windows)
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\.vcpkg_cache
 
     steps:
       - name: Checkout
@@ -35,14 +42,21 @@ jobs:
           sudo apt-get install -y build-essential cmake ninja-build \
                                   libopencv-dev \
                                   doxygen graphviz \
-                                  libyaml-cpp-dev
+                                  libyaml-cpp-dev \
+                                  ccache
+      - name: Enable ccache (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "CMAKE_C_COMPILER_LAUNCHER=ccache"  >> $GITHUB_ENV
+          echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> $GITHUB_ENV
+          ccache --max-size=250M || true
 
       # -------- Windows toolchain --------
       - name: Setup MSVC (Windows)
         if: matrix.os == 'windows-latest'
         uses: ilammy/msvc-dev-cmd@v1
 
-      # Set a persistent binary cache path (Windows)
+      # Define + create vcpkg binary cache (Windows)
       - name: Define vcpkg binary cache path (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
@@ -79,7 +93,6 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          # ensure the binary cache directory still exists (defensive)
           if (!(Test-Path -Path $env:VCPKG_DEFAULT_BINARY_CACHE)) {
             New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
           }
@@ -88,12 +101,13 @@ jobs:
           echo "VCPKG_TARGET_TRIPLET=x64-windows" >> $env:GITHUB_ENV
           echo "VCPKG_HOST_TRIPLET=x64-windows" >> $env:GITHUB_ENV
 
-      # -------- Configure --------
+      # -------- Configure (use Ninja on both OSes) --------
       - name: Configure (CMake)
         shell: pwsh
         run: |
           $cmakeArgs = @(
             "-S", ".", "-B", "build",
+            "-G", "Ninja",
             "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}",
             "-DBUILD_TESTS=ON",
             "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=build/bin",
@@ -107,22 +121,27 @@ jobs:
               "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}",
               "-DVCPKG_DEFAULT_BINARY_CACHE=${env:VCPKG_DEFAULT_BINARY_CACHE}"
             )
+          } else {
+            $cmakeArgs += @(
+              "-DCMAKE_C_COMPILER_LAUNCHER=$env:CMAKE_C_COMPILER_LAUNCHER",
+              "-DCMAKE_CXX_COMPILER_LAUNCHER=$env:CMAKE_CXX_COMPILER_LAUNCHER"
+            )
           }
           cmake @cmakeArgs
 
-      # -------- Build --------
-      - name: Build (Windows)
-        if: matrix.os == 'windows-latest'
-        run: cmake --build build --config ${{ env.BUILD_TYPE }} -- /m /v:m
-
-      - name: Build (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      # -------- Build (Ninja: single path) --------
+      - name: Build (all)
         run: cmake --build build --config ${{ env.BUILD_TYPE }} -- -v
 
-      # -------- Build test executables (Linux) --------
+      # -------- Ensure Catch2 discovery (Linux) --------
       - name: Build tests (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: cmake --build build --config ${{ env.BUILD_TYPE }} --target test_core_smoke test_config_yaml
+
+      # (Optional) do the same on Windows if discovery ever flakes:
+      # - name: Build tests (Windows)
+      #   if: matrix.os == 'windows-latest'
+      #   run: cmake --build build --config ${{ env.BUILD_TYPE }} --target test_core_smoke test_config_yaml
 
       # -------- Test --------
       - name: CTest
@@ -159,7 +178,7 @@ jobs:
           path: |
             build/bin/**/*.exe
             build/bin/**/*.pdb
-            build/lib/**/*.lib
+            build/lib/**/*.*
             build/*.zip
           retention-days: 30
 
@@ -172,4 +191,4 @@ jobs:
             build/bin/videostrip_cli
             build/lib/**/*.a
             build/*.tar.gz
-          retention-days: 30
+          retention-days: 20
