@@ -1,5 +1,7 @@
 .vscode/*
 
+next_steps.md
+
 # Doxygen
 doc/html/*
 doc/latex/*

@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(Catch2)
 include(Catch)  # provides catch_discover_tests()
 
 # ---- Common includes for tests (allow <videostrip_core/...> etc.) ----
-# Adjust if you need stricter scoping:
+# Adjust if we need stricter scoping:
 set(TEST_COMMON_INCLUDES
   ${CMAKE_SOURCE_DIR}
 )
@@ -82,7 +82,7 @@ if (EXISTS ${CONFIG_YAML_SRC})
       catch_discover_tests(test_config_yaml
         WORKING_DIRECTORY $<TARGET_FILE_DIR:test_config_yaml>
       )
-      # Optional explicit CTest name, if you kept add_test() elsewhere:
+      # Optional explicit CTest name
       add_test(NAME config_yaml COMMAND test_config_yaml)
     endif()
   else()

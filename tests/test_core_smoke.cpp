@@ -3,7 +3,7 @@
 #include <fstream>
 #include <opencv2/opencv.hpp>
 
-#include <videostrip_core/videostrip_core.hpp>                // your public API
+#include <videostrip_core/videostrip_core.hpp>                // the public API
 #include <videostrip_core/feature/feature_extractor.hpp>      // used indirectly
 #include <videostrip_core/logging/logger.hpp>                 // ConsoleLogger
 
@@ -23,13 +23,6 @@ static fs::path make_tmp_dir(const std::string& name) {
     fs::create_directories(base);
     return base;
 }
-
-
-// static fs::path make_tmp_dir(const std::string& name) {
-//     auto base = fs::temp_directory_path() / ("vs_" + name + "_" + std::to_string(::getpid()));
-//     fs::create_directories(base);
-//     return base;
-// }
 
 TEST_CASE("core: synthetic video to images + CSV + YAML", "[core][smoke]") {
     // --- 1) Make synthetic video (20 frames @ 10 fps) ---

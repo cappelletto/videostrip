@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(videostrip VERSION 0.7.0 LANGUAGES CXX)
+project(videostrip VERSION 0.7.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -137,36 +137,58 @@ install(TARGETS videostrip_core
   LIBRARY DESTINATION lib
 )
 
+# TODO: Minimal manpage (optional). We do not have one yet, generate with help2man later.
+# install(FILES packaging/videostrip.1 DESTINATION share/man/man1)
+
 # Public headers (install only .hpp files from videostrip_core/)
-# If your headers live in subdirs (feature/, logging/), this will include them.
+# If the headers live in subdirs (feature/, logging/), this will include them.
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/videostrip_core/
   DESTINATION include/videostrip_core
-  FILES_MATCHING
-    PATTERN "*.hpp"
+  FILES_MATCHING PATTERN "*.hpp"
 )
 
+# Install shared assets
+install(FILES configs/sample_config.yaml
+        DESTINATION share/videostrip)
 # Licenses / docs
 install(FILES ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_SOURCE_DIR}/LICENSE
-  DESTINATION .
+  DESTINATION share/doc/videostrip
 )
 
 # -------------------------
 # CPack configuration
 # -------------------------
+
 set(CPACK_PACKAGE_NAME "videostrip")
-set(CPACK_PACKAGE_VENDOR "cappelletto")
+set(CPACK_PACKAGE_VENDOR "Rivermouth")
+set(CPACK_PACKAGE_CONTACT "cappelletto@gmail.com")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Video transect utilities for 2D/3D mapping (CLI)")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Smart video frame extraction for 2D/3D reconstruction pipelines")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README  "${CMAKE_SOURCE_DIR}/README.md")
-
 # Nice archive base name: videostrip-0.7.0-Linux-x86_64, etc.
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" _sysname_lc)
 set(CPACK_PACKAGE_FILE_NAME
   "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}"
 )
 
-# Generators we use in CI
-set(CPACK_GENERATOR "ZIP;TGZ")
+# Source + binary archives
+set(CPACK_GENERATOR "TGZ;ZIP;DEB")
+
+# Debian metadata (tune as you learn your shared libs)
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Jose Cappelletto")           # required
+set(CPACK_DEBIAN_PACKAGE_SECTION "science")
+set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
+
+# Runtime deps if linking dynamically; keep minimal first, then refine with ldd
+# Example: 
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6, libgcc-s1")
+# TODO: 
+# Add correct libraries from OpenCV
+# set(CPACK_DEBIAN_PACKAGE_DEPENDS "libopencv-core4.8, libopencv-imgcodecs4.8")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+# Avoid the classic error: ensure CPack knows the project
+set(CPACK_PACKAGE_FILE_NAME "videostrip-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 
 include(CPack)
+# End of CPack configuration
