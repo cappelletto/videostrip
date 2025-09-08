@@ -131,23 +131,30 @@ install(TARGETS videostrip_cli
   RUNTIME DESTINATION bin
 )
 
+
+
 # Libraries (adjust if SHARED; this is STATIC right now)
 install(TARGETS videostrip_core
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
 )
 
+# TODO: Minimal manpage (optional). We do not have one yet, generate with help2man later.
+# install(FILES packaging/videostrip.1 DESTINATION share/man/man1)
+
 # Public headers (install only .hpp files from videostrip_core/)
-# If your headers live in subdirs (feature/, logging/), this will include them.
+# If the headers live in subdirs (feature/, logging/), this will include them.
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/videostrip_core/
   DESTINATION include/videostrip_core
-  FILES_MATCHING
-    PATTERN "*.hpp"
+  FILES_MATCHING PATTERN "*.hpp"
 )
 
+# Install shared assets
+install(FILES configs/sample_config.yaml
+        DESTINATION share/videostrip)
 # Licenses / docs
 install(FILES ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_SOURCE_DIR}/LICENSE
-  DESTINATION .
+  DESTINATION hare/doc/videostrip
 )
 
 # -------------------------

@@ -34,7 +34,7 @@ void normalize_output_paths(ExtractorConfig& cfg, const std::string& base_dir);
 /**
  * @brief Merge precedence helper: dst = YAML ; then apply CLI overrides.
  *        Only overwrites fields when src has non-empty values / set flags.
- *        (You still need to clamp/validate after merging.)
+ *        (Still need to clamp/validate after merging.)
  */
 void merge_yaml_into(ExtractorConfig& dst, const ExtractorConfig& yamlCfg);
 

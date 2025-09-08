@@ -3,7 +3,7 @@
 #include <fstream>
 #include <opencv2/opencv.hpp>
 
-#include <videostrip_core/videostrip_core.hpp>                // your public API
+#include <videostrip_core/videostrip_core.hpp>                // the public API
 #include <videostrip_core/feature/feature_extractor.hpp>      // used indirectly
 #include <videostrip_core/logging/logger.hpp>                 // ConsoleLogger
 
