@@ -131,8 +131,6 @@ install(TARGETS videostrip_cli
   RUNTIME DESTINATION bin
 )
 
-
-
 # Libraries (adjust if SHARED; this is STATIC right now)
 install(TARGETS videostrip_core
   ARCHIVE DESTINATION lib
@@ -154,26 +152,43 @@ install(FILES configs/sample_config.yaml
         DESTINATION share/videostrip)
 # Licenses / docs
 install(FILES ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_SOURCE_DIR}/LICENSE
-  DESTINATION hare/doc/videostrip
+  DESTINATION share/doc/videostrip
 )
 
 # -------------------------
 # CPack configuration
 # -------------------------
+
 set(CPACK_PACKAGE_NAME "videostrip")
-set(CPACK_PACKAGE_VENDOR "cappelletto")
+set(CPACK_PACKAGE_VENDOR "Rivermouth")
+set(CPACK_PACKAGE_CONTACT "cappelletto@gmail.com")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Video transect utilities for 2D/3D mapping (CLI)")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Smart video frame extraction for 2D/3D reconstruction pipelines")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README  "${CMAKE_SOURCE_DIR}/README.md")
-
 # Nice archive base name: videostrip-0.7.0-Linux-x86_64, etc.
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" _sysname_lc)
 set(CPACK_PACKAGE_FILE_NAME
   "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}"
 )
 
-# Generators we use in CI
-set(CPACK_GENERATOR "ZIP;TGZ")
+# Source + binary archives
+set(CPACK_GENERATOR "TGZ;ZIP;DEB")
+
+# Debian metadata (tune as you learn your shared libs)
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Jose Cappelletto")           # required
+set(CPACK_DEBIAN_PACKAGE_SECTION "science")
+set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
+
+# Runtime deps if linking dynamically; keep minimal first, then refine with ldd
+# Example: 
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6, libgcc-s1")
+# TODO: 
+# Add correct libraries from OpenCV
+# set(CPACK_DEBIAN_PACKAGE_DEPENDS "libopencv-core4.8, libopencv-imgcodecs4.8")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+# Avoid the classic error: ensure CPack knows the project
+set(CPACK_PACKAGE_FILE_NAME "videostrip-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 
 include(CPack)
+# End of CPack configuration
