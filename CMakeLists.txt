@@ -152,16 +152,15 @@ install(FILES configs/sample_config.yaml
         DESTINATION share/videostrip)
 # Licenses / docs
 install(FILES ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_SOURCE_DIR}/LICENSE
-  DESTINATION hare/doc/videostrip
+  DESTINATION share/doc/videostrip
 )
 
 # -------------------------
 # CPack configuration
 # -------------------------
-include(CPack)
 
 set(CPACK_PACKAGE_NAME "videostrip")
-set(CPACK_PACKAGE_VENDOR "YourOrg")
+set(CPACK_PACKAGE_VENDOR "Rivermouth")
 set(CPACK_PACKAGE_CONTACT "cappelletto@gmail.com")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Video transect utilities for 2D/3D mapping (CLI)")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
@@ -184,9 +183,12 @@ set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 # Runtime deps if linking dynamically; keep minimal first, then refine with ldd
 # Example: 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6, libgcc-s1")
-TODO: 
+# TODO: 
 # Add correct libraries from OpenCV
 # set(CPACK_DEBIAN_PACKAGE_DEPENDS "libopencv-core4.8, libopencv-imgcodecs4.8")
-
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # Avoid the classic error: ensure CPack knows the project
 set(CPACK_PACKAGE_FILE_NAME "videostrip-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+
+include(CPack)
+# End of CPack configuration
