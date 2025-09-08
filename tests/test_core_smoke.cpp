@@ -24,13 +24,6 @@ static fs::path make_tmp_dir(const std::string& name) {
     return base;
 }
 
-
-// static fs::path make_tmp_dir(const std::string& name) {
-//     auto base = fs::temp_directory_path() / ("vs_" + name + "_" + std::to_string(::getpid()));
-//     fs::create_directories(base);
-//     return base;
-// }
-
 TEST_CASE("core: synthetic video to images + CSV + YAML", "[core][smoke]") {
     // --- 1) Make synthetic video (20 frames @ 10 fps) ---
     const int W=320, H=240, FPS=10, N=20;
