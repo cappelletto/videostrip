@@ -5,6 +5,7 @@ message(STATUS "*******************")
 
 add_library(videostrip_core STATIC
     videostrip_core.cpp
+    image_enhancers.cpp
     feature/feature_extractor.cpp
     keyframe/keyframe_selector.cpp
     io/metadata_writer.cpp
@@ -15,13 +16,14 @@ add_library(videostrip_core STATIC
 # Public headers live in this folder (P1204R0)
 target_include_directories(videostrip_core
     PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}       # so <videostrip_core/...> works
+    PUBLIC  ${YAML_CPP_INCLUDE_DIR}           # add yaml-cpp include directory
 )
 
 target_compile_definitions(videostrip_core
     PUBLIC GIT_COMMIT=\"${GIT_INFO}\"
 )
 
-# Link OpenCV to this module
+# Link dependencies to this module
 target_link_libraries(videostrip_core
     PUBLIC ${OpenCV_LIBS}
 )
