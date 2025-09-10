@@ -63,13 +63,16 @@ include_directories(${CMAKE_SOURCE_DIR})
 # Promoted to top-level as it is needed by multiple modules
 find_package(yaml-cpp QUIET)
 if(NOT yaml-cpp_FOUND)
-  message(STATUS "yaml-cpp not found; fetching...")
-  include(FetchContent)
-  FetchContent_Declare(yaml_cpp GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git GIT_TAG 0.8.0)
-  FetchContent_MakeAvailable(yaml_cpp)
+    message(STATUS "yaml-cpp not found; fetching...")
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+        message(STATUS "On Linux, you can install yaml-cpp system-wide with:")
+        message(STATUS "  sudo apt install libyaml-cpp-dev")
+    endif()
+    include(FetchContent)
+    FetchContent_Declare(yaml_cpp GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git GIT_TAG 0.8.0)
+    FetchContent_MakeAvailable(yaml_cpp)
 endif()
 
-# // TODO: Add deb package installation for libyaml-dev on Linux
 # ==========================================
 # Add project modules (progressive build)
 # ==========================================
@@ -155,6 +158,37 @@ install(FILES configs/sample_config.yaml
 install(FILES ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_SOURCE_DIR}/LICENSE
   DESTINATION share/doc/videostrip
 )
+# -------------------------
+# Manpage generation (optional)
+# -------------------------
+if (BUILD_MANPAGE)
+    message(STATUS "Manpage generation enabled")
+    find_program(HELP2MAN_EXECUTABLE help2man)
+
+    if(HELP2MAN_EXECUTABLE)
+        # Create packaging dir if it does not exist
+        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/packaging)
+        add_custom_command(
+            OUTPUT ${CMAKE_BINARY_DIR}/packaging/videostrip.1
+            COMMAND ${HELP2MAN_EXECUTABLE} --no-discard-stderr --output=${CMAKE_BINARY_DIR}/packaging/videostrip.1 $<TARGET_FILE:videostrip_cli>
+            DEPENDS videostrip_cli
+            COMMENT "Generating manpage for videostrip_cli"
+            VERBATIM
+        )
+
+        add_custom_target(manpage ALL
+            DEPENDS ${CMAKE_BINARY_DIR}/packaging/videostrip.1
+        )
+
+        install(FILES ${CMAKE_BINARY_DIR}/packaging/videostrip.1 DESTINATION share/man/man1)
+        else()
+        message(WARNING "help2man not found: manpage will not be generated automatically.")
+    endif()
+
+else()
+  message(STATUS "Manpage generation disabled")
+endif()
+
 
 # -------------------------
 # CPack configuration
