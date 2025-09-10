@@ -69,6 +69,7 @@ if(NOT yaml-cpp_FOUND)
   FetchContent_MakeAvailable(yaml_cpp)
 endif()
 
+# // TODO: Add deb package installation for libyaml-dev on Linux
 # ==========================================
 # Add project modules (progressive build)
 # ==========================================
