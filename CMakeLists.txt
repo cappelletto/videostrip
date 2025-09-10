@@ -16,6 +16,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # ==========================================
 option(BUILD_TESTS "Build unit/integration tests" ON)
 option(BUILD_GUI "Build GUI module" OFF)
+option(BUILD_MANPAGE "Generate manpage for CLI tool (requires help2man)" OFF)
 
 
 message(STATUS "--------------------")
@@ -141,9 +142,6 @@ install(TARGETS videostrip_core
   LIBRARY DESTINATION lib
 )
 
-# TODO: Minimal manpage (optional). We do not have one yet, generate with help2man later.
-# install(FILES packaging/videostrip.1 DESTINATION share/man/man1)
-
 # Public headers (install only .hpp files from videostrip_core/)
 # If the headers live in subdirs (feature/, logging/), this will include them.
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/videostrip_core/
@@ -210,17 +208,14 @@ set(CPACK_PACKAGE_FILE_NAME
 # Source + binary archives
 set(CPACK_GENERATOR "TGZ;ZIP;DEB")
 
-# Debian metadata (tune as you learn your shared libs)
+# Debian metadata (tune as we expand shared libs)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Jose Cappelletto")           # required
 set(CPACK_DEBIAN_PACKAGE_SECTION "science")
 set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 
 # Runtime deps if linking dynamically; keep minimal first, then refine with ldd
-# Example: 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6, libgcc-s1")
-# TODO: 
-# Add correct libraries from OpenCV
-# set(CPACK_DEBIAN_PACKAGE_DEPENDS "libopencv-core4.8, libopencv-imgcodecs4.8")
+# Automate depedencies based on linked shared libs
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # Avoid the classic error: ensure CPack knows the project
 set(CPACK_PACKAGE_FILE_NAME "videostrip-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
