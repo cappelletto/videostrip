@@ -20,3 +20,17 @@ processing:
   create_output_dirs: true
   enable_logging: true
   # overlap_mode: FEATURE  # (optional, harmless for now)
+
+enhance:
+  enable: true
+  sequence:
+    - type: contrast
+      alpha: 1.15
+      beta: -5
+    - type: grayworld
+    - type: gamma
+      value: 1.05
+    - type: clahe
+      clip_limit: 2.0
+      tile_grid: [8, 8]
+      space: YCrCb   # YCrCb | HSV | Lab | BGR

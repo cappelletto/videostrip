@@ -15,8 +15,11 @@ add_library(videostrip_core STATIC
 
 # Public headers live in this folder (P1204R0)
 target_include_directories(videostrip_core
-    PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}       # so <videostrip_core/...> works
-    PUBLIC  ${YAML_CPP_INCLUDE_DIR}           # add yaml-cpp include directory
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}      # so <videostrip_core/...> works
+        ${CMAKE_SOURCE_DIR}/external
+        ${CMAKE_SOURCE_DIR}/videostrip_core
+        # ${YAML_CPP_INCLUDE_DIR}  #<-- TODO: provide access to yaml-cpp/yaml.h
 )
 
 target_compile_definitions(videostrip_core
