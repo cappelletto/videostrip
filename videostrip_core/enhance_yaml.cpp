@@ -1,5 +1,5 @@
-#include "enhance_yaml.hpp"
 #include <algorithm>
+#include <videostrip_core/enhance_yaml.hpp>
 
 namespace videostrip_core {
 

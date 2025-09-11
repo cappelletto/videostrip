@@ -52,7 +52,7 @@ namespace videostrip
         std::string output_log_file;
         std::string overlap_mode; ///< Reserved for future use, from args, options are FEATURE|FLOW|ECC
 
-        // videostrip_core::EnhanceConfig enhance; //< Image enhancement config
+        videostrip_core::EnhanceConfig enhance; //< Image enhancement config
 
         // Frame selection
         float overlap_threshold = 0.7f; ///< [0.0 - 1.0], min overlap/confidence for selecting frames
