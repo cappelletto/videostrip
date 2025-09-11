@@ -29,6 +29,7 @@ target_compile_definitions(videostrip_core
 # Link dependencies to this module
 target_link_libraries(videostrip_core
     PUBLIC ${OpenCV_LIBS}
+    yaml-cpp
 )
 
 # Optional: Warnings

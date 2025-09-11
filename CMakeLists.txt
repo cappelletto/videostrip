@@ -59,18 +59,31 @@ message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
 # All headers live in subfolders inside ${CMAKE_SOURCE_DIR}
 include_directories(${CMAKE_SOURCE_DIR})
 
-# ==========================================
-# Promoted to top-level as it is needed by multiple modules
-find_package(yaml-cpp QUIET)
+# ---- yaml-cpp (CONFIG package preferred; else FetchContent) ----
+find_package(yaml-cpp CONFIG QUIET)
+
 if(NOT yaml-cpp_FOUND)
-    message(STATUS "yaml-cpp not found; fetching...")
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        message(STATUS "On Linux, you can install yaml-cpp system-wide with:")
-        message(STATUS "  sudo apt install libyaml-cpp-dev")
-    endif()
-    include(FetchContent)
-    FetchContent_Declare(yaml_cpp GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git GIT_TAG 0.8.0)
-    FetchContent_MakeAvailable(yaml_cpp)
+  message(STATUS "yaml-cpp not found; fetching source with FetchContent...")
+  include(FetchContent)
+
+  # Keep the fetched build small & static
+  set(YAML_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+  set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+  set(YAML_CPP_INSTALL     OFF CACHE BOOL "" FORCE)
+  # MSVC runtime per your project policy
+  set(YAML_MSVC_SHARED_RT  ON  CACHE BOOL "" FORCE)
+
+  FetchContent_Declare(yaml_cpp
+    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+    GIT_TAG        0.8.0
+  )
+  FetchContent_MakeAvailable(yaml_cpp)
+endif()
+
+# At this point, a target named 'yaml-cpp' must exist (from either path).
+if(NOT TARGET yaml-cpp)
+  message(FATAL_ERROR "yaml-cpp target not found even after FetchContent; aborting.")
 endif()
 
 # ==========================================
