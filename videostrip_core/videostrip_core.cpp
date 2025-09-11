@@ -69,6 +69,8 @@ namespace videostrip
         m_summary.input_video_basename = fs::path(m_config.input_video_path).filename().string();
         m_summary.config_used = m_config;
 
+        // 
+
         // Timestamp (ISO8601-like)
         {
             auto now = std::chrono::system_clock::now();

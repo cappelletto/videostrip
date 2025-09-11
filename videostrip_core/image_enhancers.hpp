@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-namespace videostrip_core {
+namespace videostrip {
 
 /// Supported Operations - extensible list.
 enum class EnhanceType {
@@ -99,4 +99,4 @@ private:
     void ensureClahe(const ClaheParams& p);
 };
 
-} // namespace videostrip_core
+} // namespace videostrip

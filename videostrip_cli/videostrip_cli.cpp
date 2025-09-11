@@ -71,6 +71,8 @@ int main(int argc, char *argv[])
     if (config_file) {
         std::string err;
         ExtractorConfig y;
+        // Show in console we are loading a config
+        std::cout << "Loading config from " << args::get(config_file) << "\n";
         if (!videostrip::cli::load_yaml_config(args::get(config_file), y, err)) {
             std::cerr << "Config error: " << err << "\n";
             return 2;
@@ -202,7 +204,7 @@ int main(int argc, char *argv[])
             });
 
         // Run
-        const bool ok = extractor.run();
+        const bool ok = extractor.run(); ///< this will run main videostrip_core loop: VideoFrameExtractor::run()
         std::cout << std::endl;
         if (!ok)
         {

@@ -4,6 +4,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <videostrip_cli/config_loader.hpp>
+#include <videostrip_core/enhance_yaml.hpp>
 
 namespace fs = std::filesystem;
 
@@ -97,6 +98,32 @@ bool load_yaml_config(const std::string& yaml_path,
             chosen_base = root["output"]["base_dir"].as<std::string>();
         }
         normalize_output_paths(out, chosen_base);
+
+        // enhancement.* (authoritative block) 
+        // YAML::Node root["enhance"] is the standard way to access it.
+        // We still delegate parsing to core to avoid duplicating schema rules. For that we use the parseEnhanceConfig function.
+        std::string enhance_err;
+        auto enhance_cfg = videostrip::parseEnhanceConfig(root, enhance_err); // return type std::optional<EnhanceConfig>
+        if (!enhance_cfg.has_value()) {
+            // Check if the node was present but malformed
+            if (root["enhance"]) {
+                err = "Failed to parse enhance config: " + enhance_err;
+                return false;
+            }
+        }
+        else{
+            out.enhance = *enhance_cfg; //copy the content of the optional to the out config
+        }
+
+        // Check if we received the legacy flag for apply_enhancement
+        if (out.apply_enhancement && !root["enhance"]) {
+            // If so, enable a default enhancement sequence (GrayWorldWB)
+            out.enhance.enable = true;
+            // clear the sequence if any (should be empty anyway)
+            out.enhance.sequence.clear();
+            out.enhance.sequence.push_back({EnhanceType::GrayWorldWB, GrayWorldParams{}});
+            out.enhance.sequence.push_back({ EnhanceType::CLAHE, ClaheParams{2.0, {8,8}, ClaheSpace::YCrCb} });
+        }
 
         err.clear();
         return true;
