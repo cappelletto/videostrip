@@ -2,6 +2,9 @@
 #include <opencv2/core.hpp>
 #include <string>
 
+#include <iostream>
+#include <fstream>
+
 #include <videostrip_core/image_enhancers.hpp>
 #include <videostrip_core/enhance_yaml.hpp>
 
@@ -25,7 +28,7 @@ public:
     bool process(cv::Mat& bgr) {
         if (!enabled_) return true;
         if (bgr.empty()) return false;
-
+        std::cout << "EnhanceStage: applying enhancement steps" << std::endl;
         // Expect CV_8UC3. Convert conservatively if needed.
         if (bgr.type() != CV_8UC3) {
             cv::Mat tmp;

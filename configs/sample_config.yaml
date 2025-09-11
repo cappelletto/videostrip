@@ -15,7 +15,7 @@ processing:
   feature_type: KAZE
   image_format: png
   overlap_threshold: 0.75
-  max_skipped_frames: 4
+  max_skipped_frames: 5
   apply_enhancement: true
   create_output_dirs: true
   enable_logging: true
@@ -25,8 +25,8 @@ enhance:
   enable: true
   sequence:
     - type: contrast
-      alpha: 1.15
-      beta: -5
+      alpha: 1.8
+      beta: 200
     - type: grayworld
     - type: gamma
       value: 1.05
