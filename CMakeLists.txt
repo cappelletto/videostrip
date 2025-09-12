@@ -61,9 +61,11 @@ message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
 include_directories(${CMAKE_SOURCE_DIR})
 
 # ---- yaml-cpp (CONFIG package preferred; else FetchContent) ----
-find_package(yaml-cpp CONFIG QUIET)
+find_package(yaml-cpp CONFIG)
 
-if(NOT yaml-cpp_FOUND)
+if(NOT TARGET yaml-cpp)
+# TODO: Investigate difference across OS, (not working on Linux)
+# if(NOT yaml-cpp_FOUND)
   message(STATUS "yaml-cpp not found; fetching source with FetchContent...")
   include(FetchContent)
 
