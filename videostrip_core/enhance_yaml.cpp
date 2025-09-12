@@ -1,7 +1,7 @@
-#include "enhance_yaml.hpp"
 #include <algorithm>
+#include <videostrip_core/enhance_yaml.hpp>
 
-namespace videostrip_core {
+namespace videostrip {
 
 static inline std::string toLower(std::string s) {
     std::transform(s.begin(), s.end(), s.begin(),
@@ -77,4 +77,4 @@ std::optional<EnhanceConfig> parseEnhanceConfig(const YAML::Node& root, std::str
     return cfg;
 }
 
-} // namespace videostrip_core
+} // namespace videostrip

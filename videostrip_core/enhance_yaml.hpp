@@ -5,7 +5,7 @@
 
 #include <videostrip_core/image_enhancers.hpp>
 
-namespace videostrip_core {
+namespace videostrip {
 
 struct EnhanceConfig {
     bool enable{false};
@@ -15,4 +15,4 @@ struct EnhanceConfig {
 /// Parse EnhanceConfig from a YAML node (root or subnode). Returns error string on failure.
 std::optional<EnhanceConfig> parseEnhanceConfig(const YAML::Node& root, std::string& err);
 
-} // namespace videostrip_core
+} // namespace videostrip

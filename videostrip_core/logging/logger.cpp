@@ -22,4 +22,4 @@ namespace videostrip
     // {
     //     // No history implemented — stub
     // }
-} // namespace videostrip_core::logger
+} // namespace videostrip

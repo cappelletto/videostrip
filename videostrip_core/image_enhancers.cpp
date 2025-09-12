@@ -6,7 +6,7 @@
 
 #include <videostrip_core/image_enhancers.hpp>
 
-namespace videostrip_core {
+namespace videostrip {
 
 //--------------------------
 // Public API
@@ -242,4 +242,4 @@ bool Enhancer::opClahe(cv::Mat& bgr, const ClaheParams& p) {
     return true;
 }
 
-} // namespace videostrip_core
+} // namespace videostrip
