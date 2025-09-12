@@ -77,7 +77,9 @@ int main(int argc, char *argv[])
             std::cerr << "Config error: " << err << "\n";
             return 2;
         }
-        videostrip::cli::merge_yaml_into(config, y);
+        // TODO: Reevaluate either setting flags as optional (otherwise we can't tell if user set them or end using defaults)
+        // Or just avoid merging and always let CLI override YAML if present
+        videostrip::cli::merge_yaml_into(config, y); // Ensure 'config' is passed by reference in the function definition
     }
 
     // Input (CLI > YAML)

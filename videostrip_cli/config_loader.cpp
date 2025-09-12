@@ -191,6 +191,7 @@ void merge_yaml_into(ExtractorConfig& dst, const ExtractorConfig& y)
     dst.apply_enhancement  = y.apply_enhancement;
     dst.create_output_dirs = y.create_output_dirs;
     dst.enable_logging     = y.enable_logging;
+    dst.enhance            = y.enhance;
 
     // Optional future field:
     // if (!y.overlap_mode.empty()) dst.overlap_mode = y.overlap_mode;
