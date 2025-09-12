@@ -69,6 +69,8 @@ namespace videostrip
         m_summary.input_video_basename = fs::path(m_config.input_video_path).filename().string();
         m_summary.config_used = m_config;
 
+        // 
+
         // Timestamp (ISO8601-like)
         {
             auto now = std::chrono::system_clock::now();
@@ -109,9 +111,20 @@ namespace videostrip
         videostrip::io::MetadataWriter md_writer(m_config);
         md_writer.initCSV();
 
+        // Construct the EnhanceStage member if requested
+        if (m_config.apply_enhancement) {
+            m_enhance_stage = EnhanceStage();
+            std::string err;
+            bool sucess = m_enhance_stage.configure(m_config.enhance, err);
+            if (!sucess) {
+                writeLog("Failed to configure enhancement stage: " + err, "ERROR");
+                throw std::runtime_error("Failed to configure enhancement stage: " + err);
+            }
+        }
+
         // Helper lambda: export one selected frame (image + features + CSV row)
         // Captures by reference; only call within run()
-        auto export_frame = [&](const cv::Mat& bgr_frame, int source_frame_idx, double quality_score)
+        auto export_frame = [&](cv::Mat& bgr_frame, int source_frame_idx, double quality_score)
         {
             std::ostringstream img_name;
             img_name << "frame_" << std::setw(6) << std::setfill('0') << source_frame_idx << "." << m_config.image_format;
@@ -121,7 +134,15 @@ namespace videostrip
             // Optional enhancement hook
             if (m_config.apply_enhancement) {
                 // TODO: enhancement step
-                writeLog("Enhancement not implemented; skipping", "WARN");
+                writeLog("Applying enhancement steps", "INFO");
+                bool ret_ = m_enhance_stage.process(bgr_frame);
+                if (!ret_) {
+                    writeLog("Enhancement step failed for frame " + std::to_string(source_frame_idx), "WARN");
+                    std::cout << "Enhancement step failed for frame"  << source_frame_idx << std::endl;
+                }
+                else{
+                    writeLog("Enhancement step succeeded for frame " + std::to_string(source_frame_idx), "INFO");
+                }
             }
 
             // Save image (best-effort)

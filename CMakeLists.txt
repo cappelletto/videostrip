@@ -16,6 +16,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # ==========================================
 option(BUILD_TESTS "Build unit/integration tests" ON)
 option(BUILD_GUI "Build GUI module" OFF)
+option(BUILD_MANPAGE "Generate manpage for CLI tool (requires help2man)" OFF)
 
 
 message(STATUS "--------------------")
@@ -59,14 +60,33 @@ message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
 # All headers live in subfolders inside ${CMAKE_SOURCE_DIR}
 include_directories(${CMAKE_SOURCE_DIR})
 
-# ==========================================
-# Promoted to top-level as it is needed by multiple modules
-find_package(yaml-cpp QUIET)
-if(NOT yaml-cpp_FOUND)
-  message(STATUS "yaml-cpp not found; fetching...")
+# ---- yaml-cpp (CONFIG package preferred; else FetchContent) ----
+find_package(yaml-cpp CONFIG)
+
+if(NOT TARGET yaml-cpp)
+# TODO: Investigate difference across OS, (not working on Linux)
+# if(NOT yaml-cpp_FOUND)
+  message(STATUS "yaml-cpp not found; fetching source with FetchContent...")
   include(FetchContent)
-  FetchContent_Declare(yaml_cpp GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git GIT_TAG 0.8.0)
+
+  # Keep the fetched build small & static
+  set(YAML_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+  set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+  set(YAML_CPP_INSTALL     OFF CACHE BOOL "" FORCE)
+  # MSVC runtime per your project policy
+  set(YAML_MSVC_SHARED_RT  ON  CACHE BOOL "" FORCE)
+
+  FetchContent_Declare(yaml_cpp
+    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+    GIT_TAG        0.8.0
+  )
   FetchContent_MakeAvailable(yaml_cpp)
+endif()
+
+# At this point, a target named 'yaml-cpp' must exist (from either path).
+if(NOT TARGET yaml-cpp)
+  message(FATAL_ERROR "yaml-cpp target not found even after FetchContent; aborting.")
 endif()
 
 # ==========================================
@@ -137,9 +157,6 @@ install(TARGETS videostrip_core
   LIBRARY DESTINATION lib
 )
 
-# TODO: Minimal manpage (optional). We do not have one yet, generate with help2man later.
-# install(FILES packaging/videostrip.1 DESTINATION share/man/man1)
-
 # Public headers (install only .hpp files from videostrip_core/)
 # If the headers live in subdirs (feature/, logging/), this will include them.
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/videostrip_core/
@@ -154,6 +171,37 @@ install(FILES configs/sample_config.yaml
 install(FILES ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_SOURCE_DIR}/LICENSE
   DESTINATION share/doc/videostrip
 )
+# -------------------------
+# Manpage generation (optional)
+# -------------------------
+if (BUILD_MANPAGE)
+    message(STATUS "Manpage generation enabled")
+    find_program(HELP2MAN_EXECUTABLE help2man)
+
+    if(HELP2MAN_EXECUTABLE)
+        # Create packaging dir if it does not exist
+        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/packaging)
+        add_custom_command(
+            OUTPUT ${CMAKE_BINARY_DIR}/packaging/videostrip.1
+            COMMAND ${HELP2MAN_EXECUTABLE} --no-discard-stderr --output=${CMAKE_BINARY_DIR}/packaging/videostrip.1 $<TARGET_FILE:videostrip_cli>
+            DEPENDS videostrip_cli
+            COMMENT "Generating manpage for videostrip_cli"
+            VERBATIM
+        )
+
+        add_custom_target(manpage ALL
+            DEPENDS ${CMAKE_BINARY_DIR}/packaging/videostrip.1
+        )
+
+        install(FILES ${CMAKE_BINARY_DIR}/packaging/videostrip.1 DESTINATION share/man/man1)
+        else()
+        message(WARNING "help2man not found: manpage will not be generated automatically.")
+    endif()
+
+else()
+  message(STATUS "Manpage generation disabled")
+endif()
+
 
 # -------------------------
 # CPack configuration
@@ -175,17 +223,14 @@ set(CPACK_PACKAGE_FILE_NAME
 # Source + binary archives
 set(CPACK_GENERATOR "TGZ;ZIP;DEB")
 
-# Debian metadata (tune as you learn your shared libs)
+# Debian metadata (tune as we expand shared libs)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Jose Cappelletto")           # required
 set(CPACK_DEBIAN_PACKAGE_SECTION "science")
 set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 
 # Runtime deps if linking dynamically; keep minimal first, then refine with ldd
-# Example: 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6, libgcc-s1")
-# TODO: 
-# Add correct libraries from OpenCV
-# set(CPACK_DEBIAN_PACKAGE_DEPENDS "libopencv-core4.8, libopencv-imgcodecs4.8")
+# Automate depedencies based on linked shared libs
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # Avoid the classic error: ensure CPack knows the project
 set(CPACK_PACKAGE_FILE_NAME "videostrip-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")

@@ -21,6 +21,8 @@
 #include <vector>
 
 #include <videostrip_core/feature/feature_extractor.hpp>
+#include <videostrip_core/enhance_yaml.hpp> 
+#include <videostrip_core/pipeline_enhance.hpp>
 
 /**
  * @namespace videostrip
@@ -51,6 +53,7 @@ namespace videostrip
         std::string output_log_file;
         std::string overlap_mode; ///< Reserved for future use, from args, options are FEATURE|FLOW|ECC
 
+        videostrip::EnhanceConfig enhance; //< Image enhancement config
 
         // Frame selection
         float overlap_threshold = 0.7f; ///< [0.0 - 1.0], min overlap/confidence for selecting frames
@@ -156,6 +159,7 @@ namespace videostrip
 
     private:
         ExtractorConfig m_config;
+        EnhanceStage m_enhance_stage;  // Image enhancement stage
         std::vector<FrameMetadata> m_metadata;
         RunSummary m_summary;
         ProgressCallback m_progress_cb;
