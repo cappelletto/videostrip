@@ -63,10 +63,12 @@ include_directories(${CMAKE_SOURCE_DIR})
 # ---- yaml-cpp (CONFIG package preferred; else FetchContent) ----
 find_package(yaml-cpp CONFIG)
 
-if(NOT TARGET yaml-cpp)
-# TODO: Investigate difference across OS, (not working on Linux)
-# if(NOT yaml-cpp_FOUND)
-  message(STATUS "yaml-cpp not found; fetching source with FetchContent...")
+if (TARGET yaml-cpp)
+    message(STATUS "yaml-cpp found (CONFIG package)")
+    message(STATUS "yaml-cpp include dirs: ${yaml-cpp_INCLUDE_DIRS}")
+else()
+    message(STATUS "yaml-cpp not found (CONFIG package)")
+  message(STATUS ">>>> yaml-cpp not found; fetching source with FetchContent...")
   include(FetchContent)
 
   # Keep the fetched build small & static
