@@ -5,7 +5,7 @@
 #include <videostrip_core/enhance/pipeline_enhance.hpp>
 #include <videostrip_core/enhance/enhance_yaml.hpp>
 
-using namespace videostrip_core;
+using namespace videostrip;
 
 TEST_CASE("EnhanceStage: converts to 8UC3 and applies sequence", "[enhance][stage]") {
     // Start with 16U gray; stage should convert and then process

@@ -4,7 +4,7 @@
 
 #include <videostrip_core/enhance/enhance_yaml.hpp>
 
-using namespace videostrip_core;
+using namespace videostrip;
 
 TEST_CASE("enhance yaml: valid sequence parses", "[enhance][yaml]") {
     const char* y = R"YAML(

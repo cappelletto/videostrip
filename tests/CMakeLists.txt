@@ -34,6 +34,58 @@ target_link_libraries(test_core_smoke
     ${OpenCV_LIBS}
 )
 
+# =========================
+# test_enhance_yaml
+# =========================
+add_executable(test_enhance_yaml
+  ${CMAKE_CURRENT_SOURCE_DIR}/test_enhance_yaml.cpp
+)
+target_include_directories(test_enhance_yaml PRIVATE ${TEST_COMMON_INCLUDES})
+target_link_libraries(test_enhance_yaml
+  PRIVATE
+    videostrip_core
+    Catch2::Catch2WithMain
+    yaml-cpp
+)
+catch_discover_tests(test_enhance_yaml
+  WORKING_DIRECTORY $<TARGET_FILE_DIR:test_enhance_yaml>
+)
+
+# =========================
+# test_enhance_ops
+# =========================
+add_executable(test_enhance_ops
+  ${CMAKE_CURRENT_SOURCE_DIR}/test_enhance_ops.cpp
+)
+target_include_directories(test_enhance_ops PRIVATE ${TEST_COMMON_INCLUDES})
+target_link_libraries(test_enhance_ops
+  PRIVATE
+    videostrip_core
+    Catch2::Catch2WithMain
+    ${OpenCV_LIBS}
+)
+catch_discover_tests(test_enhance_ops
+  WORKING_DIRECTORY $<TARGET_FILE_DIR:test_enhance_ops>
+)
+
+# =========================
+# test_enhance_stage
+# =========================
+add_executable(test_enhance_stage
+  ${CMAKE_CURRENT_SOURCE_DIR}/test_enhance_stage.cpp
+)
+target_include_directories(test_enhance_stage PRIVATE ${TEST_COMMON_INCLUDES})
+target_link_libraries(test_enhance_stage
+  PRIVATE
+    videostrip_core
+    Catch2::Catch2WithMain
+    ${OpenCV_LIBS}
+)
+catch_discover_tests(test_enhance_stage
+  WORKING_DIRECTORY $<TARGET_FILE_DIR:test_enhance_stage>
+)
+
+
 catch_discover_tests(test_core_smoke
   WORKING_DIRECTORY $<TARGET_FILE_DIR:test_core_smoke>
 )

@@ -4,7 +4,7 @@
 
 #include <videostrip_core/enhance/image_enhancers.hpp>
 
-using namespace videostrip_core;
+using namespace videostrip;
 
 static cv::Mat toy2x2() {
     cv::Mat m(2,2,CV_8UC3);
