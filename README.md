@@ -16,13 +16,16 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshr
 > * A **CLI application** for processing videos into frames + metadata.
 > * A **core library** exposing `VideoFrameExtractor` and related modules.
 > * A **metadata writer** for reproducible CSV + YAML outputs.
-> * CI/CD with unit tests for schema regression.
+> * CI/CD with unit tests for schema regression, running on Linux and Windows.
+> * A modular image enhacement pipeline (pre-export stage)
+> * Optional packaging system (DEB/TAR)
+> * Linux compatible documentation (manpages)
 
 **Short-term focus**: Consolidate usability, error resilience, and schema compliance before expanding to advanced feature modes (grid, enhancement, optical flow).
 
 ---
 
-## **Key Features (v0.4.0)**
+## **Key Features (v0.8.0)**
 
 * ✅ **CLI support** for video processing with YAML or CLI configs.
 * ✅ **Frame extraction with stride or overlap-based selection**.
@@ -31,7 +34,7 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshr
   * `frames.csv` — per-frame metadata.
   * `summary.yaml` — run summary + configuration snapshot.
 * ✅ **Deterministic file structure**: images/, features/, frames.csv, summary.yaml, run.log.
-* ⏳ **On-export frame enhancement** (future).
+* ✅ **On-export frame enhancement** (future).
 * ⏳ **Grid-based feature density normalization** (future).
 
 ---
@@ -67,7 +70,7 @@ git clone https://github.com/cappelletto/videostrip.git
 cd videostrip
 
 # Configure and build
-cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_MANPAGE=OFF -DBUILD_TESTS=OFF
 cmake --build build -j4
 ```
 
@@ -126,11 +129,11 @@ processing:
   apply_enhancement: false
   enable_logging: true
 ```
-Here’s a suggested **README update** to document the enhancement pipeline now that it’s wired into core. I’ve kept it minimal and in the same style/sections as your current README. Later you can extract this into a separate `docs/enhancement.md`.
 
 ---
 
 ## **Enhancement Pipeline (NEW)**
+TODO: extract this into a separate `docs/enhancement.md`.
 
 Starting with **v0.7.x**, videostrip supports an optional **image enhancement stage** that preprocesses frames before feature extraction. This improves contrast and uniformity in underwater imagery.
 
