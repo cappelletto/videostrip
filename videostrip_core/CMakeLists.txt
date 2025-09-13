@@ -5,9 +5,9 @@ message(STATUS "*******************")
 
 add_library(videostrip_core STATIC
     videostrip_core.cpp
-    image_enhancers.cpp
-    enhance_yaml.cpp
-    pipeline_enhance.cpp
+    enhance/image_enhancers.cpp
+    enhance/enhance_yaml.cpp
+    enhance/pipeline_enhance.cpp
     feature/feature_extractor.cpp
     keyframe/keyframe_selector.cpp
     io/metadata_writer.cpp

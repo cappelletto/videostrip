@@ -5,8 +5,8 @@
 #include <iostream>
 #include <fstream>
 
-#include <videostrip_core/image_enhancers.hpp>
-#include <videostrip_core/enhance_yaml.hpp>
+#include <videostrip_core/enhance/image_enhancers.hpp>
+#include <videostrip_core/enhance/enhance_yaml.hpp>
 
 namespace videostrip {
 

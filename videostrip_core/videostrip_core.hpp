@@ -21,8 +21,8 @@
 #include <vector>
 
 #include <videostrip_core/feature/feature_extractor.hpp>
-#include <videostrip_core/enhance_yaml.hpp> 
-#include <videostrip_core/pipeline_enhance.hpp>
+#include <videostrip_core/enhance/enhance_yaml.hpp> 
+#include <videostrip_core/enhance/pipeline_enhance.hpp>
 
 /**
  * @namespace videostrip

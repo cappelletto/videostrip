@@ -4,7 +4,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <videostrip_cli/config_loader.hpp>
-#include <videostrip_core/enhance_yaml.hpp>
+#include <videostrip_core/enhance/enhance_yaml.hpp>
 
 namespace fs = std::filesystem;
 
