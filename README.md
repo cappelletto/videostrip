@@ -16,13 +16,16 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshr
 > * A **CLI application** for processing videos into frames + metadata.
 > * A **core library** exposing `VideoFrameExtractor` and related modules.
 > * A **metadata writer** for reproducible CSV + YAML outputs.
-> * CI/CD with unit tests for schema regression.
+> * CI/CD with unit tests for schema regression, running on Linux and Windows.
+> * A modular image enhacement pipeline (pre-export stage)
+> * Optional packaging system (DEB/TAR)
+> * Linux compatible documentation (manpages)
 
 **Short-term focus**: Consolidate usability, error resilience, and schema compliance before expanding to advanced feature modes (grid, enhancement, optical flow).
 
 ---
 
-## **Key Features (v0.4.0)**
+## **Key Features (v0.8.0)**
 
 * ✅ **CLI support** for video processing with YAML or CLI configs.
 * ✅ **Frame extraction with stride or overlap-based selection**.
@@ -31,7 +34,7 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshr
   * `frames.csv` — per-frame metadata.
   * `summary.yaml` — run summary + configuration snapshot.
 * ✅ **Deterministic file structure**: images/, features/, frames.csv, summary.yaml, run.log.
-* ⏳ **On-export frame enhancement** (future).
+* ✅ **On-export frame enhancement** (future).
 * ⏳ **Grid-based feature density normalization** (future).
 
 ---
@@ -67,7 +70,7 @@ git clone https://github.com/cappelletto/videostrip.git
 cd videostrip
 
 # Configure and build
-cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_MANPAGE=OFF -DBUILD_TESTS=OFF
 cmake --build build -j4
 ```
 
@@ -129,6 +132,73 @@ processing:
 
 ---
 
+## **Enhancement Pipeline (NEW)**
+TODO: extract this into a separate `docs/enhancement.md`.
+
+Starting with **v0.7.x**, videostrip supports an optional **image enhancement stage** that preprocesses frames before feature extraction. This improves contrast and uniformity in underwater imagery.
+
+### Supported enhancement steps
+
+* **Contrast & offset**
+  Linear transform per pixel: `alpha * I + beta`.
+  *Params*: `alpha` (gain), `beta` (offset).
+
+* **Gray-world white balance**
+  Scales RGB channels so that their mean matches the global mean.
+  *Params*: none.
+
+* **Gamma correction**
+  Applies a gamma LUT (`I_out = I_in^(1/gamma)`).
+  *Params*: `value` (gamma > 0).
+
+* **CLAHE (Contrast Limited Adaptive Histogram Equalization)**
+  Adaptive histogram equalization on luminance channel.
+  *Params*:
+
+  * `clip_limit` (float, default 2.0)
+  * `tile_grid` (two-element array, default `[8,8]`)
+  * `space` (one of `YCrCb`, `HSV`, `Lab`, `BGR`)
+    Channel is chosen implicitly: Y (YCrCb), V (HSV), L (Lab), all channels (BGR).
+
+### Minimal YAML configuration
+
+Add an `enhance` block at the top level of the config file:
+
+```yaml
+enhance:
+  enable: true
+  sequence:
+    - type: contrast
+      alpha: 1.10
+      beta: -5
+    - type: grayworld
+    - type: gamma
+      value: 1.05
+    - type: clahe
+      clip_limit: 2.0
+      tile_grid: [8, 8]
+      space: YCrCb
+```
+
+If no `enhance:` block is given but the legacy flag
+
+```yaml
+processing:
+  apply_enhancement: true
+```
+
+is set, a default sequence `{grayworld, clahe(YCrCb)}` will be applied.
+
+### CLI override
+
+You can also pass a shorthand string (for quick tests):
+
+```bash
+./videostrip_cli --enhance.sequence "contrast(alpha=1.1,beta=-5); grayworld; gamma(1.05); clahe(clip=2.0,grid=8x8,space=YCrCb)"
+```
+
+---
+
 ## **Schema v1 Contract**
 
 * **frames.csv** — columns: `frame_idx,timestamp_ms,output_image,feature_count,quality_score,georef`
@@ -144,13 +214,13 @@ Schema is locked at `v1`. Future changes will bump schema_version.
 ## **Roadmap**
 
 Near-term milestones:
-1. Add **frame enhancement filters** (CLAHE, WB).
-2. Introduce **grid-based feature normalization**.
-3. Expand **Windows CI/CD** coverage.
+1. Introduce **grid-based feature normalization**.
+2. Performance release by adding multithreading and GPU support.
 
 Long-term:
 * Optical flow / ECC overlap modes.
-* Batch manager & GUI front-end.
+* Cross-platform GUI for both pipeline configuration and dispatching.
+* Integration with Meshroom (node-base core library)
 
 ---
 

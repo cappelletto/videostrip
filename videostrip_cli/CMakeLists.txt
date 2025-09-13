@@ -13,7 +13,7 @@ add_executable(videostrip_cli
 # - Project external folder for args.hxx
 # - Core module for headers.hpp and helper.hpp
 target_include_directories(videostrip_cli
-    PRIVATE
+    PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/external
         ${CMAKE_SOURCE_DIR}/videostrip_core

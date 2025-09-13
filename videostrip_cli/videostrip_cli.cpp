@@ -71,11 +71,15 @@ int main(int argc, char *argv[])
     if (config_file) {
         std::string err;
         ExtractorConfig y;
+        // Show in console we are loading a config
+        std::cout << "Loading config from " << args::get(config_file) << "\n";
         if (!videostrip::cli::load_yaml_config(args::get(config_file), y, err)) {
             std::cerr << "Config error: " << err << "\n";
             return 2;
         }
-        videostrip::cli::merge_yaml_into(config, y);
+        // TODO: Reevaluate either setting flags as optional (otherwise we can't tell if user set them or end using defaults)
+        // Or just avoid merging and always let CLI override YAML if present
+        videostrip::cli::merge_yaml_into(config, y); // Ensure 'config' is passed by reference in the function definition
     }
 
     // Input (CLI > YAML)
@@ -202,7 +206,7 @@ int main(int argc, char *argv[])
             });
 
         // Run
-        const bool ok = extractor.run();
+        const bool ok = extractor.run(); ///< this will run main videostrip_core loop: VideoFrameExtractor::run()
         std::cout << std::endl;
         if (!ok)
         {
