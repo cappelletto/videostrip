@@ -15,7 +15,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Build options
 # ==========================================
 option(BUILD_TESTS "Build unit/integration tests" ON)
-option(BUILD_GUI "Build GUI module" OFF)
+# option(BUILD_GUI "Build GUI module" OFF)
 option(BUILD_MANPAGE "Generate manpage for CLI tool (requires help2man)" OFF)
 
 
@@ -55,12 +55,8 @@ message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
 
 # ==========================================
-# Global include path (so <videostrip_core/...> works everywhere)
+# yaml-cpp detection. FetchContent fallback
 # ==========================================
-# All headers live in subfolders inside ${CMAKE_SOURCE_DIR}
-include_directories(${CMAKE_SOURCE_DIR})
-
-# ---- yaml-cpp (CONFIG package preferred; else FetchContent) ----
 find_package(yaml-cpp CONFIG)
 
 if (TARGET yaml-cpp)
@@ -87,9 +83,16 @@ else()
 endif()
 
 # At this point, a target named 'yaml-cpp' must exist (from either path).
+# If not, abort with error.
 if(NOT TARGET yaml-cpp)
   message(FATAL_ERROR "yaml-cpp target not found even after FetchContent; aborting.")
 endif()
+
+# ==========================================
+# Global include path (so <videostrip_core/...> works everywhere)
+# ==========================================
+# All headers live in subfolders inside ${CMAKE_SOURCE_DIR}
+include_directories(${CMAKE_SOURCE_DIR})
 
 # ==========================================
 # Add project modules (progressive build)
