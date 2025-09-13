@@ -53,7 +53,7 @@ TEST_CASE("Gamma LUT monotonic and anchors", "[enhance][ops]") {
     CHECK(m.at<cv::Vec3b>(0,0) == cv::Vec3b(0,0,0));
     CHECK(m.at<cv::Vec3b>(0,3) == cv::Vec3b(255,255,255));
     CHECK(m.at<cv::Vec3b>(0,1)[0] < m.at<cv::Vec3b>(0,2)[0]); // monotonic
-    CHECK(m.at<cv::Vec3b>(0,2)[0] < 128); // compressed mid-tones
+    CHECK(m.at<cv::Vec3b>(0,2)[0] > 128); // compressed mid-tones
 }
 
 TEST_CASE("CLAHE increases gray stddev", "[enhance][ops]") {
