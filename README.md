@@ -1,11 +1,12 @@
 [![C/C++ CI](https://github.com/cappelletto/videostrip/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/cappelletto/videostrip/actions/workflows/c-cpp.yml)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ---
 
 # videostrip
 
 **videostrip** is a modular project for **video frame extraction and keyframe selection** to support **2D/3D reconstruction of underwater video transects**.
-It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshroom, Metashape**, and our **custom video transect pipeline**.
+It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshroom, Metashape**, and our (future) **custom video transect pipeline**.
 
 ---
 
@@ -19,13 +20,14 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshr
 > * CI/CD with unit tests for schema regression, running on Linux and Windows.
 > * A modular image enhacement pipeline (pre-export stage)
 > * Optional packaging system (DEB/TAR)
+> * Precompiled binaries for Linux and Windows as part of the release payload (CD)
 > * Linux compatible documentation (manpages)
 
 **Short-term focus**: Consolidate usability, error resilience, and schema compliance before expanding to advanced feature modes (grid, enhancement, optical flow).
 
 ---
 
-## **Key Features (v0.8.0)**
+## **Key Features (v0.8.2)**
 
 * ✅ **CLI support** for video processing with YAML or CLI configs.
 * ✅ **Frame extraction with stride or overlap-based selection**.
@@ -34,8 +36,8 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshr
   * `frames.csv` — per-frame metadata.
   * `summary.yaml` — run summary + configuration snapshot.
 * ✅ **Deterministic file structure**: images/, features/, frames.csv, summary.yaml, run.log.
-* ✅ **On-export frame enhancement** (future).
-* ⏳ **Grid-based feature density normalization** (future).
+* ✅ **On-export frame enhancement**.
+* ✅ **Grid-based feature density normalization**.
 
 ---
 
@@ -128,6 +130,11 @@ processing:
   max_skipped_frames: 4
   apply_enhancement: false
   enable_logging: true
+  feature_normalization: grid     # none|grid
+  grid_normalization:
+    cell: [32, 32]
+    max_per_cell: 50
+    score: response               # response|size
 ```
 
 ---
@@ -214,7 +221,7 @@ Schema is locked at `v1`. Future changes will bump schema_version.
 ## **Roadmap**
 
 Near-term milestones:
-1. Introduce **grid-based feature normalization**.
+1. In-depth performance profiling
 2. Performance release by adding multithreading and GPU support.
 
 Long-term:
