@@ -30,6 +30,8 @@ namespace videostrip
           m_feature_extractor(make_default_extractor(config.feature_type)),
           m_logger(std::make_shared<videostrip::logger::ConsoleLogger>("VideoFrameExtractor"))
     {
+        // Apply normalization config to extractor at construction time, see #23
+        m_feature_extractor->set_normalization(m_config.feature_normalization);
     }
 
     VideoFrameExtractor::~VideoFrameExtractor() = default;
@@ -69,7 +71,10 @@ namespace videostrip
         m_summary.input_video_basename = fs::path(m_config.input_video_path).filename().string();
         m_summary.config_used = m_config;
 
-        // 
+        // Update config with normalization if requested
+        // if (m_config.feature_normalization == FeatureNormalizationMode::Grid) {
+        //     m_feature_extractor->set_normalization(m_config.grid_normalization);
+        // }
 
         // Timestamp (ISO8601-like)
         {

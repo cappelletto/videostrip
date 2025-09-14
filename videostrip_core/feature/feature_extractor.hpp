@@ -15,6 +15,8 @@
 
 #include <memory>
 #include <string>
+#include <opencv2/opencv.hpp>
+#include <opencv2/features2d.hpp>
 
 // TODO: We can convert this into a CMake stage xfeatures2d check
 // Conditionally enable SURF if headers exist
@@ -27,6 +29,28 @@
 
 namespace videostrip
 {
+    // #23: Normalization controls
+    enum class FeatureNormalizationMode {
+        None = 0,
+        Grid  // enforce per-cell cap using a score (e.g., response)
+    };
+
+    // #23: Parameters for grid-based normalization
+    struct GridNormalizationParams {
+        // Either define by cell size in pixels (recommended for robustness),
+        // or by grid rows/cols (mutually exclusive; prefer cell_w/h)
+        int cell_w{32};          // pixels
+        int cell_h{32};          // pixels
+        int max_per_cell{50};    // cap per cell
+        // Score key to pick "best" per cell. For now: response or size
+        enum class Score { Response, Size } score{Score::Response};
+    };
+
+    // #23: Overall normalization config
+    struct FeatureNormalizationConfig {
+        FeatureNormalizationMode mode{FeatureNormalizationMode::None};
+        GridNormalizationParams grid{};
+    };
 
     class FeatureExtractor
     {
@@ -46,6 +70,18 @@ namespace videostrip
 
         /// @return An identifier for the extractor (e.g., "ORB", "AKAZE", "SURF").
         virtual std::string type() const = 0;
+        // #23: Configure normalization (optional; keep defaults if not called)
+        void set_normalization(const FeatureNormalizationConfig& cfg) { norm_cfg_ = cfg; }
+
+    protected:
+
+        // Helpers for subclasses (post-detect normalization)
+        void apply_normalization(const cv::Size& img_size,
+                                std::vector<cv::KeyPoint>& keypoints) const;
+
+        // Normalization config (default: none)
+        FeatureNormalizationConfig norm_cfg_{};
+
     };
 
     /**
