@@ -1,11 +1,12 @@
 [![C/C++ CI](https://github.com/cappelletto/videostrip/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/cappelletto/videostrip/actions/workflows/c-cpp.yml)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ---
 
 # videostrip
 
 **videostrip** is a modular project for **video frame extraction and keyframe selection** to support **2D/3D reconstruction of underwater video transects**.
-It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshroom, Metashape**, and our **custom video transect pipeline**.
+It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshroom, Metashape**, and our (future) **custom video transect pipeline**.
 
 ---
 
@@ -19,6 +20,7 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshr
 > * CI/CD with unit tests for schema regression, running on Linux and Windows.
 > * A modular image enhacement pipeline (pre-export stage)
 > * Optional packaging system (DEB/TAR)
+> * Precompiled binaries for Linux and Windows as part of the release payload (CD)
 > * Linux compatible documentation (manpages)
 
 **Short-term focus**: Consolidate usability, error resilience, and schema compliance before expanding to advanced feature modes (grid, enhancement, optical flow).
