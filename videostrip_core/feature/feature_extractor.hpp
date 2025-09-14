@@ -74,6 +74,7 @@ namespace videostrip
         void set_normalization(const FeatureNormalizationConfig& cfg) { norm_cfg_ = cfg; }
 
     protected:
+
         // Helpers for subclasses (post-detect normalization)
         void apply_normalization(const cv::Size& img_size,
                                 std::vector<cv::KeyPoint>& keypoints) const;

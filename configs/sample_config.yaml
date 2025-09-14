@@ -21,6 +21,12 @@ processing:
   enable_logging: true
   # overlap_mode: FEATURE  # (optional, harmless for now)
 
+  feature_normalization: grid     # none|grid
+  grid_normalization:
+    cell: [32, 32]
+    max_per_cell: 50
+    score: response               # response|size
+
 enhance:
   enable: true
   sequence:

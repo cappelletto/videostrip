@@ -17,6 +17,7 @@
 
 namespace fs = std::filesystem;
 
+
 namespace videostrip
 {
 
@@ -74,6 +75,7 @@ namespace videostrip
                                            std::vector<cv::KeyPoint>& kpts) const
     {
         if (norm_cfg_.mode != FeatureNormalizationMode::Grid) return;
+        std::cout << "Applying GRID normalization" << std::endl;
         const auto& gp = norm_cfg_.grid;
         if (gp.cell_w <= 0 || gp.cell_h <= 0 || gp.max_per_cell <= 0) return;
         if (kpts.empty()) return;
@@ -166,7 +168,7 @@ namespace videostrip
                 std::vector<cv::KeyPoint> keypoints;
                 cv::Mat descriptors;
                 orb_->detectAndCompute(img, cv::noArray(), keypoints, descriptors);
-
+                apply_normalization(img.size(), keypoints);
                 // Ensure parent dir exists
                 try
                 {
@@ -224,7 +226,7 @@ namespace videostrip
                 std::vector<cv::KeyPoint> keypoints;
                 cv::Mat descriptors;
                 akaze_->detectAndCompute(img, cv::noArray(), keypoints, descriptors);
-
+                apply_normalization(img.size(), keypoints);
                 try
                 {
                     fs::create_directories(fs::path(feature_file_out).parent_path());
@@ -280,7 +282,7 @@ namespace videostrip
                 std::vector<cv::KeyPoint> keypoints;
                 cv::Mat descriptors;
                 surf_->detectAndCompute(img, cv::noArray(), keypoints, descriptors);
-
+                apply_normalization(img.size(), keypoints);
                 try
                 {
                     fs::create_directories(fs::path(feature_file_out).parent_path());
