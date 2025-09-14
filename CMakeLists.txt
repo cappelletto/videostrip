@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.18)
 project(videostrip VERSION 0.8.2 LANGUAGES CXX)
 
+# ------------------------------------------------------------
+# Licensing
+# ------------------------------------------------------------
+set(PROJECT_LICENSE "Apache License 2.0")
+message(STATUS "License: ${PROJECT_LICENSE}")
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -215,11 +221,12 @@ endif()
 set(CPACK_PACKAGE_NAME "videostrip")
 set(CPACK_PACKAGE_VENDOR "Rivermouth")
 set(CPACK_PACKAGE_CONTACT "cappelletto@gmail.com")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Video transect utilities for 2D/3D mapping (CLI)")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Video transect utilities for 2D/3D mapping via structure-from-motion or mosaicking")
+set(CPACK_PACKAGE_LICENSE "Apache-2.0")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README  "${CMAKE_SOURCE_DIR}/README.md")
-# Nice archive base name: videostrip-0.7.0-Linux-x86_64, etc.
+# Nice archive base name: videostrip-X.Y.Z-Linux-x86_64, etc.
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" _sysname_lc)
 set(CPACK_PACKAGE_FILE_NAME
   "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}"
