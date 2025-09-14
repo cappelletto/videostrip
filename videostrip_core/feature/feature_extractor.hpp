@@ -27,6 +27,28 @@
 
 namespace videostrip
 {
+    // #23: Normalization controls
+    enum class FeatureNormalizationMode {
+        None = 0,
+        Grid  // enforce per-cell cap using a score (e.g., response)
+    };
+
+    // #23: Parameters for grid-based normalization
+    struct GridNormalizationParams {
+        // Either define by cell size in pixels (recommended for robustness),
+        // or by grid rows/cols (mutually exclusive; prefer cell_w/h)
+        int cell_w{32};          // pixels
+        int cell_h{32};          // pixels
+        int max_per_cell{50};    // cap per cell
+        // Score key to pick "best" per cell. For now: response or size
+        enum class Score { Response, Size } score{Score::Response};
+    };
+
+    // #23: Overall normalization config
+    struct FeatureNormalizationConfig {
+        FeatureNormalizationMode mode{FeatureNormalizationMode::None};
+        GridNormalizationParams grid{};
+    };
 
     class FeatureExtractor
     {
