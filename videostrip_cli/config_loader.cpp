@@ -4,7 +4,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <videostrip_cli/config_loader.hpp>
-#include <videostrip_core/enhance_yaml.hpp>
+#include <videostrip_core/enhance/enhance_yaml.hpp>
 
 namespace fs = std::filesystem;
 
@@ -89,6 +89,38 @@ bool load_yaml_config(const std::string& yaml_path,
                 // e.g., out.overlap_mode = v.as<std::string>();
                 // Ignored if not present in struct.
             }
+
+            // NEW: feature normalization, see #23
+            // -----------------------------
+            using videostrip::FeatureNormalizationMode;
+            using videostrip::GridNormalizationParams;
+            // mode: none|grid
+            if (auto v = n["feature_normalization"]; v && v.IsScalar()) {
+                std::string s = v.as<std::string>();
+                std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+                out.feature_normalization.mode =
+                    (s == "grid") ? FeatureNormalizationMode::Grid
+                                  : FeatureNormalizationMode::None;
+            }
+            // grid_normalization: { cell:[w,h], max_per_cell:int, score:response|size }
+            if (auto gn = n["grid_normalization"]; gn && gn.IsMap()) {
+                if (auto cell = gn["cell"]; cell && cell.IsSequence() && cell.size() == 2) {
+                    out.feature_normalization.grid.cell_w = std::max(1, cell[0].as<int>(32));
+                    out.feature_normalization.grid.cell_h = std::max(1, cell[1].as<int>(32));
+                }
+                if (auto mpc = gn["max_per_cell"]; mpc && mpc.IsScalar()) {
+                    out.feature_normalization.grid.max_per_cell = std::max(1, mpc.as<int>(50));
+                }
+                if (auto sc = gn["score"]; sc && sc.IsScalar()) {
+                    std::string ss = sc.as<std::string>();
+                    std::transform(ss.begin(), ss.end(), ss.begin(), ::tolower);
+                    out.feature_normalization.grid.score =
+                        (ss == "size")
+                        ? GridNormalizationParams::Score::Size
+                        : GridNormalizationParams::Score::Response; // default
+                }
+            }
+
         }
 
         // Normalize outputs (relative -> base_dir)
@@ -192,6 +224,13 @@ void merge_yaml_into(ExtractorConfig& dst, const ExtractorConfig& y)
     dst.create_output_dirs = y.create_output_dirs;
     dst.enable_logging     = y.enable_logging;
     dst.enhance            = y.enhance;
+
+    // check if there is a normalization mode set in the yaml config
+    // if so, copy the entire normalization config
+    // if not, leave dst as-is (probably None)
+
+    dst.feature_normalization.mode = y.feature_normalization.mode;
+    dst.feature_normalization.grid = y.feature_normalization.grid;
 
     // Optional future field:
     // if (!y.overlap_mode.empty()) dst.overlap_mode = y.overlap_mode;

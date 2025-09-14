@@ -10,12 +10,13 @@
 #include <stdexcept>
 #include <vector>
 
-#include <opencv2/opencv.hpp>
-#include <opencv2/features2d.hpp>
+// #include <opencv2/opencv.hpp> # Now included by feature_extractor.hpp
+// #include <opencv2/features2d.hpp>
 
 #include <videostrip_core/feature/feature_extractor.hpp>
 
 namespace fs = std::filesystem;
+
 
 namespace videostrip
 {
@@ -70,7 +71,73 @@ namespace videostrip
         }
     } // anonymous namespace
 
-    // ------------------------------
+    void FeatureExtractor::apply_normalization(const cv::Size& img_size,
+                                           std::vector<cv::KeyPoint>& kpts) const
+    {
+        if (norm_cfg_.mode != FeatureNormalizationMode::Grid) return;
+        std::cout << "Applying GRID normalization" << std::endl;
+        const auto& gp = norm_cfg_.grid;
+        if (gp.cell_w <= 0 || gp.cell_h <= 0 || gp.max_per_cell <= 0) return;
+        if (kpts.empty()) return;
+
+        // Grid dims (ceil to cover image)
+        const int cols = std::max(1, (img_size.width  + gp.cell_w - 1) / gp.cell_w);
+        const int rows = std::max(1, (img_size.height + gp.cell_h - 1) / gp.cell_h);
+
+        // Per-cell buckets of indices
+        std::vector<std::vector<int>> buckets(rows * cols);
+
+        // Assign each keypoint to a cell
+        buckets.shrink_to_fit();
+        for (int i = 0; i < (int)kpts.size(); ++i) {
+            const auto& p = kpts[i].pt;
+            int cx = std::clamp(int(p.x) / gp.cell_w, 0, cols - 1);
+            int cy = std::clamp(int(p.y) / gp.cell_h, 0, rows - 1);
+            buckets[cy * cols + cx].push_back(i);
+        }
+
+        // Order within each cell by score (desc), then keep best N
+        auto score_of = [&](const cv::KeyPoint& kp) -> float {
+            switch (gp.score) {
+                case GridNormalizationParams::Score::Size:     return kp.size;
+                case GridNormalizationParams::Score::Response: // fallthrough
+                default:                                       return kp.response;
+            }
+        };
+
+        std::vector<char> keep(kpts.size(), 0);
+        for (auto& cell : buckets) {
+            if (cell.empty()) continue;
+
+            std::sort(cell.begin(), cell.end(),
+                    [&](int a, int b){
+                        float sa = score_of(kpts[a]);
+                        float sb = score_of(kpts[b]);
+                        if (sa != sb) return sa > sb; // desc
+                        // tie-break: smaller distance to cell center (promote central)
+                        const float ax = kpts[a].pt.x, ay = kpts[a].pt.y;
+                        const float bx = kpts[b].pt.x, by = kpts[b].pt.y;
+                        // center of the cell
+                        float cx = ( (int(ax) / gp.cell_w) * gp.cell_w ) + gp.cell_w * 0.5f;
+                        float cy = ( (int(ay) / gp.cell_h) * gp.cell_h ) + gp.cell_h * 0.5f;
+                        float da = (ax-cx)*(ax-cx) + (ay-cy)*(ay-cy);
+                        float db = (bx-cx)*(bx-cx) + (by-cy)*(by-cy);
+                        return da < db;
+                    });
+
+            int keepN = std::min<int>(gp.max_per_cell, (int)cell.size());
+            for (int i = 0; i < keepN; ++i)
+                keep[cell[i]] = 1;
+        }
+
+        // Compact
+        std::vector<cv::KeyPoint> out;
+        out.reserve(kpts.size());
+        for (int i = 0; i < (int)kpts.size(); ++i)
+            if (keep[i]) out.push_back(kpts[i]);
+        kpts.swap(out);
+    }
+        // ------------------------------
     // ORB implementation (internal)
     // ------------------------------
     namespace
@@ -101,7 +168,7 @@ namespace videostrip
                 std::vector<cv::KeyPoint> keypoints;
                 cv::Mat descriptors;
                 orb_->detectAndCompute(img, cv::noArray(), keypoints, descriptors);
-
+                apply_normalization(img.size(), keypoints);
                 // Ensure parent dir exists
                 try
                 {
@@ -159,7 +226,7 @@ namespace videostrip
                 std::vector<cv::KeyPoint> keypoints;
                 cv::Mat descriptors;
                 akaze_->detectAndCompute(img, cv::noArray(), keypoints, descriptors);
-
+                apply_normalization(img.size(), keypoints);
                 try
                 {
                     fs::create_directories(fs::path(feature_file_out).parent_path());
@@ -215,7 +282,7 @@ namespace videostrip
                 std::vector<cv::KeyPoint> keypoints;
                 cv::Mat descriptors;
                 surf_->detectAndCompute(img, cv::noArray(), keypoints, descriptors);
-
+                apply_normalization(img.size(), keypoints);
                 try
                 {
                     fs::create_directories(fs::path(feature_file_out).parent_path());

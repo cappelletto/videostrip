@@ -21,8 +21,8 @@
 #include <vector>
 
 #include <videostrip_core/feature/feature_extractor.hpp>
-#include <videostrip_core/enhance_yaml.hpp> 
-#include <videostrip_core/pipeline_enhance.hpp>
+#include <videostrip_core/enhance/enhance_yaml.hpp> 
+#include <videostrip_core/enhance/pipeline_enhance.hpp>
 
 /**
  * @namespace videostrip
@@ -54,6 +54,7 @@ namespace videostrip
         std::string overlap_mode; ///< Reserved for future use, from args, options are FEATURE|FLOW|ECC
 
         videostrip::EnhanceConfig enhance; //< Image enhancement config
+        videostrip::FeatureNormalizationConfig feature_normalization; //< Feature normalization config
 
         // Frame selection
         float overlap_threshold = 0.7f; ///< [0.0 - 1.0], min overlap/confidence for selecting frames

@@ -4,7 +4,7 @@
 #include <cctype>
 #include <sstream>
 
-#include <videostrip_core/image_enhancers.hpp>
+#include <videostrip_core/enhance/image_enhancers.hpp>
 
 namespace videostrip {
 
