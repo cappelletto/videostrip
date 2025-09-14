@@ -15,6 +15,8 @@
 
 #include <memory>
 #include <string>
+#include <opencv2/opencv.hpp>
+#include <opencv2/features2d.hpp>
 
 // TODO: We can convert this into a CMake stage xfeatures2d check
 // Conditionally enable SURF if headers exist
@@ -68,6 +70,17 @@ namespace videostrip
 
         /// @return An identifier for the extractor (e.g., "ORB", "AKAZE", "SURF").
         virtual std::string type() const = 0;
+        // #23: Configure normalization (optional; keep defaults if not called)
+        void set_normalization(const FeatureNormalizationConfig& cfg) { norm_cfg_ = cfg; }
+
+    protected:
+        // Helpers for subclasses (post-detect normalization)
+        void apply_normalization(const cv::Size& img_size,
+                                std::vector<cv::KeyPoint>& keypoints) const;
+
+        // Normalization config (default: none)
+        FeatureNormalizationConfig norm_cfg_{};
+
     };
 
     /**
