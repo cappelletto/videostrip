@@ -25,21 +25,41 @@ public:
     }
 
     // Process a BGR frame in-place. No-op if disabled.
-    bool process(cv::Mat& bgr) {
+    bool process(cv::Mat& img) {
         if (!enabled_) return true;
-        if (bgr.empty()) return false;
-        std::cout << "EnhanceStage: applying enhancement steps" << std::endl;
-        // Expect CV_8UC3. Convert conservatively if needed.
-        if (bgr.type() != CV_8UC3) {
-            cv::Mat tmp;
-            if (bgr.channels() == 1)      cv::cvtColor(bgr, tmp, cv::COLOR_GRAY2BGR);
-            else if (bgr.type() == CV_16UC3) {
-                cv::Mat f; bgr.convertTo(f, CV_32FC3, 1.0/65535.0);
-                f.convertTo(tmp, CV_8UC3, 255.0);
-            } else                         bgr.convertTo(tmp, CV_8UC3);
-            bgr = std::move(tmp);
+        if (img.empty()) return false;
+
+        // 1) Depth normalize to 8U
+        if (img.depth() != CV_8U) {
+            // scale per depth
+            double alpha = 1.0, beta = 0.0;
+            switch (img.depth()) {
+                case CV_16U: alpha = 1.0 / 256.0; break;   // 16U -> 8U (>>8)
+                case CV_16S: alpha = 1.0 / 256.0; beta = 128.0; break; // crude shift with bias
+                case CV_32F: alpha = 255.0; break;         // assumes [0,1] range
+                case CV_64F: alpha = 255.0; break;
+                default: break;
+            }
+            cv::Mat tmp8;
+            img.convertTo(tmp8, CV_MAKETYPE(CV_8U, img.channels()), alpha, beta);
+            img = std::move(tmp8);
         }
-        return enhancer_.apply(bgr);
+
+        // 2) Channels normalize to 3 (BGR)
+        if (img.channels() == 1) {
+            cv::Mat bgr;
+            cv::cvtColor(img, bgr, cv::COLOR_GRAY2BGR);
+            img = std::move(bgr);
+        } else if (img.channels() == 3) {
+            // ok
+        } else if (img.channels() == 4) {
+            cv::Mat bgr;
+            cv::cvtColor(img, bgr, cv::COLOR_BGRA2BGR);
+            img = std::move(bgr);
+        } else {
+            return false; // unsupported channel count
+        }
+        return enhancer_.apply(img);
     }
 
     bool enabled() const { return enabled_; }
