@@ -46,7 +46,8 @@ New features or bugfixes should include a Catch2 unit test under `tests/`. You c
 
 * Target the `develop` branch (which is the main active target).
 * Include a description of changes and a reference to any related issue (e.g., Fixes #23).
-* Use as reference `conventional commits`
+* Use as reference `conventional commits`. See https://www.conventionalcommits.org/en/v1.0.0/
+* Ensure code is well formatted (e.g., run `clang-format`).
 * Make sure that CI (Linux + Windows) passes. You can try first building and testing locally and then Github Actions can be used for testing the rest of the OS-matrix
 
 ## Licensing of Contributions
