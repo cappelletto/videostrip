@@ -4,7 +4,7 @@ project(videostrip VERSION 0.9.0 LANGUAGES CXX)
 # ------------------------------------------------------------
 # Licensing
 # ------------------------------------------------------------
-set(PROJECT_LICENSE "Apache License 2.0")
+set(PROJECT_LICENSE "Apache-2.0 OR LGPL-3.0-or-later")
 message(STATUS "License: ${PROJECT_LICENSE}")
 
 set(CMAKE_CXX_STANDARD 17)
@@ -222,7 +222,7 @@ set(CPACK_PACKAGE_NAME "videostrip")
 set(CPACK_PACKAGE_VENDOR "Rivermouth")
 set(CPACK_PACKAGE_CONTACT "cappelletto@gmail.com")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Video transect utilities for 2D/3D mapping via structure-from-motion or mosaicking")
-set(CPACK_PACKAGE_LICENSE "Apache-2.0")
+set(CPACK_PACKAGE_LICENSE "Apache-2.0 OR LGPL-3.0-or-later")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README  "${CMAKE_SOURCE_DIR}/README.md")
