@@ -234,4 +234,17 @@ Long-term:
 
 ## **License**
 
-See [LICENSE](LICENSE) for details.
+**Dual License Notice**
+
+videostrip is dual-licensed under:
+
+  * Apache License, Version 2.0
+    (see LICENSE.Apache or https://www.apache.org/licenses/LICENSE-2.0)
+
+  * GNU Lesser General Public License, Version 3.0 or later
+    (see LICENSE.LGPL or https://www.gnu.org/licenses/lgpl-3.0.html)
+
+You may choose to use *videostrip* as a whole under either license. Note that some dependencies (e.g., OpenCV with non-free modules) have their own licensing terms.
+
+See LICENSE.Apache and LICENSE.LGPL files in this repository for the complete license texts.
+
