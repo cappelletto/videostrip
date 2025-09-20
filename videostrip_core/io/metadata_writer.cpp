@@ -42,7 +42,7 @@ void MetadataWriter::appendFrame(const FrameMetadata& md)
         << md.output_image_name << ","
         << md.feature_count << ","
         << std::fixed << std::setprecision(4) << md.quality_score << ","
-        << ((md.georef && md.georef->empty()) ? "" : md.georef->c_str())
+        << (md.georef ? *md.georef : "")
         << "\n";
 }
 
