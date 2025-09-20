@@ -175,6 +175,16 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/videostrip_core/
   FILES_MATCHING PATTERN "*.hpp"
 )
 
+# Install Meshroom plugin (all .py, .mg, config.json)
+# into share/videostrip_plugin/meshroom
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/meshroom/
+        DESTINATION share/videostrip_plugin/meshroom
+        FILES_MATCHING
+          PATTERN "*.py"
+          PATTERN "*.mg"
+          PATTERN "config.json"
+          PATTERN "__init__.py")
+
 # Install shared assets
 install(FILES configs/sample_config.yaml
         DESTINATION share/videostrip)

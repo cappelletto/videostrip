@@ -1,0 +1,5 @@
+{
+  "env": {
+    "PATH": ["{pluginRoot}/bin", "{PATH}"]
+  }
+}
