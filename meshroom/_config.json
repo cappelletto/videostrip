@@ -1,0 +1,12 @@
+{
+  "env": {
+    "LD_PRELOAD": ["/lib/x86_64-linux-gnu/libopenblas.so.0"],
+    "LD_LIBRARY_PATH": [
+      "/lib/x86_64-linux-gnu",
+      "/usr/lib/x86_64-linux-gnu",
+      "/usr/local/lib",
+      "{LD_LIBRARY_PATH}"
+    ],
+    "PATH": ["{PATH}"]
+  }
+}

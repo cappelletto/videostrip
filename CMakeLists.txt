@@ -17,6 +17,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# Make installed binaries/libraries remember where to find their deps
+# See #48 Meshroom integration on Linux
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
+# Use a literal $ORIGIN (escape the $ for CMake)
+set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib")
+
 # ==========================================
 # Build options
 # ==========================================
@@ -174,6 +181,16 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/videostrip_core/
   DESTINATION include/videostrip_core
   FILES_MATCHING PATTERN "*.hpp"
 )
+
+# Install Meshroom plugin (all .py, .mg, config.json)
+# into share/videostrip_plugin/meshroom
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/meshroom/
+        DESTINATION share/videostrip_plugin/meshroom
+        FILES_MATCHING
+          PATTERN "*.py"
+          PATTERN "*.mg"
+          PATTERN "config.json"
+          PATTERN "__init__.py")
 
 # Install shared assets
 install(FILES configs/sample_config.yaml
