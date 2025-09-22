@@ -41,3 +41,6 @@ doc/latex/*
 build/*
 CMakeCache*
 CMakeFiles*
+
+# Python
+*/__pycache__
