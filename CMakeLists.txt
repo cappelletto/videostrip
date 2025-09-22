@@ -10,6 +10,10 @@ message(STATUS "License: ${PROJECT_LICENSE}")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
+set(OpenCV_STATIC ON CACHE BOOL "Link OpenCV statically" FORCE)
+set(OpenCV_USE_STATIC_LIBS ON CACHE BOOL "Prefer static OpenCV libs" FORCE)
+
 # ==========================================
 # Build output directories
 # ==========================================
@@ -41,13 +45,23 @@ message(STATUS "--------------------")
 # ==========================================
 message(STATUS "Searching for OpenCV 4.5 or higher...")
 
+set(VS_OPENCV_COMPONENTS
+    core
+    imgproc
+    imgcodecs
+    videoio
+    features2d
+    calib3d
+    highgui
+)
+
 # Try system-wide first
-find_package(OpenCV 4 QUIET)
+find_package(OpenCV 4 QUIET COMPONENTS ${VS_OPENCV_COMPONENTS})
 
 # Fallback to /usr/local or /opt/local
 if(NOT OpenCV_FOUND)
     message(STATUS "OpenCV not found system-wide, trying /usr/local ...")
-    find_package(OpenCV 4.5 QUIET
+    find_package(OpenCV 4.5 QUIET COMPONENTS ${VS_OPENCV_COMPONENTS}
         PATHS /usr/local /opt/local
         NO_DEFAULT_PATH
     )
@@ -66,6 +80,7 @@ endif()
 
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
+message(STATUS "OpenCV libraries (static preferred): ${OpenCV_LIBS}")
 
 # ==========================================
 # yaml-cpp detection. FetchContent fallback
