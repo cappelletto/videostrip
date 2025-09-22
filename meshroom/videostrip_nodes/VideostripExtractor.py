@@ -81,6 +81,7 @@ class VideostripExtractor(desc.CommandLineNode):
     # ------------------------------
     # Outputs
     # ------------------------------
+    # TODO: use as output {nodeCacheFolder}
     outputs = [
         desc.File(
             name='imagesDir',
