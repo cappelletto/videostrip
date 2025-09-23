@@ -47,7 +47,7 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshr
 * **PI / Project Lead**
   * Tracks processed assets and reproducibility with `summary.yaml`.
 * **Student / Data Collector**
-  * Runs a simple CLI: `--input video.mp4 --output ./out` → usable frames + metadata.
+  * Runs a simple CLI: `--input video.mp4 --output ./out` -> usable frames + metadata.
 * **Data Manager**
   * Archives deterministic outputs: locked schema v1.
 * **Analyst / Scientist**

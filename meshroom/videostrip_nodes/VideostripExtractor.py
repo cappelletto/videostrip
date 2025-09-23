@@ -71,9 +71,9 @@ class VideostripExtractor(desc.CommandLineNode):
         # Path to executable; keep out of {allParams} by using group=None.
         desc.StringParam(
             name='videostripCli',
-            label='videostrip_cli_meshroom',
+            label='videostrip_cli',
             description='Path or name of the videostrip CLI executable.',
-            value='videostrip_cli_meshroom',
+            value='videostrip_cli',
             group=None
         ),
     ]
