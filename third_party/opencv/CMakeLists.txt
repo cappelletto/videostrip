@@ -42,6 +42,30 @@ set(OPENCV_CMAKE_ARGS
   -DWITH_AVIF=OFF
 )
 
+# This is for size reduction: disable some extra modules/dependencies
+# CI jobs we running out of memory building OpenCV
+list(APPEND OPENCV_CMAKE_ARGS
+  -DBUILD_OPENEXR=OFF
+  -DBUILD_OPENJPEG=OFF
+  -DBUILD_WEBP=OFF
+  -DBUILD_TIFF=OFF
+  -DBUILD_JASPER=OFF
+  -DBUILD_ZLIB=OFF        # use system zlib
+  -DWITH_IMGCODEC_HDR=OFF # optional extra diet
+  -DWITH_IMGCODEC_SUNRASTER=OFF
+  -DWITH_IMGCODEC_PXM=OFF
+  -DWITH_IMGCODEC_PFM=OFF
+
+  # keep JPEG+PNG (needed by videostrip)
+  -DWITH_JPEG=ON  -DBUILD_JPEG=ON
+  -DWITH_PNG=ON   -DBUILD_PNG=ON
+
+  # build-time/size reductions
+  # TODO: implement MARCH/CPU settings via discovery or if LEAN build is set
+  -DCPU_BASELINE=AVX2      # single baseline (adjust if older CPU needed)
+  -DCPU_DISPATCH=          # avoid multi-dispatch variants
+)
+
 if(OPENCV_WITH_CONTRIB)
   list(APPEND OPENCV_CMAKE_ARGS
     -DOPENCV_EXTRA_MODULES_PATH=${CMAKE_BINARY_DIR}/opencv_contrib/modules

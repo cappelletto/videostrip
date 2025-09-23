@@ -74,7 +74,7 @@ jobs:
                 -DOPENCV_VERSION=${OPENCV_VERSION} \
                 -DOPENCV_WITH_CONTRIB=OFF \
                 -DOPENCV_BUILD_WORLD=OFF
-          cmake --build third_party/opencv/build --target opencv_src --parallel
+          cmake --build third_party/opencv/build --target opencv_src --parallel 2
           test -f "${OPENCV_VENDOR_PREFIX}/lib/cmake/opencv4/OpenCVConfig.cmake"
 
       # -------- Windows toolchain --------
@@ -154,11 +154,14 @@ jobs:
             "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=build/lib"
           )
           if ("${{ matrix.os }}" -eq "windows-latest") {
+            # On Windows use vcpkg OpenCV; disable vendored OpenCV and pin MSVC runtime
             $cmakeArgs += @(
               "-DCMAKE_TOOLCHAIN_FILE=${env:VCPKG_TOOLCHAIN}",
               "-DVCPKG_TARGET_TRIPLET=${env:VCPKG_TARGET_TRIPLET}",
               "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}",
-              "-DVCPKG_DEFAULT_BINARY_CACHE=${env:VCPKG_DEFAULT_BINARY_CACHE}"
+              "-DVCPKG_DEFAULT_BINARY_CACHE=${env:VCPKG_DEFAULT_BINARY_CACHE}",
+              "-DVIDEOSTRIP_BUNDLE_OPENCV=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL$<$<CONFIG:Debug>:Debug>"
             )
           } else {
             $cmakeArgs += @(

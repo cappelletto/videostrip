@@ -15,7 +15,7 @@ set_target_properties(videostrip_cli PROPERTIES
 )
 
 if(MSVC)
-    target_link_options(videostrip_cli PRIVATE /MT)
+    target_link_options(videostrip_cli PRIVATE )
 else()
     target_link_options(videostrip_cli PRIVATE -static-libstdc++ -static-libgcc)
 endif()
