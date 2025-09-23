@@ -2,6 +2,11 @@
 
 next_steps.md
 
+# 3rd party builds
+third_party/_install/
+third_party/opencv/build/
+
+
 # Doxygen
 doc/html/*
 doc/latex/*

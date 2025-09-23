@@ -1,5 +1,4 @@
 #include <opencv2/imgcodecs.hpp>
-#include <opencv2/photo.hpp>
 #include <algorithm>
 #include <cctype>
 #include <sstream>

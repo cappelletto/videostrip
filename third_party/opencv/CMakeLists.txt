@@ -10,8 +10,12 @@ set(OPENCV_WITH_CONTRIB OFF CACHE BOOL "Build OpenCV contrib modules")
 # IMPORTANT: do NOT build opencv_world unless you also build highgui.
 set(OPENCV_BUILD_WORLD OFF CACHE BOOL "Build opencv_world for fewer .so files")
 
-# ---- Vendor prefix ----
-set(OPENCV_VENDOR_PREFIX "${CMAKE_SOURCE_DIR}/../_install/opencv-${OPENCV_VERSION}")
+# ----- Vendor prefix (parent can pre-set OPENCV_VENDOR_PREFIX) via CMake invocation -----
+if(NOT DEFINED OPENCV_VENDOR_PREFIX)
+  # CMAKE_CURRENT_LIST_DIR == <repo>/third_party/opencv
+  get_filename_component(_third_party_dir "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+  set(OPENCV_VENDOR_PREFIX "${_third_party_dir}/_install/opencv-${OPENCV_VERSION}")
+endif()
 file(MAKE_DIRECTORY "${OPENCV_VENDOR_PREFIX}")
 
 # ---- Repos/URLs ----
@@ -35,6 +39,7 @@ set(OPENCV_CMAKE_ARGS
   -DWITH_CUDA=OFF
   -DWITH_GTK=OFF    # no highgui in BUILD_LIST
   -DWITH_FFMPEG=ON
+  -DWITH_AVIF=OFF
 )
 
 if(OPENCV_WITH_CONTRIB)
