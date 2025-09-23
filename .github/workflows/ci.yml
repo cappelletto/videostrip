@@ -160,7 +160,7 @@ jobs:
               "-DVCPKG_TARGET_TRIPLET=${env:VCPKG_TARGET_TRIPLET}",
               "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}",
               "-DVCPKG_DEFAULT_BINARY_CACHE=${env:VCPKG_DEFAULT_BINARY_CACHE}",
-              "-DVIDEOSTRIP_BUNDLE_OPENCV=OFF",
+              "-DVIDEOSTRIP_BUNDLE_OPENCV=OFF"
             )
           } else {
             $cmakeArgs += @(
