@@ -3,13 +3,14 @@ project(videostrip_opencv_superbuild LANGUAGES C CXX)
 
 include(ExternalProject)
 
-# ---- Version knobs you can adjust in one place ----
+# ---- Version knobs ----
 set(OPENCV_VERSION 4.12.0 CACHE STRING "OpenCV version to build")
 set(OPENCV_WITH_CONTRIB OFF CACHE BOOL "Build OpenCV contrib modules")
-set(OPENCV_BUILD_WORLD ON CACHE BOOL "Build opencv_world for fewer .so files")
 
-# ---- Install prefix inside the repo (vendored) ----
-# We use a fixed path under source to make it easy to reference & cache in CI.
+# IMPORTANT: do NOT build opencv_world unless you also build highgui.
+set(OPENCV_BUILD_WORLD OFF CACHE BOOL "Build opencv_world for fewer .so files")
+
+# ---- Vendor prefix ----
 set(OPENCV_VENDOR_PREFIX "${CMAKE_SOURCE_DIR}/../_install/opencv-${OPENCV_VERSION}")
 file(MAKE_DIRECTORY "${OPENCV_VENDOR_PREFIX}")
 
@@ -17,7 +18,7 @@ file(MAKE_DIRECTORY "${OPENCV_VENDOR_PREFIX}")
 set(OPENCV_GIT_URL          https://github.com/opencv/opencv.git)
 set(OPENCV_CONTRIB_GIT_URL  https://github.com/opencv/opencv_contrib.git)
 
-# ---- Build options (lean: disable LAPACK/BLAS to avoid cblas_* deps) ----
+# ---- Lean options (no LAPACK/BLAS -> no cblas_*; no GUI) ----
 set(OPENCV_CMAKE_ARGS
   -DCMAKE_BUILD_TYPE=Release
   -DCMAKE_INSTALL_PREFIX=${OPENCV_VENDOR_PREFIX}
@@ -32,8 +33,7 @@ set(OPENCV_CMAKE_ARGS
   -DWITH_IPP=OFF
   -DWITH_TBB=OFF
   -DWITH_CUDA=OFF
-  -DWITH_MSMF=OFF
-  -DWITH_GTK=ON
+  -DWITH_GTK=OFF    # no highgui in BUILD_LIST
   -DWITH_FFMPEG=ON
 )
 
@@ -43,7 +43,6 @@ if(OPENCV_WITH_CONTRIB)
   )
 endif()
 
-# ---- ExternalProject to fetch & install OpenCV ----
 ExternalProject_Add(opencv_src
   GIT_REPOSITORY   ${OPENCV_GIT_URL}
   GIT_TAG          ${OPENCV_VERSION}
@@ -52,7 +51,7 @@ ExternalProject_Add(opencv_src
   CMAKE_ARGS       ${OPENCV_CMAKE_ARGS}
   BUILD_BYPRODUCTS ${OPENCV_VENDOR_PREFIX}/lib/cmake/opencv4/OpenCVConfig.cmake
   INSTALL_DIR      ${OPENCV_VENDOR_PREFIX}
-  TEST_COMMAND     "" # skip tests
+  TEST_COMMAND     ""
 )
 
 if(OPENCV_WITH_CONTRIB)
@@ -65,7 +64,6 @@ if(OPENCV_WITH_CONTRIB)
   )
 endif()
 
-# ---- Expose a "done" target and a hint file for consumers ----
 add_custom_target(opencv_vendor ALL DEPENDS opencv_src)
 file(WRITE "${CMAKE_BINARY_DIR}/OpenCVVendorDir.cmake"
   "set(VENDOR_OPENCV_DIR \"${OPENCV_VENDOR_PREFIX}/lib/cmake/opencv4\")\n"

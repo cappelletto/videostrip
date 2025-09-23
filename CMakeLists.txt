@@ -11,6 +11,20 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
+
+# Attempt at bundled OpenCV (deterministic - 4.12.0)
+option(VIDEOSTRIP_BUNDLE_OPENCV "Use vendored OpenCV under third_party/_install" ON)
+set(VIDEOSTRIP_OPENCV_VERSION "4.12.0" CACHE STRING "Vendored OpenCV version")
+
+set(_VENDOR_OCV_PREFIX   "${CMAKE_SOURCE_DIR}/third_party/_install/opencv-${VIDEOSTRIP_OPENCV_VERSION}")
+set(_VENDOR_OCV_CMAKEDIR "${_VENDOR_OCV_PREFIX}/lib/cmake/opencv4")
+
+if (VIDEOSTRIP_BUNDLE_OPENCV AND EXISTS "${_VENDOR_OCV_CMAKEDIR}/OpenCVConfig.cmake")
+  message(STATUS "Using vendored OpenCV at: ${_VENDOR_OCV_CMAKEDIR}")
+  list(PREPEND CMAKE_PREFIX_PATH "${_VENDOR_OCV_PREFIX}")
+  set(OpenCV_DIR "${_VENDOR_OCV_CMAKEDIR}")
+endif()
+
 set(OpenCV_STATIC ON CACHE BOOL "Link OpenCV statically" FORCE)
 set(OpenCV_USE_STATIC_LIBS ON CACHE BOOL "Prefer static OpenCV libs" FORCE)
 
@@ -20,13 +34,6 @@ set(OpenCV_USE_STATIC_LIBS ON CACHE BOOL "Prefer static OpenCV libs" FORCE)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-# Make installed binaries/libraries remember where to find their deps
-# See #48 Meshroom integration on Linux
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
-# Use a literal $ORIGIN (escape the $ for CMake)
-set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib")
 
 # ==========================================
 # Build options
@@ -52,7 +59,7 @@ set(VS_OPENCV_COMPONENTS
     videoio
     features2d
     calib3d
-    highgui
+    flann
 )
 
 # Try system-wide first
@@ -76,6 +83,30 @@ if(NOT OpenCV_FOUND)
         "Or specify OpenCV_DIR:\n"
         "  cmake -DOpenCV_DIR=/path/to/opencv/build .."
     )
+endif()
+
+# Install OpenCV vendored libs (per-module by default)
+if (VIDEOSTRIP_BUNDLE_OPENCV AND EXISTS "${_VENDOR_OCV_CMAKEDIR}/OpenCVConfig.cmake")
+  find_library(OPENCV_WORLD NAMES opencv_world PATHS "${_VENDOR_OCV_PREFIX}/lib" NO_DEFAULT_PATH)
+
+  if (OPENCV_WORLD)
+    install(FILES "${OPENCV_WORLD}" DESTINATION lib)
+  else()
+    foreach(lib IN LISTS OpenCV_LIBS)
+      get_target_property(_libloc ${lib} IMPORTED_LOCATION_RELEASE)
+      if (NOT _libloc)
+        get_target_property(_libloc ${lib} IMPORTED_LOCATION)
+      endif()
+      if (_libloc)
+        install(FILES "${_libloc}" DESTINATION lib)
+      endif()
+    endforeach()
+  endif()
+
+  # RPATH so your binaries prefer bundled libs.
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+  set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib")
 endif()
 
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
@@ -122,12 +153,19 @@ endif()
 # All headers live in subfolders inside ${CMAKE_SOURCE_DIR}
 include_directories(${CMAKE_SOURCE_DIR})
 
+# ===========================================
+# Add 3rd_pary vendor build (OpenCV)
+# ===========================================
+add_subdirectory(third_party/opencv)
 # ==========================================
 # Add project modules (progressive build)
 # ==========================================
 add_subdirectory(videostrip_core)
+add_dependencies(videostrip_core opencv_vendor)
+
 # add_subdirectory(videostrip_utils)
 add_subdirectory(videostrip_cli)
+add_dependencies(videostrip_cli opencv_vendor)
 
 if(BUILD_GUI)
     add_subdirectory(videostrip_gui)
