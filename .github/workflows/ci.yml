@@ -161,13 +161,18 @@ jobs:
               "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}",
               "-DVCPKG_DEFAULT_BINARY_CACHE=${env:VCPKG_DEFAULT_BINARY_CACHE}",
               "-DVIDEOSTRIP_BUNDLE_OPENCV=OFF",
-              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL$<$<CONFIG:Debug>:Debug>"
             )
           } else {
             $cmakeArgs += @(
               "-DCMAKE_C_COMPILER_LAUNCHER=$env:CMAKE_C_COMPILER_LAUNCHER",
               "-DCMAKE_CXX_COMPILER_LAUNCHER=$env:CMAKE_CXX_COMPILER_LAUNCHER"
             )
+          }
+          if ("${{ matrix.os }}" -eq "windows-latest") {
+            # Choose a literal MSVC runtime value (generator expressions are not allowed during compiler checks)
+            if ("${{ env.BUILD_TYPE }}" -eq "Debug") { $msvcRuntime = "MultiThreadedDebugDLL" } else { $msvcRuntime = "MultiThreadedDLL" }
+            # Append the literal to the existing list of cmake arguments
+            $cmakeArgs += @("-DCMAKE_MSVC_RUNTIME_LIBRARY=$msvcRuntime")
           }
           cmake @cmakeArgs
 
