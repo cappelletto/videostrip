@@ -80,9 +80,9 @@ jobs:
           cmake --build third_party/opencv/build --target opencv_src --parallel 2
           test -f "${OPENCV_VENDOR_PREFIX}/lib/cmake/opencv4/OpenCVConfig.cmake"
 
-      - name: Log cache status (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: echo "OpenCV cache hit: ${{ steps.cache-opencv.outputs.cache-hit }}"
+    #   - name: Log cache status (Ubuntu)
+    #     if: matrix.os == 'ubuntu-latest'
+    #     run: echo "OpenCV cache hit: $steps.cache-opencv.outputs.cache-hit"
 
       # -------- Windows toolchain --------
       - name: Setup MSVC (Windows)
