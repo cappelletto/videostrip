@@ -65,6 +65,9 @@ jobs:
         with:
           path: ${{ env.OPENCV_VENDOR_PREFIX }}
           key: opencv-${{ env.OPENCV_VERSION }}-${{ runner.os }}-${{ hashFiles('third_party/opencv/CMakeLists.txt') }}-ffmpegON-lapackOFF-worldOFF-v1
+          restore-keys: |
+            opencv-${{ env.OPENCV_VERSION }}-${{ runner.os }}-
+            opencv-
 
       # Build vendored OpenCV only if cache miss (Ubuntu)
       - name: Build vendored OpenCV (Ubuntu)
@@ -76,6 +79,10 @@ jobs:
                 -DOPENCV_BUILD_WORLD=OFF
           cmake --build third_party/opencv/build --target opencv_src --parallel 2
           test -f "${OPENCV_VENDOR_PREFIX}/lib/cmake/opencv4/OpenCVConfig.cmake"
+
+    #   - name: Log cache status (Ubuntu)
+    #     if: matrix.os == 'ubuntu-latest'
+    #     run: echo "OpenCV cache hit: $steps.cache-opencv.outputs.cache-hit"
 
       # -------- Windows toolchain --------
       - name: Setup MSVC (Windows)
@@ -141,39 +148,43 @@ jobs:
       - name: Configure (CMake)
         shell: pwsh
         run: |
+          # Decide MSVC runtime first (literal values only)
+          $msvcRuntime = if ("${{ matrix.os }}" -eq "windows-latest" -and "${{ env.BUILD_TYPE }}" -eq "Debug") { "MultiThreadedDebugDLL" } else { "MultiThreadedDLL" }
+
+          # Base args
           $cmakeArgs = @(
             "-S", ".", "-B", "build",
             "-G", "Ninja",
             "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}",
             "-DBUILD_TESTS=ON",
             "-DPROJECT_VERSION=${{ env.PKG_VERSION }}",
-            "-DVIDEOSTRIP_BUNDLE_OPENCV=ON",
-            "-DVIDEOSTRIP_OPENCV_VERSION=${{ env.OPENCV_VERSION }}",
             "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=build/bin",
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=build/lib",
             "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=build/lib"
           )
+
           if ("${{ matrix.os }}" -eq "windows-latest") {
-            # On Windows use vcpkg OpenCV; disable vendored OpenCV and pin MSVC runtime
+            # Windows: use vcpkg OpenCV; do not vendor OpenCV
             $cmakeArgs += @(
               "-DCMAKE_TOOLCHAIN_FILE=${env:VCPKG_TOOLCHAIN}",
               "-DVCPKG_TARGET_TRIPLET=${env:VCPKG_TARGET_TRIPLET}",
               "-DVCPKG_HOST_TRIPLET=${env:VCPKG_HOST_TRIPLET}",
               "-DVCPKG_DEFAULT_BINARY_CACHE=${env:VCPKG_DEFAULT_BINARY_CACHE}",
-              "-DVIDEOSTRIP_BUNDLE_OPENCV=OFF"
+              "-DVIDEOSTRIP_BUNDLE_OPENCV=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=$msvcRuntime"
             )
           } else {
+            # Linux: vendor OpenCV and (optionally) hint OpenCV_DIR if present
             $cmakeArgs += @(
+              "-DVIDEOSTRIP_BUNDLE_OPENCV=ON",
+              "-DVIDEOSTRIP_OPENCV_VERSION=${{ env.OPENCV_VERSION }}",
               "-DCMAKE_C_COMPILER_LAUNCHER=$env:CMAKE_C_COMPILER_LAUNCHER",
               "-DCMAKE_CXX_COMPILER_LAUNCHER=$env:CMAKE_CXX_COMPILER_LAUNCHER"
             )
+            $vendorCfg = "${{ env.OPENCV_VENDOR_PREFIX }}/lib/cmake/opencv4"
+            if (Test-Path $vendorCfg) { $cmakeArgs += @("-DOpenCV_DIR=$vendorCfg") }
           }
-          if ("${{ matrix.os }}" -eq "windows-latest") {
-            # Choose a literal MSVC runtime value (generator expressions are not allowed during compiler checks)
-            if ("${{ env.BUILD_TYPE }}" -eq "Debug") { $msvcRuntime = "MultiThreadedDebugDLL" } else { $msvcRuntime = "MultiThreadedDLL" }
-            # Append the literal to the existing list of cmake arguments
-            $cmakeArgs += @("-DCMAKE_MSVC_RUNTIME_LIBRARY=$msvcRuntime")
-          }
+
           cmake @cmakeArgs
 
       # -------- Build --------
