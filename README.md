@@ -236,6 +236,10 @@ Long-term:
 
 ---
 
+## **Contributing?**
+
+For more information on how to contribute to this project, please visit the [Contributing guidelines](CONTRIBUTING.md)
+
 ## **License**
 
 **Dual License Notice**
