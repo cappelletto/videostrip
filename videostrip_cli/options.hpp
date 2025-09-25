@@ -14,7 +14,6 @@
 
 args::ArgumentParser argParser("", "");
 args::HelpFlag argHelp(argParser, "help", "Display this help menu", {'h', "help"});
-// args::CompletionFlag completion(argParser, {"complete"});	//TODO: figure out why is missing in current version of args.hxx
 
 args::Flag argDumpInfo(argParser, "dump", "Show compilation time related information", {'d', "dump"});
 args::ValueFlag<std::string> argInput(argParser, "input", "Path to video input file", {"input"});
@@ -71,7 +70,7 @@ int initParser(int argc, char *argv[])
         std::cerr << "Use -h, --help command to see usage" << std::endl;
         return -1;
     }
-    // std::cout << "\tBuilt:\t" << __DATE__ << " - " << __TIME__ << endl;   // TODO: solve, make is complaining about this
+    std::cout << "\tBuilt:\t" << __DATE__ << " - " << __TIME__ << endl; 
     return 0;
 }
 

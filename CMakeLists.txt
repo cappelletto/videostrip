@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(videostrip VERSION 0.9.0 LANGUAGES CXX)
+project(videostrip VERSION 0.9.1 LANGUAGES CXX)
 
 # ------------------------------------------------------------
 # Licensing
