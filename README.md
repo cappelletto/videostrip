@@ -64,7 +64,7 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Metas
 
 * **C++17** compiler
 * **CMake ≥ 3.18**
-* **OpenCV ≥ 4.5**
+* **OpenCV ≥ 4.5** (option: bundle 4.12 for Meshroom compatibility)
 * **yaml-cpp** (for YAML config parsing)
 * **Catch2** (for unit testing)
 
