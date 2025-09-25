@@ -27,7 +27,7 @@ endif()
 target_include_directories(videostrip_cli
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/external
+        ${CMAKE_SOURCE_DIR}/third_pary
         ${CMAKE_SOURCE_DIR}/videostrip_core
 )
 

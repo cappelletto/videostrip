@@ -1,7 +1,3 @@
-Perfect time to split. Below is a **migration plan** expressed as **ready-to-paste GitHub issues**, split between the two repos.
-
----
-
 # 📦 New repo: `videostrip-meshroom`
 
 ### Issue: **Bootstrap repository & import history**

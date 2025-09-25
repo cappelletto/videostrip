@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-`videostrip_core/` contains the C++17 extraction engine (feature detection, metadata writers, logging). `videostrip_cli/` builds the command-line entry point exported to `build/bin/videostrip_cli`. `videostrip_utils/` hosts shared helpers; `videostrip_gui/` is an experimental viewer. Pipeline templates for Meshroom live under `meshroom/`, sample YAML configs under `configs/`, and generated docs/manpages under `doc/`. Keep CMake build artifacts in `build/` and add new tests beside the existing Catch2 suites in `tests/`.
+`videostrip_core/` contains the C++17 extraction engine (feature detection, metadata writers, logging). `videostrip_cli/` builds the command-line entry point exported to `build/bin/videostrip_cli`. `videostrip_utils/` hosts shared helpers; `videostrip_gui/` is an experimental viewer. Pipeline templates for Meshroom live under its own repository `videostrip-meshroom/`, sample YAML configs under `configs/`, and generated docs/manpages under `doc/`. Keep CMake build artifacts in `build/` and add new tests beside the existing Catch2 suites in `tests/`.
 
 ## Build, Test, and Development Commands
 Configure once, then build incrementally:
