@@ -1,3 +1,4 @@
+
 [![C/C++ CI](https://github.com/cappelletto/videostrip/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/cappelletto/videostrip/actions/workflows/c-cpp.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![License](https://img.shields.io/badge/License-LGPL_3.0-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
@@ -7,7 +8,9 @@
 # videostrip
 
 **videostrip** is a modular project for **video frame extraction and keyframe selection** to support **2D/3D reconstruction of underwater video transects**.
-It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshroom, Metashape**, and our (future) **custom video transect pipeline**.
+It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Metashape**, and our (future) **custom video transect pipeline**.
+
+> ⚠️ **Note**: The Meshroom integration node has been moved to a separate repository: [videostrip-meshroom](https://github.com/cappelletto/videostrip-meshroom).
 
 ---
 
@@ -28,7 +31,7 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshr
 
 ---
 
-## **Key Features (v0.8.2)**
+## **Key Features (v0.7.X onwards)**
 
 * ✅ **CLI support** for video processing with YAML or CLI configs.
 * ✅ **Frame extraction with stride or overlap-based selection**.
@@ -61,7 +64,7 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshr
 
 * **C++17** compiler
 * **CMake ≥ 3.18**
-* **OpenCV ≥ 4.5**
+* **OpenCV ≥ 4.5** (option: bundle 4.12 for Meshroom compatibility)
 * **yaml-cpp** (for YAML config parsing)
 * **Catch2** (for unit testing)
 
@@ -75,12 +78,12 @@ cd videostrip
 # Configure and build
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_MANPAGE=OFF -DBUILD_TESTS=OFF
 cmake --build build -j4
-```
+````
 
 The build produces:
 
 ```
-build/bin/videostrip_cli     # CLI binary
+build/bin/videostrip_cli        # CLI binary
 build/lib/libvideostrip_core.a  # Core library
 ```
 
@@ -95,6 +98,7 @@ Basic run (defaults to ./output/*):
 ```
 
 Outputs:
+
 ```
 ./output/images/*.png
 ./output/features/*.feat.txt
@@ -104,11 +108,13 @@ Outputs:
 ```
 
 With YAML config:
+
 ```bash
 ./videostrip_cli --config configs/sample_min.yaml
 ```
 
 CLI overrides YAML:
+
 ```bash
 ./videostrip_cli --config configs/sample_min.yaml --feature AKAZE --output ./out
 ```
@@ -141,7 +147,6 @@ processing:
 ---
 
 ## **Enhancement Pipeline (NEW)**
-TODO: extract this into a separate `docs/enhancement.md`.
 
 Starting with **v0.7.x**, videostrip supports an optional **image enhancement stage** that preprocesses frames before feature extraction. This improves contrast and uniformity in underwater imagery.
 
@@ -170,8 +175,6 @@ Starting with **v0.7.x**, videostrip supports an optional **image enhancement st
 
 ### Minimal YAML configuration
 
-Add an `enhance` block at the top level of the config file:
-
 ```yaml
 enhance:
   enable: true
@@ -199,8 +202,6 @@ is set, a default sequence `{grayworld, clahe(YCrCb)}` will be applied.
 
 ### CLI override
 
-You can also pass a shorthand string (for quick tests):
-
 ```bash
 ./videostrip_cli --enhance.sequence "contrast(alpha=1.1,beta=-5); grayworld; gamma(1.05); clahe(clip=2.0,grid=8x8,space=YCrCb)"
 ```
@@ -222,15 +223,22 @@ Schema is locked at `v1`. Future changes will bump schema_version.
 ## **Roadmap**
 
 Near-term milestones:
+
 1. In-depth performance profiling
 2. Performance release by adding multithreading and GPU support.
+3. Improved cross-OS packaging (OpenCV bundle, Meshroom node) 
 
 Long-term:
+
 * Optical flow / ECC overlap modes.
 * Cross-platform GUI for both pipeline configuration and dispatching.
-* Integration with Meshroom (node-base core library)
+* Meshroom integration continues in [videostrip-meshroom](https://github.com/cappelletto/videostrip-meshroom)
 
 ---
+
+## **Contributing?**
+
+For more information on how to contribute to this project, please visit the [Contributing guidelines](CONTRIBUTING.md)
 
 ## **License**
 
@@ -238,11 +246,11 @@ Long-term:
 
 videostrip is dual-licensed under:
 
-  * Apache License, Version 2.0
-    (see LICENSE.Apache or https://www.apache.org/licenses/LICENSE-2.0)
+* Apache License, Version 2.0
+  (see LICENSE.Apache or [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0))
 
-  * GNU Lesser General Public License, Version 3.0 or later
-    (see LICENSE.LGPL or https://www.gnu.org/licenses/lgpl-3.0.html)
+* GNU Lesser General Public License, Version 3.0 or later
+  (see LICENSE.LGPL or [https://www.gnu.org/licenses/lgpl-3.0.html](https://www.gnu.org/licenses/lgpl-3.0.html))
 
 You may choose to use *videostrip* as a whole under either license. Note that some dependencies (e.g., OpenCV with non-free modules) have their own licensing terms.
 

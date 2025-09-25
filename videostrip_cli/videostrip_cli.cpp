@@ -14,7 +14,8 @@
 #include <videostrip_core/videostrip_core.hpp>
 #include <videostrip_core/logging/logger.hpp>
 
-#include <args.hxx> // provided from external/ via include path
+// TODO: Replace with proper include when args is added to third_party
+#include <../third_party/args.hxx> // provided from third_pary/ via include path
 
 namespace fs = std::filesystem;
 using namespace videostrip;
