@@ -138,7 +138,6 @@ namespace videostrip
 
             // Optional enhancement hook
             if (m_config.apply_enhancement) {
-                // TODO: enhancement step
                 writeLog("Applying enhancement steps", "INFO");
                 bool ret_ = m_enhance_stage.process(bgr_frame);
                 if (!ret_) {
