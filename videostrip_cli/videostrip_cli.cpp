@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
             (ft == "ORB" || ft == "AKAZE" || ft == "KAZE" || ft == "SURF" ||
             ft == "GRID_ORB" || ft == "GRID_AKAZE");
         if (!ok) {
-            std::cerr << "Warning: unsupported feature type '" << ft << "' → falling back to ORB\n";
+            std::cerr << "Warning: unsupported feature type '" << ft << "' -> falling back to ORB\n";
             config.feature_type = "ORB";
         }
     }

@@ -13,7 +13,7 @@ std::optional<EnhanceConfig> parseEnhanceConfig(const YAML::Node& root, std::str
     EnhanceConfig cfg{};
     const auto n = root["enhance"];
     if (!n) {
-        // Not present → disabled
+        // Not present -> disabled
         return cfg;
     }
 

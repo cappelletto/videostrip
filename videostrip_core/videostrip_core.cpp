@@ -138,7 +138,6 @@ namespace videostrip
 
             // Optional enhancement hook
             if (m_config.apply_enhancement) {
-                // TODO: enhancement step
                 writeLog("Applying enhancement steps", "INFO");
                 bool ret_ = m_enhance_stage.process(bgr_frame);
                 if (!ret_) {
@@ -213,7 +212,7 @@ namespace videostrip
                 overlap = static_cast<float>(m_config.overlap_threshold) - 1e-3f;
             }
 
-            // Below threshold → open k-window and pick sharpest
+            // Below threshold -> open k-window and pick sharpest
             if (overlap <= static_cast<float>(m_config.overlap_threshold)) {
                 const int kWindow = std::max(1, m_config.max_skipped_frames + 1);
 
@@ -254,7 +253,7 @@ namespace videostrip
                 continue;
             }
 
-            // Overlap above threshold → keep scanning
+            // Overlap above threshold -> keep scanning
             if (m_progress_cb) {
                 float prog = (total_frames > 0) ? (static_cast<float>(frame_idx) / static_cast<float>(total_frames)) : 0.0f;
                 std::ostringstream msg; msg << "Overlap " << std::fixed << std::setprecision(2) << overlap;

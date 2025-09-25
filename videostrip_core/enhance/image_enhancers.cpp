@@ -1,5 +1,4 @@
 #include <opencv2/imgcodecs.hpp>
-#include <opencv2/photo.hpp>
 #include <algorithm>
 #include <cctype>
 #include <sstream>
@@ -224,7 +223,7 @@ bool Enhancer::opClahe(cv::Mat& bgr, const ClaheParams& p) {
         return true;
     }
 
-    // colorspace → operate only on the luminance/value-like channel
+    // colorspace -> operate only on the luminance/value-like channel
     ensureSize(scratch1_, bgr.rows, bgr.cols, bgr.type());
     convertBGRTo(bgr, scratch1_, p.space);
 

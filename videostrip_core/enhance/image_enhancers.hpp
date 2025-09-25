@@ -16,10 +16,10 @@ enum class EnhanceType {
 };
 
 /// Colorspace selection for CLAHE. Channel is implicit:
-/// - YCrCb → Y
-/// - HSV   → V
-/// - Lab   → L
-/// - BGR   → per-channel (3x CLAHE; slower; optional)
+/// - YCrCb -> Y
+/// - HSV   -> V
+/// - Lab   -> L
+/// - BGR   -> per-channel (3x CLAHE; slower; optional)
 enum class ClaheSpace { YCrCb, HSV, Lab, BGR };
 
 struct ContrastOffsetParams {

@@ -1,5 +1,6 @@
 [![C/C++ CI](https://github.com/cappelletto/videostrip/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/cappelletto/videostrip/actions/workflows/c-cpp.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![License](https://img.shields.io/badge/License-LGPL_3.0-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
 
 ---
 
@@ -46,7 +47,7 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Meshr
 * **PI / Project Lead**
   * Tracks processed assets and reproducibility with `summary.yaml`.
 * **Student / Data Collector**
-  * Runs a simple CLI: `--input video.mp4 --output ./out` → usable frames + metadata.
+  * Runs a simple CLI: `--input video.mp4 --output ./out` -> usable frames + metadata.
 * **Data Manager**
   * Archives deterministic outputs: locked schema v1.
 * **Analyst / Scientist**
@@ -233,4 +234,17 @@ Long-term:
 
 ## **License**
 
-See [LICENSE](LICENSE) for details.
+**Dual License Notice**
+
+videostrip is dual-licensed under:
+
+  * Apache License, Version 2.0
+    (see LICENSE.Apache or https://www.apache.org/licenses/LICENSE-2.0)
+
+  * GNU Lesser General Public License, Version 3.0 or later
+    (see LICENSE.LGPL or https://www.gnu.org/licenses/lgpl-3.0.html)
+
+You may choose to use *videostrip* as a whole under either license. Note that some dependencies (e.g., OpenCV with non-free modules) have their own licensing terms.
+
+See LICENSE.Apache and LICENSE.LGPL files in this repository for the complete license texts.
+
