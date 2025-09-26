@@ -4,13 +4,13 @@
  * @brief Handles CSV + YAML output for videostrip_core (schema v1).
  */
 
+#include <filesystem>
 #include <string>
 #include <vector>
-#include <filesystem>
+#include <videostrip_core/videostrip_core.hpp> // ExtractorConfig, FrameMetadata, RunSummary
 
-#include <videostrip_core/videostrip_core.hpp>  // ExtractorConfig, FrameMetadata, RunSummary
-
-namespace videostrip::io {
+namespace videostrip::io
+{
 
 /**
  * @brief MetadataWriter is responsible for persisting pipeline outputs:
@@ -19,7 +19,8 @@ namespace videostrip::io {
  *
  *        Contract: schema_version = 1
  */
-class MetadataWriter {
+class MetadataWriter
+{
 public:
     explicit MetadataWriter(const ExtractorConfig& cfg);
 
@@ -33,7 +34,10 @@ public:
     void writeSummary(const RunSummary& summary);
 
     /// @return schema version number (currently 1).
-    static int schemaVersion() { return 1; }
+    static int schemaVersion()
+    {
+        return 1;
+    }
 
 private:
     ExtractorConfig m_cfg;

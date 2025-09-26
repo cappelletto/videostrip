@@ -85,164 +85,159 @@ string makeFixedLength(const int i, const int length)
  */
 namespace logger
 {
-    /**
-     * @brief core function that formats the publisher field according the message
-     * type. Also, provides mutex protection for thread safety of the console output
-     *
-     * @param type one of the supported message types:MSG_ERROR, MSG_DEBUG,
-     * MSG_WARNING, MSG_INFO
-     * @param publisher name of the message publisher
-     * @param message string to be displayed
-     * @return string returns a copy of the formatted string. It can be used for
-     * disk-based logging
-     */
-    string ConsoleOutput::publish(LogLevel type, std::string publisher,
-                                  std::string message)
-    {
-        std::ostringstream out;
+/**
+ * @brief core function that formats the publisher field according the message
+ * type. Also, provides mutex protection for thread safety of the console output
+ *
+ * @param type one of the supported message types:MSG_ERROR, MSG_DEBUG,
+ * MSG_WARNING, MSG_INFO
+ * @param publisher name of the message publisher
+ * @param message string to be displayed
+ * @return string returns a copy of the formatted string. It can be used for
+ * disk-based logging
+ */
+string ConsoleOutput::publish(LogLevel type, std::string publisher, std::string message)
+{
+    std::ostringstream out;
 
-        // thread_safe_log log = safe_cout();
-        std::lock_guard<std::mutex> lock(this->mtx);
-        switch (type)
-        {
-        case logger::LogLevel::MSG_ERROR:
-            out << red << "[error]" << light_cyan << " <" << publisher << "> " << reset
-                << message << reset << std::endl;
-            break;
-        case logger::LogLevel::MSG_DEBUG:
-            out << green << "[debug]" << light_cyan << " <" << publisher << "> "
-                << reset << message << reset << std::endl;
-            break;
-        case logger::LogLevel::MSG_WARNING:
-            out << yellow << "[warn] " << light_cyan << " <" << publisher << "> "
-                << reset << message << reset << std::endl;
-            break;
-        case logger::LogLevel::MSG_INFO:
-            out << reset << "[info] " << light_cyan << " <" << publisher << "> "
-                << reset << message << reset << std::endl;
-            break;
-        default:
-            out << reset << "[-]" << light_cyan << " <" << publisher << "> " << reset
-                << message << reset << std::endl;
-            break;
-        }
-        std::cout << out.str();
-        return out.str();
-    }
-
-    /**
-     * @brief Generates an error message
-     *
-     * @param publisher nametag of who/where the message is being published
-     * @param message message string. It can contain extra decorators using
-     * supported escape sequences
-     * @return string
-     */
-    string ConsoleOutput::error(string publisher, string message)
+    // thread_safe_log log = safe_cout();
+    std::lock_guard<std::mutex> lock(this->mtx);
+    switch (type)
     {
-        return ConsoleOutput::publish(LogLevel::MSG_ERROR, publisher, message);
+    case logger::LogLevel::MSG_ERROR:
+        out << red << "[error]" << light_cyan << " <" << publisher << "> " << reset << message
+            << reset << std::endl;
+        break;
+    case logger::LogLevel::MSG_DEBUG:
+        out << green << "[debug]" << light_cyan << " <" << publisher << "> " << reset << message
+            << reset << std::endl;
+        break;
+    case logger::LogLevel::MSG_WARNING:
+        out << yellow << "[warn] " << light_cyan << " <" << publisher << "> " << reset << message
+            << reset << std::endl;
+        break;
+    case logger::LogLevel::MSG_INFO:
+        out << reset << "[info] " << light_cyan << " <" << publisher << "> " << reset << message
+            << reset << std::endl;
+        break;
+    default:
+        out << reset << "[-]" << light_cyan << " <" << publisher << "> " << reset << message
+            << reset << std::endl;
+        break;
     }
+    std::cout << out.str();
+    return out.str();
+}
 
-    /**
-     * @brief Generates a debug message
-     *
-     * @param publisher nametag of who/where the message is being published
-     * @param message message string. It can contain extra decorators using
-     * supported escape sequences
-     * @return string
-     */
-    string ConsoleOutput::debug(string publisher, string message)
-    {
-        return ConsoleOutput::publish(LogLevel::MSG_DEBUG, publisher, message);
-    }
+/**
+ * @brief Generates an error message
+ *
+ * @param publisher nametag of who/where the message is being published
+ * @param message message string. It can contain extra decorators using
+ * supported escape sequences
+ * @return string
+ */
+string ConsoleOutput::error(string publisher, string message)
+{
+    return ConsoleOutput::publish(LogLevel::MSG_ERROR, publisher, message);
+}
 
-    /**
-     * @brief Generates a warning message
-     *
-     * @param publisher nametag of who/where the message is being published
-     * @param message message string. It can contain extra decorators using
-     * supported escape sequences
-     * @return string
-     */
-    string ConsoleOutput::warn(string publisher, string message)
-    {
-        return ConsoleOutput::publish(LogLevel::MSG_WARNING, publisher, message);
-    }
+/**
+ * @brief Generates a debug message
+ *
+ * @param publisher nametag of who/where the message is being published
+ * @param message message string. It can contain extra decorators using
+ * supported escape sequences
+ * @return string
+ */
+string ConsoleOutput::debug(string publisher, string message)
+{
+    return ConsoleOutput::publish(LogLevel::MSG_DEBUG, publisher, message);
+}
 
-    /**
-     * @brief Generates an informative message
-     *
-     * @param publisher nametag of who/where the message is being published
-     * @param message message string. It can contain extra decorators using
-     * supported escape sequences
-     * @return string
-     */
-    string ConsoleOutput::info(string publisher, string message)
-    {
-        return ConsoleOutput::publish(LogLevel::MSG_INFO, publisher, message);
-    }
+/**
+ * @brief Generates a warning message
+ *
+ * @param publisher nametag of who/where the message is being published
+ * @param message message string. It can contain extra decorators using
+ * supported escape sequences
+ * @return string
+ */
+string ConsoleOutput::warn(string publisher, string message)
+{
+    return ConsoleOutput::publish(LogLevel::MSG_WARNING, publisher, message);
+}
 
-    /**
-     * @brief Overloaded implementation supporting ostringstream
-     *
-     * @param publisher nametag of who/where the message is being published
-     * @param message message string. It can contain extra decorators using
-     * supported escape sequences
-     * @return string
-     */
-    string ConsoleOutput::error(string publisher, ostringstream &message)
-    {
-        string r =
-            ConsoleOutput::publish(LogLevel::MSG_ERROR, publisher, message.str());
-        message.str("");
-        return r;
-    }
+/**
+ * @brief Generates an informative message
+ *
+ * @param publisher nametag of who/where the message is being published
+ * @param message message string. It can contain extra decorators using
+ * supported escape sequences
+ * @return string
+ */
+string ConsoleOutput::info(string publisher, string message)
+{
+    return ConsoleOutput::publish(LogLevel::MSG_INFO, publisher, message);
+}
 
-    /**
-     * @brief Overloaded implementation supporting ostringstream
-     *
-     * @param publisher nametag of who/where the message is being published
-     * @param message message string. It can contain extra decorators using
-     * supported escape sequences
-     * @return string
-     */
-    string ConsoleOutput::debug(string publisher, ostringstream &message)
-    {
-        string r =
-            ConsoleOutput::publish(LogLevel::MSG_DEBUG, publisher, message.str());
-        message.str("");
-        return r;
-    }
+/**
+ * @brief Overloaded implementation supporting ostringstream
+ *
+ * @param publisher nametag of who/where the message is being published
+ * @param message message string. It can contain extra decorators using
+ * supported escape sequences
+ * @return string
+ */
+string ConsoleOutput::error(string publisher, ostringstream& message)
+{
+    string r = ConsoleOutput::publish(LogLevel::MSG_ERROR, publisher, message.str());
+    message.str("");
+    return r;
+}
 
-    /**
-     * @brief Overloaded implementation supporting ostringstream
-     *
-     * @param publisher nametag of who/where the message is being published
-     * @param message message string. It can contain extra decorators using
-     * supported escape sequences
-     * @return string
-     */
-    string ConsoleOutput::warn(string publisher, ostringstream &message)
-    {
-        string r =
-            ConsoleOutput::publish(LogLevel::MSG_WARNING, publisher, message.str());
-        message.str("");
-        return r;
-    }
+/**
+ * @brief Overloaded implementation supporting ostringstream
+ *
+ * @param publisher nametag of who/where the message is being published
+ * @param message message string. It can contain extra decorators using
+ * supported escape sequences
+ * @return string
+ */
+string ConsoleOutput::debug(string publisher, ostringstream& message)
+{
+    string r = ConsoleOutput::publish(LogLevel::MSG_DEBUG, publisher, message.str());
+    message.str("");
+    return r;
+}
 
-    /**
-     * @brief Overloaded implementation supporting ostringstream
-     *
-     * @param publisher nametag of who/where the message is being published
-     * @param message message string. It can contain extra decorators using
-     * supported escape sequences
-     * @return string
-     */
-    string ConsoleOutput::info(string publisher, ostringstream &message)
-    {
-        string r =
-            ConsoleOutput::publish(LogLevel::MSG_INFO, publisher, message.str());
-        message.str("");
-        return r;
-    }
+/**
+ * @brief Overloaded implementation supporting ostringstream
+ *
+ * @param publisher nametag of who/where the message is being published
+ * @param message message string. It can contain extra decorators using
+ * supported escape sequences
+ * @return string
+ */
+string ConsoleOutput::warn(string publisher, ostringstream& message)
+{
+    string r = ConsoleOutput::publish(LogLevel::MSG_WARNING, publisher, message.str());
+    message.str("");
+    return r;
+}
+
+/**
+ * @brief Overloaded implementation supporting ostringstream
+ *
+ * @param publisher nametag of who/where the message is being published
+ * @param message message string. It can contain extra decorators using
+ * supported escape sequences
+ * @return string
+ */
+string ConsoleOutput::info(string publisher, ostringstream& message)
+{
+    string r = ConsoleOutput::publish(LogLevel::MSG_INFO, publisher, message.str());
+    message.str("");
+    return r;
+}
 } // namespace logger
