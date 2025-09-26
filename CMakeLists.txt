@@ -30,6 +30,12 @@ set(OPENCV_VENDOR_CMAKEDIR "${OPENCV_VENDOR_PREFIX}/lib/cmake/opencv4")
 # Prefer Config packages over Module/pkg-config
 set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 
+# Emit compile_commands.json for clang-tidy/clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# ==========================================
+# Dependencies
+# ==========================================
 message(STATUS "Searching for OpenCV ${VIDEOSTRIP_OPENCV_VERSION} (deterministic build via third_party/opencv)")
 
 # If bundling, build vendor FIRST and then force OpenCV_DIR
