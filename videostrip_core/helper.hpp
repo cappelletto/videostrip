@@ -14,8 +14,8 @@
 
 #pragma once
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <mutex>
 #include <sstream>
 
@@ -44,7 +44,8 @@ std::string type2str(int type);
 std::string makeFixedLength(const int i, const int length);
 
 /**
- * @brief logger class that provides thread safe cout output to the console, with additional colour-coded formatting
+ * @brief logger class that provides thread safe cout output to the console, with additional
+ * colour-coded formatting
  *
  */
 

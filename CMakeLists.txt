@@ -19,7 +19,37 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# ---------- OpenCV bundling toggle ----------
+# ==========================================
+# CLang-Tidy config
+# ==========================================
+option(ENABLE_CLANG_TIDY "Run clang-tidy during the build" OFF)
+option(ENABLE_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
+
+if (ENABLE_CLANG_TIDY)
+  find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+  if (CLANG_TIDY_EXE)
+    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-p=${CMAKE_BINARY_DIR}")
+  else()
+    message(WARNING "ENABLE_CLANG_TIDY=ON but clang-tidy not found")
+  endif()
+endif()
+
+# Common warnings (we need to include the target in each target's link libraries)
+add_library(project_warnings INTERFACE)
+target_compile_options(project_warnings INTERFACE
+  $<$<CXX_COMPILER_ID:Clang,GNU>:-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion>
+  $<$<CXX_COMPILER_ID:MSVC>:/W4 /permissive->)
+
+if (ENABLE_WARNINGS_AS_ERRORS)
+  target_compile_options(project_warnings INTERFACE
+    $<$<CXX_COMPILER_ID:Clang,GNU>:-Werror>
+    $<$<CXX_COMPILER_ID:MSVC>:/WX>)
+endif()
+
+# ==========================================
+# ---------- OpenCV bundling toggle --------
+# ==========================================
 option(VIDEOSTRIP_BUNDLE_OPENCV "Use vendored OpenCV under third_party/_install" ON)
 set(VIDEOSTRIP_OPENCV_VERSION "4.12.0" CACHE STRING "Vendored OpenCV version")
 
@@ -30,6 +60,12 @@ set(OPENCV_VENDOR_CMAKEDIR "${OPENCV_VENDOR_PREFIX}/lib/cmake/opencv4")
 # Prefer Config packages over Module/pkg-config
 set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 
+# Emit compile_commands.json for clang-tidy/clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# ==========================================
+# Dependencies
+# ==========================================
 message(STATUS "Searching for OpenCV ${VIDEOSTRIP_OPENCV_VERSION} (deterministic build via third_party/opencv)")
 
 # If bundling, build vendor FIRST and then force OpenCV_DIR
@@ -117,11 +153,15 @@ include_directories(${CMAKE_SOURCE_DIR})
 # Add project modules
 # ==========================================
 add_subdirectory(videostrip_core)
+target_link_libraries(videostrip_core PRIVATE project_warnings)
+
 if (TARGET opencv_vendor)
   add_dependencies(videostrip_core opencv_vendor)
 endif()
 
 add_subdirectory(videostrip_cli)
+target_link_libraries(videostrip_cli PRIVATE project_warnings)
+
 if (TARGET opencv_vendor)
   add_dependencies(videostrip_cli opencv_vendor)
 endif()
@@ -178,10 +218,6 @@ install(TARGETS videostrip_core ARCHIVE DESTINATION lib LIBRARY DESTINATION lib)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/videostrip_core/
   DESTINATION include/videostrip_core
   FILES_MATCHING PATTERN "*.hpp")
-
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/meshroom/
-        DESTINATION share/videostrip_plugin/meshroom
-        FILES_MATCHING PATTERN "*.py" PATTERN "*.mg" PATTERN "config.json" PATTERN "__init__.py")
 
 install(FILES configs/sample_config.yaml DESTINATION share/videostrip)
 install(FILES ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_SOURCE_DIR}/LICENSE DESTINATION share/doc/videostrip)

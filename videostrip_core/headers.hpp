@@ -13,18 +13,17 @@
 #define _PROJECT_HEADERS_H_
 
 /// Basic C and C++ libraries
-#include <cmath>
+#include <args.hxx> //
 #include <chrono>
+#include <cmath>
 #include <fstream>
-#include <iostream>
-#include <iomanip>
 #include <immintrin.h>
+#include <iomanip>
+#include <iostream>
 #include <omp.h>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
-
-#include <args.hxx> //
 /// OpenCV libraries. May need review for the final release
 #include <opencv2/core.hpp>
 #include <opencv2/video.hpp>
