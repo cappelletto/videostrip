@@ -229,7 +229,7 @@ int main(int argc, char* argv[])
         const bool ok =
             extractor
                 .run(); ///< this will run main videostrip_core loop: VideoFrameExtractor::run()
-        std::cout << std::endl;
+        std::cout << "\n";
         if (!ok)
         {
             logger->error("Extraction failed (non-fatal). Check logs for details.");

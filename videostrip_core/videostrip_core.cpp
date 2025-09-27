@@ -359,7 +359,9 @@ void VideoFrameExtractor::writeMetadataCSV() const
         ofs << md.frame_idx << "," << md.timestamp_ms << "," << md.output_image_name << ","
             << md.feature_count << "," << md.quality_score << ",";
         if (md.georef.has_value())
+        {
             ofs << md.georef.value();
+        }
         ofs << "\n";
     }
 }
@@ -383,10 +385,14 @@ void VideoFrameExtractor::writeSummaryYAML() const
     ofs << "  max_skipped_frames: " << m_config.max_skipped_frames << "\n";
     ofs << "  apply_enhancement: " << (m_config.apply_enhancement ? "true" : "false") << "\n";
     if (m_config.georef.has_value())
+    {
         ofs << "  georef: " << *m_config.georef << "\n";
+    }
     ofs << "images:\n";
     for (const auto& img : m_summary.extracted_images)
+    {
         ofs << "  - " << img << "\n";
+    }
 }
 
 void VideoFrameExtractor::writeLog(const std::string& msg, const std::string& level) const
