@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.18)
 project(videostrip VERSION 0.9.2 LANGUAGES CXX)
 
+# Less-intrusive default install prefix on UNIX (avoid /usr/local by default)
+if(UNIX AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "/opt/videostrip" CACHE PATH "Install prefix" FORCE)
+  message(STATUS "Install prefix not provided, defaulting to: ${CMAKE_INSTALL_PREFIX}")
+endif()
+
 # ------------------------------------------------------------
 # Licensing
 # ------------------------------------------------------------
@@ -243,7 +249,8 @@ if (VIDEOSTRIP_BUNDLE_OPENCV AND EXISTS "${OPENCV_VENDOR_CMAKEDIR}/OpenCVConfig.
   # RPATH to prefer bundled libs
   set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-  set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib")
+  # Prefer bundled libs next to the executable; avoid falling back to system paths implicitly
+  set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib")
 
   # --- Bundle vendored OpenCV license files into the package ---
   install(DIRECTORY "${OPENCV_VENDOR_PREFIX}/share/licenses/"
@@ -268,6 +275,10 @@ set(CPACK_RESOURCE_FILE_README  "${CMAKE_SOURCE_DIR}/README.md")
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" _sysname_lc)
 # Nice archive base name: videostrip-X.Y.Z-Linux-x86_64, etc.
 set(CPACK_PACKAGE_FILE_NAME "videostrip-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+# Make packages install under /opt/videostrip by default (non-intrusive)
+if(UNIX)
+  set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/videostrip")
+endif()
 set(CPACK_GENERATOR "TGZ;ZIP;DEB")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Jose Cappelletto")
 set(CPACK_DEBIAN_PACKAGE_SECTION "science")
