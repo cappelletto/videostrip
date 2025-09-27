@@ -43,6 +43,8 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Metas
 * ✅ **On-export frame enhancement**.
 * ✅ **Grid-based feature density normalization**.
 
+
+For more detailed information, please check the  [Release notes](RELEASE_NOTES.md)
 ---
 
 ## **User Stories Alignment**

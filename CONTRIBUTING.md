@@ -37,6 +37,7 @@ We welcome contributions of all types:
 * C++17 or later
 * Prefer smart pointers, and std::optional over raw pointers.
 * Prefer clang-format with the project’s style file (.clang-format).
+* Use clang-tidy for static analysis and linting. A `.clang-tidy` configuration is provided to standardize checks.
 * Add Doxygen-style comments for public headers.
 
 4. **Add tests!**
@@ -48,6 +49,7 @@ New features or bugfixes should include a Catch2 unit test under `tests/`. You c
 * Include a description of changes and a reference to any related issue (e.g., Fixes #23).
 * Use as reference `conventional commits`. See https://www.conventionalcommits.org/en/v1.0.0/
 * Ensure code is well formatted (e.g., run `clang-format`).
+* Run `clang-tidy` locally for static analysis. Pre-commit hooks are available to automate checks and ensure consistency.
 * Make sure that CI (Linux + Windows) passes. You can try first building and testing locally and then Github Actions can be used for testing the rest of the OS-matrix
 
 ## Licensing of Contributions
