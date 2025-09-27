@@ -25,6 +25,7 @@ namespace videostrip
 // ------------------------------
 namespace
 {
+//TODO: Unused so far - might be removed
 inline cv::Mat to_gray(const cv::Mat& img)
 {
     if (img.channels() == 1)
@@ -127,8 +128,8 @@ void FeatureExtractor::apply_normalization(const cv::Size& img_size,
                       const float ax = kpts[a].pt.x, ay = kpts[a].pt.y;
                       const float bx = kpts[b].pt.x, by = kpts[b].pt.y;
                       // center of the cell
-                      float cx = ((int(ax) / gp.cell_w) * gp.cell_w) + gp.cell_w * 0.5f;
-                      float cy = ((int(ay) / gp.cell_h) * gp.cell_h) + gp.cell_h * 0.5f;
+                      float cx = ((int(ax) / gp.cell_w) * gp.cell_w) + (float) gp.cell_w * 0.5f;
+                      float cy = ((int(ay) / gp.cell_h) * gp.cell_h) + (float) gp.cell_h * 0.5f;
                       float da = (ax - cx) * (ax - cx) + (ay - cy) * (ay - cy);
                       float db = (bx - cx) * (bx - cx) + (by - cy) * (by - cy);
                       return da < db;

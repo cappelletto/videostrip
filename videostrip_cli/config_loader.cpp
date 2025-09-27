@@ -86,7 +86,7 @@ bool load_yaml_config(const std::string& yaml_path, ExtractorConfig& out, std::s
             }
             if (auto v = n["overlap_threshold"]; v && v.IsScalar())
             {
-                out.overlap_threshold = v.as<double>();
+                out.overlap_threshold = v.as<float>();
             }
             if (auto v = n["max_skipped_frames"]; v && v.IsScalar())
             {
