@@ -1,6 +1,7 @@
 /**
  * @file options.hpp
- * @brief Argument parser options based on args.hxx. Extended to accomodate multiple modules using similar parsers
+ * @brief Argument parser options based on args.hxx. Extended to accomodate multiple modules using
+ * similar parsers
  * @version 1.1
  * @date 18/06/2020
  * @author Jose Cappelletto
@@ -15,14 +16,19 @@
 args::ArgumentParser argParser("", "");
 args::HelpFlag argHelp(argParser, "help", "Display this help menu", {'h', "help"});
 
-args::Flag argDumpInfo(argParser, "dump", "Show compilation time related information", {'d', "dump"});
+args::Flag argDumpInfo(argParser, "dump", "Show compilation time related information",
+                       {'d', "dump"});
 args::ValueFlag<std::string> argInput(argParser, "input", "Path to video input file", {"input"});
-args::ValueFlag<std::string> argOutput(argParser, "output", "Output filename prefix", {'o', "output"});
+args::ValueFlag<std::string> argOutput(argParser, "output", "Output filename prefix",
+                                       {'o', "output"});
 args::ValueFlag<int> argVerbose(argParser, "verbose", "Define verbosity level, 0 - 3", {"verbose"});
 
 // Free parameters for debugging
-args::ValueFlag<int> argIntParam(argParser, "param", "User defined parameter INTEGER for testing purposes", {"int"});
-args::ValueFlag<float> argFloatParam(argParser, "param", "User defined parameter FLOAT for testing purposes", {"float"});
+args::ValueFlag<int> argIntParam(argParser, "param",
+                                 "User defined parameter INTEGER for testing purposes", {"int"});
+args::ValueFlag<float> argFloatParam(argParser, "param",
+                                     "User defined parameter FLOAT for testing purposes",
+                                     {"float"});
 
 /**
  * @brief Default initializer for argument parsing object
@@ -31,11 +37,10 @@ args::ValueFlag<float> argFloatParam(argParser, "param", "User defined parameter
  * @param argv cli argv (value)
  * @return int error code if any
  */
-int initParser(int argc, char *argv[])
+int initParser(int argc, char* argv[])
 {
     /* PARSER section */
-    std::string descriptionString =
-        "videostrip - Complete description \
+    std::string descriptionString = "videostrip - Complete description \
     OpenCV GPU C++17 multithreaded video processing";
 
     argParser.Description(descriptionString);
@@ -47,7 +52,7 @@ int initParser(int argc, char *argv[])
     {
         argParser.ParseCLI(argc, argv);
     }
-    catch (const args::Completion &e)
+    catch (const args::Completion& e)
     {
         std::cout << e.what();
         return 0;
@@ -70,7 +75,7 @@ int initParser(int argc, char *argv[])
         std::cerr << "Use -h, --help command to see usage" << std::endl;
         return -1;
     }
-    std::cout << "\tBuilt:\t" << __DATE__ << " - " << __TIME__ << endl; 
+    std::cout << "\tBuilt:\t" << __DATE__ << " - " << __TIME__ << endl;
     return 0;
 }
 

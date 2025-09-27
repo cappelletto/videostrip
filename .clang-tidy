@@ -1,0 +1,33 @@
+# .clang-tidy
+Checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  readability-*,
+  modernize-*,
+  cppcoreguidelines-*,
+  portability-simd-intrinsics,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-owning-memory,        # noisy with cv::Mat and RAII in OpenCV-heavy code
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -readability-magic-numbers,
+# -modernize-use-trailing-return-type       # taste-based
+WarningsAsErrors: >
+  clang-analyzer-*,
+  bugprone-*
+HeaderFilterRegex: '^(videostrip_core|videostrip_cli)/'
+# AnalyzeTemporaryDtors: true
+FormatStyle: file
+CheckOptions:
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: modernize-loop-convert.MinConfidence
+    value: reasonable
+  - key: performance-for-range-copy.WarnOnAllAutoCopies
+    value: true
+  - key: readability-uppercase-literal-suffix
+    value: false

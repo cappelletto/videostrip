@@ -1,12 +1,12 @@
 #include <catch2/catch_test_macros.hpp>
-#include <yaml-cpp/yaml.h>
 #include <string>
-
 #include <videostrip_core/enhance/enhance_yaml.hpp>
+#include <yaml-cpp/yaml.h>
 
 using namespace videostrip;
 
-TEST_CASE("enhance yaml: valid sequence parses", "[enhance][yaml]") {
+TEST_CASE("enhance yaml: valid sequence parses", "[enhance][yaml]")
+{
     const char* y = R"YAML(
 enhance:
   enable: true
@@ -34,7 +34,8 @@ enhance:
     CHECK(cfg->sequence[3].type == EnhanceType::CLAHE);
 }
 
-TEST_CASE("enhance yaml: malformed op fails", "[enhance][yaml]") {
+TEST_CASE("enhance yaml: malformed op fails", "[enhance][yaml]")
+{
     const char* y = R"YAML(
 enhance:
   enable: true

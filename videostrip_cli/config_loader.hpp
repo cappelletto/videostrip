@@ -5,12 +5,12 @@
  * @brief YAML loader & merge helpers for videostrip CLI.
  */
 
-#include <string>
 #include <optional>
+#include <string>
+#include <videostrip_core/videostrip_core.hpp> // for ExtractorConfig
 
-#include <videostrip_core/videostrip_core.hpp>  // for ExtractorConfig
-
-namespace videostrip::cli {
+namespace videostrip::cli
+{
 
 /**
  * @brief Load a YAML config file (optional), return a partially-filled ExtractorConfig.
@@ -20,9 +20,7 @@ namespace videostrip::cli {
  * @param err         Error text on failure (file not found / parse error)
  * @return true if loaded successfully; false otherwise (out is undefined on failure)
  */
-bool load_yaml_config(const std::string& yaml_path,
-                      ExtractorConfig& out,
-                      std::string& err);
+bool load_yaml_config(const std::string& yaml_path, ExtractorConfig& out, std::string& err);
 
 /**
  * @brief Apply CLI-style normalization for output paths using base_dir.

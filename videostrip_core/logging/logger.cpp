@@ -8,18 +8,18 @@
 
 namespace videostrip
 {
-    // void ConsoleLogger::clear()
-    // {
-    //     // No history implemented — stub
-    // }
+// void ConsoleLogger::clear()
+// {
+//     // No history implemented — stub
+// }
 
-    // int ConsoleLogger::size()
-    // {
-    //     return 0; // No history implemented — stub
-    // }
+// int ConsoleLogger::size()
+// {
+//     return 0; // No history implemented — stub
+// }
 
-    // void ConsoleLogger::dump()
-    // {
-    //     // No history implemented — stub
-    // }
+// void ConsoleLogger::dump()
+// {
+//     // No history implemented — stub
+// }
 } // namespace videostrip
