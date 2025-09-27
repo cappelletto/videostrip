@@ -222,7 +222,7 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/videostrip_core/
 install(FILES configs/sample_config.yaml DESTINATION share/videostrip)
 install(FILES ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_SOURCE_DIR}/LICENSE DESTINATION share/doc/videostrip)
 
-# RPATH so installed bins prefer bundled libs (when bundling)
+# RPATH so installed bins prefer bundled libs (when bundling) and bundle OpenCV licenses
 if (VIDEOSTRIP_BUNDLE_OPENCV AND EXISTS "${OPENCV_VENDOR_CMAKEDIR}/OpenCVConfig.cmake")
   # Copy vendored libs next to our install if desired (optional – packaging may handle this)
   find_library(OPENCV_WORLD NAMES opencv_world PATHS "${OPENCV_VENDOR_PREFIX}/lib" NO_DEFAULT_PATH)
@@ -240,11 +240,20 @@ if (VIDEOSTRIP_BUNDLE_OPENCV AND EXISTS "${OPENCV_VENDOR_CMAKEDIR}/OpenCVConfig.
     endforeach()
   endif()
 
+  # RPATH to prefer bundled libs
   set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
   set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib")
-endif()
 
+  # --- Bundle vendored OpenCV license files into the package ---
+  install(DIRECTORY "${OPENCV_VENDOR_PREFIX}/share/licenses/"
+          DESTINATION "share/licenses/opencv"
+          FILES_MATCHING PATTERN "*")
+  # Some OpenCV builds place license texts here (optional)
+  install(DIRECTORY "${OPENCV_VENDOR_PREFIX}/share/opencv4/licenses/"
+          DESTINATION "share/licenses/opencv"
+          OPTIONAL)
+endif()        
 # -------------------------
 # CPack configuration
 # -------------------------

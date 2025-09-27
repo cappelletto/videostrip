@@ -254,7 +254,11 @@ videostrip is dual-licensed under:
 * GNU Lesser General Public License, Version 3.0 or later
   (see LICENSE.LGPL or [https://www.gnu.org/licenses/lgpl-3.0.html](https://www.gnu.org/licenses/lgpl-3.0.html))
 
-You may choose to use *videostrip* as a whole under either license. Note that some dependencies (e.g., OpenCV with non-free modules) have their own licensing terms.
+You may choose to use *videostrip* as a whole under either license.
+
+**Third-party licenses**
+- OpenCV (BSD-3-Clause) and its bundled third-party components: see package path share/licenses/opencv/
+- Additional notices: see THIRD_PARTY_NOTICES.md
 
 See LICENSE.Apache and LICENSE.LGPL files in this repository for the complete license texts.
 
