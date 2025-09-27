@@ -1,13 +1,14 @@
 #pragma once
-#include <yaml-cpp/yaml.h>
 #include <optional>
 #include <string>
-
 #include <videostrip_core/enhance/image_enhancers.hpp>
+#include <yaml-cpp/yaml.h>
 
-namespace videostrip {
+namespace videostrip
+{
 
-struct EnhanceConfig {
+struct EnhanceConfig
+{
     bool enable{false};
     std::vector<EnhanceStep> sequence;
 };

@@ -1,18 +1,22 @@
 #pragma once
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+
+#include <string>
 #include <variant>
 #include <vector>
-#include <string>
 
-namespace videostrip {
+namespace videostrip
+{
 
 /// Supported Operations - extensible list.
-enum class EnhanceType {
-    ContrastOffset,  ///< alpha * I + beta (per-pixel, per-channel)
-    GrayWorldWB,     ///< scale channels so their means match the global mean
-    Gamma,           ///< apply LUT with gamma correction
-    CLAHE            ///< contrast-limited adaptive histogram equalization //TODO: bring implementation of ACLAHE
+enum class EnhanceType
+{
+    ContrastOffset, ///< alpha * I + beta (per-pixel, per-channel)
+    GrayWorldWB,    ///< scale channels so their means match the global mean
+    Gamma,          ///< apply LUT with gamma correction
+    CLAHE ///< contrast-limited adaptive histogram equalization //TODO: bring implementation of
+          ///< ACLAHE
 };
 
 /// Colorspace selection for CLAHE. Channel is implicit:
@@ -20,38 +24,50 @@ enum class EnhanceType {
 /// - HSV   -> V
 /// - Lab   -> L
 /// - BGR   -> per-channel (3x CLAHE; slower; optional)
-enum class ClaheSpace { YCrCb, HSV, Lab, BGR };
-
-struct ContrastOffsetParams {
-    double alpha{1.0};  ///< multiplicative gain
-    double beta{0.0};   ///< additive offset
+enum class ClaheSpace
+{
+    YCrCb,
+    HSV,
+    Lab,
+    BGR
 };
 
-struct GrayWorldParams {
+struct ContrastOffsetParams
+{
+    double alpha{1.0}; ///< multiplicative gain
+    double beta{0.0};  ///< additive offset
+};
+
+struct GrayWorldParams
+{
     // Future: percentile clipping / robust mean. For now basic mean.
 };
 
-struct GammaParams {
-    double gamma{1.0};  ///< >0; 1.0 = identity
+struct GammaParams
+{
+    double gamma{1.0}; ///< >0; 1.0 = identity
 };
 
-struct ClaheParams {
-    double clipLimit{2.0};      ///< OpenCV CLAHE clipLimit
-    cv::Size tileGrid{8, 8};    ///< tile grid size
+struct ClaheParams
+{
+    double clipLimit{2.0};   ///< OpenCV CLAHE clipLimit
+    cv::Size tileGrid{8, 8}; ///< tile grid size
     ClaheSpace space{ClaheSpace::YCrCb};
 };
 
 using EnhanceParams = std::variant<ContrastOffsetParams, GrayWorldParams, GammaParams, ClaheParams>;
 
 /// One step in the sequence
-struct EnhanceStep {
+struct EnhanceStep
+{
     EnhanceType type;
     EnhanceParams params;
 };
 
 /// Enhancer: apply a sequence of operations reusing internal scratch buffers.
 /// Not thread-safe across calls; use one instance per worker thread.
-class Enhancer {
+class Enhancer
+{
 public:
     Enhancer() = default;
 

@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.18)
-project(videostrip VERSION 0.9.2 LANGUAGES CXX)
+project(videostrip VERSION 0.9.3 LANGUAGES CXX)
+
+# Less-intrusive default install prefix on UNIX (avoid /usr/local by default)
+if(UNIX AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "/opt/videostrip" CACHE PATH "Install prefix" FORCE)
+  message(STATUS "Install prefix not provided, defaulting to: ${CMAKE_INSTALL_PREFIX}")
+endif()
 
 # ------------------------------------------------------------
 # Licensing
@@ -19,7 +25,37 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# ---------- OpenCV bundling toggle ----------
+# ==========================================
+# CLang-Tidy config
+# ==========================================
+option(ENABLE_CLANG_TIDY "Run clang-tidy during the build" OFF)
+option(ENABLE_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
+
+if (ENABLE_CLANG_TIDY)
+  find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+  if (CLANG_TIDY_EXE)
+    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-p=${CMAKE_BINARY_DIR}")
+  else()
+    message(WARNING "ENABLE_CLANG_TIDY=ON but clang-tidy not found")
+  endif()
+endif()
+
+# Common warnings (we need to include the target in each target's link libraries)
+add_library(project_warnings INTERFACE)
+target_compile_options(project_warnings INTERFACE
+  $<$<CXX_COMPILER_ID:Clang,GNU>:-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion>
+  $<$<CXX_COMPILER_ID:MSVC>:/W4 /permissive->)
+
+if (ENABLE_WARNINGS_AS_ERRORS)
+  target_compile_options(project_warnings INTERFACE
+    $<$<CXX_COMPILER_ID:Clang,GNU>:-Werror>
+    $<$<CXX_COMPILER_ID:MSVC>:/WX>)
+endif()
+
+# ==========================================
+# ---------- OpenCV bundling toggle --------
+# ==========================================
 option(VIDEOSTRIP_BUNDLE_OPENCV "Use vendored OpenCV under third_party/_install" ON)
 set(VIDEOSTRIP_OPENCV_VERSION "4.12.0" CACHE STRING "Vendored OpenCV version")
 
@@ -30,6 +66,12 @@ set(OPENCV_VENDOR_CMAKEDIR "${OPENCV_VENDOR_PREFIX}/lib/cmake/opencv4")
 # Prefer Config packages over Module/pkg-config
 set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 
+# Emit compile_commands.json for clang-tidy/clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# ==========================================
+# Dependencies
+# ==========================================
 message(STATUS "Searching for OpenCV ${VIDEOSTRIP_OPENCV_VERSION} (deterministic build via third_party/opencv)")
 
 # If bundling, build vendor FIRST and then force OpenCV_DIR
@@ -117,11 +159,15 @@ include_directories(${CMAKE_SOURCE_DIR})
 # Add project modules
 # ==========================================
 add_subdirectory(videostrip_core)
+target_link_libraries(videostrip_core PRIVATE project_warnings)
+
 if (TARGET opencv_vendor)
   add_dependencies(videostrip_core opencv_vendor)
 endif()
 
 add_subdirectory(videostrip_cli)
+target_link_libraries(videostrip_cli PRIVATE project_warnings)
+
 if (TARGET opencv_vendor)
   add_dependencies(videostrip_cli opencv_vendor)
 endif()
@@ -179,14 +225,10 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/videostrip_core/
   DESTINATION include/videostrip_core
   FILES_MATCHING PATTERN "*.hpp")
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/meshroom/
-        DESTINATION share/videostrip_plugin/meshroom
-        FILES_MATCHING PATTERN "*.py" PATTERN "*.mg" PATTERN "config.json" PATTERN "__init__.py")
-
 install(FILES configs/sample_config.yaml DESTINATION share/videostrip)
 install(FILES ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_SOURCE_DIR}/LICENSE DESTINATION share/doc/videostrip)
 
-# RPATH so installed bins prefer bundled libs (when bundling)
+# RPATH so installed bins prefer bundled libs (when bundling) and bundle OpenCV licenses
 if (VIDEOSTRIP_BUNDLE_OPENCV AND EXISTS "${OPENCV_VENDOR_CMAKEDIR}/OpenCVConfig.cmake")
   # Copy vendored libs next to our install if desired (optional – packaging may handle this)
   find_library(OPENCV_WORLD NAMES opencv_world PATHS "${OPENCV_VENDOR_PREFIX}/lib" NO_DEFAULT_PATH)
@@ -204,11 +246,21 @@ if (VIDEOSTRIP_BUNDLE_OPENCV AND EXISTS "${OPENCV_VENDOR_CMAKEDIR}/OpenCVConfig.
     endforeach()
   endif()
 
+  # RPATH to prefer bundled libs
   set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-  set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib")
-endif()
+  # Prefer bundled libs next to the executable; avoid falling back to system paths implicitly
+  set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib")
 
+  # --- Bundle vendored OpenCV license files into the package ---
+  install(DIRECTORY "${OPENCV_VENDOR_PREFIX}/share/licenses/"
+          DESTINATION "share/licenses/opencv"
+          FILES_MATCHING PATTERN "*")
+  # Some OpenCV builds place license texts here (optional)
+  install(DIRECTORY "${OPENCV_VENDOR_PREFIX}/share/opencv4/licenses/"
+          DESTINATION "share/licenses/opencv"
+          OPTIONAL)
+endif()        
 # -------------------------
 # CPack configuration
 # -------------------------
@@ -223,6 +275,10 @@ set(CPACK_RESOURCE_FILE_README  "${CMAKE_SOURCE_DIR}/README.md")
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" _sysname_lc)
 # Nice archive base name: videostrip-X.Y.Z-Linux-x86_64, etc.
 set(CPACK_PACKAGE_FILE_NAME "videostrip-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+# Make packages install under /opt/videostrip by default (non-intrusive)
+if(UNIX)
+  set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/videostrip")
+endif()
 set(CPACK_GENERATOR "TGZ;ZIP;DEB")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Jose Cappelletto")
 set(CPACK_DEBIAN_PACKAGE_SECTION "science")

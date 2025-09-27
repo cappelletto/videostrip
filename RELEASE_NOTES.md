@@ -3,18 +3,14 @@ Release Notes Draft
   # videostrip v0.9.2 — 2025-09-25
 
   ## Highlights
-  - Completed the Meshroom integration split: all node templates and scripts now live in the new [videostrip-meshroom](https://github.com/cappelletto/videostrip-
-  meshroom) repository, keeping this tree focused on the core extractor and CLI.
-  - Added `scripts/todo2issues.py`, a GitHub CLI helper that turns structured sections in `doc/TODO.md` into labelled issues (supports dry-run, milestone
-  assignment, and cross-repo targeting).
+  - Completed the Meshroom integration split: all node templates and scripts now live in the new [videostrip-meshroom](https://github.com/cappelletto/videostrip-meshroom) repository, keeping this tree focused on the core extractor and CLI.
+  - Added `scripts/todo2issues.py`, a GitHub CLI helper that turns structured sections in `doc/TODO.md` into labelled issues (supports dry-run, milestone assignment, and cross-repo targeting).
 
   ## Breaking Changes
-  - Meshroom node assets (`meshroom/` and `doc/TODO.md` entries tied to them) have been removed from this repository. Clone `videostrip-meshroom` alongside
-  `videostrip` if you rely on Meshroom pipelines.
+  - Meshroom node assets (`meshroom/` and `doc/TODO.md` entries tied to them) have been removed from this repository. Clone `videostrip-meshroom` alongside `videostrip` if you rely on Meshroom pipelines.
 
   ## Enhancements
-  - Promoted the bundled `args.hxx` header to `third_party/args.hxx` and rewired include paths in the CLI/core targets, simplifying packaging and making the
-  dependency boundary explicit.
+  - Promoted the bundled `args.hxx` header to `third_party/args.hxx` and rewired include paths in the CLI/core targets, simplifying packaging and making the dependency boundary explicit.
   - Pruned the unused `videostrip_utils` module to reduce build surface area.
 
   ## Documentation

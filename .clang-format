@@ -1,0 +1,22 @@
+# .clang-format
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+AllowShortFunctionsOnASingleLine: Empty
+BreakBeforeBraces: Allman
+SpacesInAngles:  false
+SpaceBeforeParens: ControlStatements
+PointerAlignment: Left
+DerivePointerAlignment: false
+IncludeBlocks: Regroup
+SortIncludes: true
+IncludeCategories:
+  - Regex: '^<opencv2/.*>'
+    Priority: 2
+  - Regex: '^<.*>'
+    Priority: 3
+  - Regex: '.*'
+    Priority: 4
+AccessModifierOffset: -4

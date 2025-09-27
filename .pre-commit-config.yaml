@@ -1,0 +1,38 @@
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.8
+    hooks:
+      - id: clang-format
+        files: '\.(c|cc|cpp|cxx|h|hpp)$'
+        # Do not format vendored / generated code
+        exclude: >
+          ^(
+            third_party/|
+            external/|
+            build/|
+            .*/_deps/|
+            .*/_install/|
+            videostrip/.*/generated/
+          )
+
+  # - repo: local
+  #   hooks:
+  #     - id: clang-tidy
+  #       name: clang-tidy (quick)
+  #       language: system
+  #       entry: bash -lc
+  #       pass_filenames: false
+  #       files: '\.(c|cc|cpp|cxx|h|hpp)$'
+  #       exclude: >
+  #         ^(
+  #           third_party/|
+  #           external/|
+  #           build/|
+  #           .*/_deps/|
+  #           .*/_install/
+  #         )
+  #       args:
+  #         - >
+  #           test -f build/compile_commands.json
+  #           || (echo "[hint] run: cmake -B build && cmake --build build" && exit 1);
+  #           run-clang-tidy -p build -quiet
