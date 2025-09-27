@@ -2,6 +2,7 @@
 [![C/C++ CI](https://github.com/cappelletto/videostrip/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/cappelletto/videostrip/actions/workflows/c-cpp.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![License](https://img.shields.io/badge/License-LGPL_3.0-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
+[![Meshroom plugin compatibility](https://img.shields.io/badge/meshroom%20plugin-%E2%89%A5%201.0-blue)](#version-compatibility) <!-- UPDATE ON RELEASE: set A.B to the minimum compatible videostrip-meshroom version -->
 
 ---
 
@@ -46,6 +47,14 @@ It produces **SfM-ready frame sets** and metadata for tools like **COLMAP, Metas
 
 For more detailed information, please check the  [Release notes](RELEASE_NOTES.md)
 ---
+
+---
+
+## **Version Compatibility**
+
+| Component            | Version (this release) | Requires / Compatible with |
+|----------------------|------------------------|-----------------------------|
+| **videostrip (CLI)** | `v0.9.1`               | **videostrip-meshroom** ≥ `1.0` |
 
 ## **User Stories Alignment**
 

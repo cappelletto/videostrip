@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(videostrip VERSION 0.9.2 LANGUAGES CXX)
+project(videostrip VERSION 0.9.3 LANGUAGES CXX)
 
 # Less-intrusive default install prefix on UNIX (avoid /usr/local by default)
 if(UNIX AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
