@@ -16,6 +16,13 @@
 // TODO: Replace with proper include when args is added to third_party
 #include <../third_party/args.hxx> // provided from third_pary/ via include path
 
+// --- Added for --version / --print-schema ---
+#include <opencv2/core.hpp>
+
+#include <videostrip_core/schema.hpp>
+
+#include "version.hpp"
+
 namespace fs = std::filesystem;
 using namespace videostrip;
 
@@ -23,6 +30,90 @@ static inline std::string to_upper(std::string s)
 {
     std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::toupper(c); });
     return s;
+}
+
+// --- helpers for reporting-only actions ---
+static int PrintVersion(const std::string& fmt)
+{
+    const std::string ocv = cv::getVersionString();
+    if (fmt == "json")
+    {
+        std::cout << R"({JSON fmt string goes here})" << std::endl;
+        std::cout << "{"
+                  << "\"name\":\"videostrip_cli\","
+                  << "\"version\":\"" << VIDEOSTRIP_VERSION << "\","
+                  << "\"schema_version\":\"" << videostrip::kSchemaVersion << "\","
+                  << "\"git\":{\"commit\":\"" << VIDEOSTRIP_GIT_COMMIT << "\",\"dirty\":false},"
+                  << "\"build\":{\"type\":\"" << VIDEOSTRIP_BUILD_TYPE
+                  << "\","
+                     "\"compiler\":\""
+                  << VIDEOSTRIP_COMPILER_ID
+                  << "\","
+                     "\"compiler_version\":\""
+                  << VIDEOSTRIP_COMPILER_VERSION
+                  << "\","
+                     "\"platform\":\""
+                  << VIDEOSTRIP_PLATFORM << "\"},"
+                  << "\"opencv\":{\"version\":\"" << ocv << "\",\"vendored\":true}"
+                  << "}";
+    }
+    else
+    {
+        // std::cout << R"({VERSION string goes here})" << std::endl;
+        std::cout << "videostrip_cli " << VIDEOSTRIP_VERSION << " (schema v"
+                  << videostrip::kSchemaVersion << ")\n"
+                  << "git: " << VIDEOSTRIP_GIT_COMMIT << " (dirty: no)\n"
+                  << "build: " << VIDEOSTRIP_BUILD_TYPE << ", " << VIDEOSTRIP_COMPILER_ID << " "
+                  << VIDEOSTRIP_COMPILER_VERSION << ", " << VIDEOSTRIP_PLATFORM << "\n"
+                  << "opencv: " << ocv << " (vendored: yes)" << std::endl;
+    }
+    return 0;
+}
+
+static int PrintSchema(const std::string& which, const std::string& format, bool /*brief*/)
+{
+    const std::string WHICH = to_upper(which);
+    const std::string FMT = to_upper(format);
+
+    if (WHICH == "SUMMARY")
+    {
+        if (FMT == "YAML")
+        {
+            std::cout << videostrip::SummarySchemaYaml();
+            return 0;
+        }
+        std::cerr << "JSON summary schema not implemented; use --schema-format=yaml";
+        return 2;
+    }
+    else if (WHICH == "FRAMES")
+    {
+        if (FMT == "JSON")
+        {
+            std::cout << videostrip::FramesCsvSchemaJson();
+            return 0;
+        }
+        std::cout << "schema_version: \"" << videostrip::kSchemaVersion << "\"\n"
+                  << "frames_csv:\n"
+                  << "  header: [frame_idx, timestamp_ms, output_image, feature_count, "
+                     "quality_score, georef]"
+                  << std::endl;
+        return 0;
+    }
+    else
+    { // ALL
+        if (FMT == "YAML")
+        {
+            std::cout << videostrip::SummarySchemaYaml() << "\n---\n\n"
+                      << "schema_version: \"" << videostrip::kSchemaVersion << "\"\n"
+                      << "frames_csv:\n"
+                      << "  header: [frame_idx, timestamp_ms, output_image, feature_count, "
+                         "quality_score, georef]"
+                      << std::endl;
+            return 0;
+        }
+        std::cout << "{\"summary\": null,\"frames\": " << videostrip::FramesCsvSchemaJson() << "}";
+        return 0;
+    }
 }
 
 int main(int argc, char* argv[])
@@ -46,6 +137,19 @@ int main(int argc, char* argv[])
     args::ValueFlag<std::string> overlap_mode(parser, "mode", "Overlap mode (FEATURE|FLOW|ECC)",
                                               {"overlap-mode"});
 
+    // --- Version / Schema reporting ---
+    args::Flag version(parser, "version", "Print version and exit", {'V', "version"});
+    args::ValueFlag<std::string> version_format(parser, "fmt", "Version format: text|json",
+                                                {"version-format"});
+
+    args::Flag print_schema(parser, "print-schema", "Print output schema and exit",
+                            {"print-schema"});
+    args::ValueFlag<std::string> schema_which(parser, "which", "Which schema: summary|frames|all",
+                                              {"schema-which"});
+    args::ValueFlag<std::string> schema_format(parser, "format", "Schema format: yaml|json",
+                                               {"schema-format"});
+    args::Flag schema_brief(parser, "brief", "Brief schema info", {"brief"});
+
     try
     {
         parser.ParseCLI(argc, argv);
@@ -64,6 +168,20 @@ int main(int argc, char* argv[])
     {
         std::cerr << e.what() << "\n" << parser;
         return 2;
+    }
+
+    // Handle reporting-only actions and exit cleanly
+    if (version)
+    {
+        const std::string fmt = version_format ? args::get(version_format) : std::string("text");
+        return PrintVersion(to_upper(fmt) == "JSON" ? std::string("json") : std::string("text"));
+    }
+    if (print_schema)
+    {
+        const std::string which = schema_which ? args::get(schema_which) : std::string("all");
+        const std::string format = schema_format ? args::get(schema_format) : std::string("yaml");
+        const bool brief = static_cast<bool>(schema_brief);
+        return PrintSchema(which, format, brief);
     }
 
     // --- Config construction (YAML optional + CLI overrides) ---
