@@ -7,9 +7,9 @@ if(UNIX AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   message(STATUS "Install prefix not provided, defaulting to: ${CMAKE_INSTALL_PREFIX}")
 endif()
 
-# ------------------------------------------------------------
+# ==========================================
 # Licensing
-# ------------------------------------------------------------
+# ==========================================
 set(PROJECT_LICENSE "Apache-2.0 OR LGPL-3.0-or-later")
 message(STATUS "License: ${PROJECT_LICENSE}")
 
@@ -17,6 +17,33 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
+
+# ==========================================
+# Git and build information for configuration (to embed in binaries)
+# ==========================================
+# --- Generate version header (place near other top-level config) ---
+# Short git commit (ignore errors if not a git checkout)
+execute_process(
+  COMMAND git rev-parse --short HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_SHA
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  ERROR_QUIET
+)
+if (NOT GIT_COMMIT_SHA)
+  set(GIT_COMMIT_SHA "unknown")
+endif()
+
+set(BUILD_TYPE        "${CMAKE_BUILD_TYPE}")
+set(COMPILER_ID       "${CMAKE_CXX_COMPILER_ID}")
+set(COMPILER_VERSION  "${CMAKE_CXX_COMPILER_VERSION}")
+set(PLATFORM          "${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR}")
+
+configure_file(
+  ${CMAKE_SOURCE_DIR}/videostrip_core/version.hpp.in
+  ${CMAKE_BINARY_DIR}/generated/version.hpp
+  @ONLY
+)
 
 # ==========================================
 # Build output directories
@@ -160,6 +187,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 # ==========================================
 add_subdirectory(videostrip_core)
 target_link_libraries(videostrip_core PRIVATE project_warnings)
+target_include_directories(videostrip_core PUBLIC ${CMAKE_BINARY_DIR}/generated)
 
 if (TARGET opencv_vendor)
   add_dependencies(videostrip_core opencv_vendor)
@@ -167,6 +195,7 @@ endif()
 
 add_subdirectory(videostrip_cli)
 target_link_libraries(videostrip_cli PRIVATE project_warnings)
+target_include_directories(videostrip_cli  PUBLIC ${CMAKE_BINARY_DIR}/generated)
 
 if (TARGET opencv_vendor)
   add_dependencies(videostrip_cli opencv_vendor)
