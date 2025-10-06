@@ -79,24 +79,42 @@ For more detailed information, please check the  [Release notes](RELEASE_NOTES.m
 * **yaml-cpp** (for YAML config parsing)
 * **Catch2** (for unit testing)
 
-### **Build (CLI)**
+### **Configure & Build**
 
 ```bash
 # Clone repository
 git clone https://github.com/cappelletto/videostrip.git
 cd videostrip
 
-# Configure and build
-cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_MANPAGE=OFF -DBUILD_TESTS=OFF
-cmake --build build -j4
-````
+# Configure once, build incrementally
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target videostrip_cli -j
+```
 
-The build produces:
+The default target links `videostrip_core` and emits:
 
 ```
-build/bin/videostrip_cli        # CLI binary
-build/lib/libvideostrip_core.a  # Core library
+build/bin/videostrip_cli        # CLI binary wrapping VideoFrameExtractor
+build/lib/libvideostrip_core.a  # Core C++17 static library
 ```
+
+Need only the library?
+
+```bash
+cmake --build build --target videostrip_core
+```
+
+### **Testing**
+
+Enable Catch2 suites on demand:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON
+cmake --build build --target test_core_smoke test_config_yaml -j
+ctest --test-dir build --output-on-failure
+```
+
+`tests/build_with_tests.sh` mirrors the CI flow and builds all test binaries (e.g. `test_enhance_stage`).
 
 ---
 
@@ -105,7 +123,7 @@ build/lib/libvideostrip_core.a  # Core library
 Basic run (defaults to ./output/*):
 
 ```bash
-./videostrip_cli --input reef_transect.mp4
+./build/bin/videostrip_cli --input reef_transect.mp4
 ```
 
 Outputs:
@@ -121,13 +139,13 @@ Outputs:
 With YAML config:
 
 ```bash
-./videostrip_cli --config configs/sample_min.yaml
+./build/bin/videostrip_cli --config configs/sample_min.yaml
 ```
 
 CLI overrides YAML:
 
 ```bash
-./videostrip_cli --config configs/sample_min.yaml --feature AKAZE --output ./out
+./build/bin/videostrip_cli --config configs/sample_min.yaml --feature AKAZE --output ./out
 ```
 
 ### **Minimal YAML Config Example**
@@ -214,7 +232,7 @@ is set, a default sequence `{grayworld, clahe(YCrCb)}` will be applied.
 ### CLI override
 
 ```bash
-./videostrip_cli --enhance.sequence "contrast(alpha=1.1,beta=-5); grayworld; gamma(1.05); clahe(clip=2.0,grid=8x8,space=YCrCb)"
+./build/bin/videostrip_cli --enhance.sequence "contrast(alpha=1.1,beta=-5); grayworld; gamma(1.05); clahe(clip=2.0,grid=8x8,space=YCrCb)"
 ```
 
 ---
