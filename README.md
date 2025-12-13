@@ -227,13 +227,10 @@ processing:
   apply_enhancement: true
 ```
 
-is set, a default sequence `{grayworld, clahe(YCrCb)}` will be applied.
+is set, or if you pass `--enhance` on the CLI while running without a YAML config, a default sequence
+`{grayworld, clahe(YCrCb)}` will be applied.
 
-### CLI override
-
-```bash
-./build/bin/videostrip_cli --enhance.sequence "contrast(alpha=1.1,beta=-5); grayworld; gamma(1.05); clahe(clip=2.0,grid=8x8,space=YCrCb)"
-```
+For custom enhancement pipelines, prefer specifying an explicit `enhance:` block in the YAML config.
 
 ---
 
@@ -288,4 +285,3 @@ You may choose to use *videostrip* as a whole under either license.
 - Additional notices: see THIRD_PARTY_NOTICES.md
 
 See LICENSE.Apache and LICENSE.LGPL files in this repository for the complete license texts.
-

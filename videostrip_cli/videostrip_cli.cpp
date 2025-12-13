@@ -300,7 +300,22 @@ int main(int argc, char* argv[])
     }
 
     // Enhancement
-    config.apply_enhancement = enhance ? true : config.apply_enhancement;
+    if (enhance)
+    {
+        // CLI flag always enables enhancement
+        config.apply_enhancement = true;
+
+        // If no enhancement sequence has been configured (no YAML or no enhance block),
+        // install the default pipeline used by the YAML loader’s legacy path.
+        if (!config.enhance.enable || config.enhance.sequence.empty())
+        {
+            config.enhance.enable = true;
+            config.enhance.sequence.clear();
+            config.enhance.sequence.push_back({EnhanceType::GrayWorldWB, GrayWorldParams{}});
+            config.enhance.sequence.push_back(
+                {EnhanceType::CLAHE, ClaheParams{2.0, cv::Size(8, 8), ClaheSpace::YCrCb}});
+        }
+    }
 
     // Optional: overlap-mode passthrough (harmless if core ignores it now)
     // if (overlap_mode) config.overlap_mode = to_upper(args::get(overlap_mode));

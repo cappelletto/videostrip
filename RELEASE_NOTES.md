@@ -12,6 +12,7 @@ Release Notes Draft
   ## Enhancements
   - Promoted the bundled `args.hxx` header to `third_party/args.hxx` and rewired include paths in the CLI/core targets, simplifying packaging and making the dependency boundary explicit.
   - Pruned the unused `videostrip_utils` module to reduce build surface area.
+  - CLI `--enhance` flag now applies the default `{grayworld, clahe(YCrCb)}` enhancement pipeline even when no YAML config is provided, matching the legacy `processing.apply_enhancement: true` behavior.
 
   ## Documentation
   - README now opens with the Meshroom migration notice, refreshed build/usage guidance, and a direct link to the contributing guide.
@@ -27,4 +28,3 @@ Release Notes Draft
     ```bash
     python scripts/todo2issues.py --todo doc/TODO.md --owner <github-org> --dry-run
     ```
-
